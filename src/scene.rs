@@ -78,7 +78,7 @@ pub fn setup_scene(
                     .add(Mesh::from(Circle::new(Planet::SUN.radius)))
                     .into(),
                 transform: Transform::from_xyz(0.0, 0.0, 1.0),
-                material: materials.add(ColorMaterial::from(Color::WHITE)),
+                material: materials.add(ColorMaterial::from(Color::srgb(3.0, 3.0, 3.0))),
                 ..default()
             },
             RigidBody {

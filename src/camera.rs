@@ -1,4 +1,5 @@
 use bevy::{
+    core_pipeline::bloom::BloomSettings,
     prelude::*,
     render::{
         camera::RenderTarget,
@@ -92,6 +93,7 @@ pub fn setup_camera(
                     // render before the "main pass" camera
                     order: -1,
                     target: RenderTarget::Image(image_handle.clone()),
+                    hdr: true,
                     ..default()
                 },
                 projection: OrthographicProjection {
@@ -109,6 +111,7 @@ pub fn setup_camera(
             Autofollow {
                 target: Option::None,
             },
+            BloomSettings::OLD_SCHOOL,
         ))
         .id();
 
@@ -256,7 +259,7 @@ pub fn scale_entities(
         let Some(aabb) = m.compute_aabb() else {
             todo!()
         };
-        
+
         let size = f32::min(aabb.half_extents.x, aabb.half_extents.y);
         if size / projection.scale < 1.0 {
             transform.scale = Vec3::splat(projection.scale / size);
