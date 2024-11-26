@@ -72,7 +72,7 @@ pub fn setup_scene(
 ) {
     commands.spawn_big_space(ReferenceFrame::<i32>::default(), |root| {
         root.spawn_spatial((
-            Name::new("SUN"),
+            Name::new("Sun"),
             MaterialMesh2dBundle {
                 mesh: meshes
                     .add(Mesh::from(Circle::new(Planet::SUN.radius)))
@@ -91,7 +91,7 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             PlanetBundle {
-                name: Name::new("MERCURY"),
+                name: Name::new("Mercury"),
                 material_mesh_2d: MaterialMesh2dBundle {
                     mesh: meshes
                         .add(Mesh::from(Circle::new(Planet::MERCURY.radius)))
@@ -114,7 +114,7 @@ pub fn setup_scene(
             Trailable,
         ));
         root.spawn_spatial((
-            Name::new("VENUS"),
+            Name::new("Venus"),
             MaterialMesh2dBundle {
                 mesh: meshes
                     .add(Mesh::from(Circle::new(Planet::VENUS.radius)))
@@ -166,6 +166,7 @@ pub fn setup_scene(
             Autoscale,
             Focusable,
         ))
+        // TODO: Extract this to a helper function?
         .with_children(|earth| {
             // Spawn Earth atmosphere layers.
             earth.spawn(MaterialMesh2dBundle {
