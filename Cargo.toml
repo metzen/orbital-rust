@@ -1,0 +1,27 @@
+[package]
+name = "orbital"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+#bevy = { version = "0.14.2" }
+bevy = { version = "0.14.2", features = ["dynamic_linking"] }
+bevy_framepace = "0.17"
+big_space = "0.7"
+rand = "0.8.5"
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
+incremental = false
+debug = false
+
+# Enable a small amount of optimization in the dev profile.
+[profile.dev]
+opt-level = 1
+
+# Enable max optimizations for dependencies, but not for our code:
+[profile.dev.package."*"]
+opt-level = 3
+

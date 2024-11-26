@@ -1,0 +1,39 @@
+(
+  entities: {
+    4294967296: (
+      components: {
+        "bevy_core::name::Name": (
+          hash: 17588334858059901562,
+          name: "sun",
+
+        ),
+        "scene::RigidBody": (
+            mass: 1.9891e30,
+        ),
+        "bevy_transform::components::global_transform::GlobalTransform": ((1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0)),
+        "bevy_transform::components::transform::Transform": (
+          translation: (0.0, 0.0, 0.0),
+          rotation: (0.0, 0.0, 0.0, 1.0),
+          scale: (1.0, 1.0, 1.0),
+        ),
+      },
+    ),
+    2342342354: (
+            // Hexagon
+      components: {
+        "bevy_sprite::mesh2d::material::MaterialMesh2dBundle: (
+            mesh: meshes.add(shape::RegularPolygon::new(20., 6).into()).into(),
+            material: materials.add(ColorMaterial::from(Color::TURQUOISE)),
+            transform: Transform::from_translation(Vec3::new(15., -50., 0.)),
+            ..default()
+        },
+        Rotate,
+        RigidBody {
+            mass: 15.,
+            velocity: Vec3::ZERO,
+            ..default()
+        },
+    ));
+    )
+  },
+)
