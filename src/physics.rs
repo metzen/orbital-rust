@@ -2,7 +2,7 @@ use bevy::{ecs::query::QueryData, prelude::*};
 
 use crate::{lifetime::Ephemeral, scene::Planet, timewarp::*};
 
-// Gravitational constant.
+/// Gravitational constant.
 const G: f64 = 6.67430e-11; // (N * m**2) / kg**2
 
 pub struct PhysicsPlugin;
