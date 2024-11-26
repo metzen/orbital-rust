@@ -33,14 +33,14 @@ pub struct SineDecoder {
 impl SineDecoder {
     fn new(frequency: f32) -> Self {
         // standard sample rate for most recordings
-        let sample_rate = 44_100;
+        let sample_rate = 44_100.0;
         SineDecoder {
             current_progress: 0.0,
             current_progress_two: 0.0,
-            progress_per_frame: frequency / sample_rate as f32,
-            progress_per_frame_two: frequency * 0.8 / sample_rate as f32,
-            period: std::f32::consts::PI * 2.,
-            sample_rate,
+            progress_per_frame: frequency / sample_rate,
+            progress_per_frame_two: frequency * 0.8 / sample_rate,
+            period: std::f32::consts::PI * 2.0,
+            sample_rate: sample_rate as u32,
         }
     }
 }
