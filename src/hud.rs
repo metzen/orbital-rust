@@ -36,8 +36,6 @@ struct AccelerationText;
 #[derive(Component)]
 struct AltitudeText;
 
-const MARGIN: Val = Val::Px(12.0);
-
 fn setup_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
     let font = asset_server.load("fonts/Roboto-Medium.ttf");
     let text_style = TextStyle {
