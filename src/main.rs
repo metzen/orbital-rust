@@ -50,6 +50,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins
                 .build()
+                // BigSpacePlugin will handle syncing Transforms to GlobalTransform.
                 .disable::<TransformPlugin>()
                 .set(WindowPlugin {
                     primary_window: Some(Window {
