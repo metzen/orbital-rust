@@ -59,6 +59,40 @@ pub fn setup_vessel(
     let big_space = big_space_query.single();
     commands
         .spawn((
+            Name::new("Pickle"),
+            MaterialMesh2dBundle {
+                mesh: meshes
+                    .add(Mesh::from(Capsule2d {
+                        radius: 8.0,
+                        half_length: 10.0,
+                    }))
+                    .into(),
+                material: materials.add(ColorMaterial::from(Color::from(TEAL))),
+                transform: Transform::from_xyz(147.10e9 + 100.0, Planet::EARTH.radius, 2.0),
+                // transform: Transform::from_xyz(147.10e9 + 500.0, Planet::EARTH.radius, 2.0),
+                ..default()
+            },
+            RigidBody {
+                velocity: Vec3 {
+                    x: 0.0,
+                    y: 30.29e3,
+                    z: 0.0,
+                },
+                mass: 10.0,
+                ..default()
+            },
+            Autoscale,
+            Focusable,
+            Vessel::default(),
+            GridCell::<i32>::default(),
+            // AudioSourceBundle {
+            //     source: assets.add(SineAudio { frequency: 150.0 }),
+            //     ..default()
+            // },
+        ))
+        .set_parent(big_space);
+    commands
+        .spawn((
             Name::new("FlySafe"),
             MaterialMesh2dBundle {
                 mesh: meshes
