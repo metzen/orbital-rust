@@ -244,7 +244,7 @@ pub fn vessel_control(mut query: Query<(&mut Vessel)>, keyboard_input: Res<Butto
     }
 }
 
-pub fn vessel_engine_audio(query: Query<(&Vessel, Option<&AudioSink>)>) {
+pub fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
     for (vessel, audiosink) in &query {
         if audiosink.is_some() {
             let sink = audiosink.unwrap();
