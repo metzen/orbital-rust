@@ -40,7 +40,7 @@ enum Direction {
 
 #[derive(Component, Default)]
 pub struct Vessel {
-    controlled: bool,
+    pub controlled: bool,
     pub throttle: f32, // [0, 1]
     rotate: f32,
     direction_lock: Option<Direction>,
@@ -110,9 +110,9 @@ pub fn setup_vessel(
 
 pub fn vessel_control(mut query: Query<(&mut Vessel)>, keyboard_input: Res<ButtonInput<KeyCode>>) {
     for (mut vessel) in query.iter_mut() {
-        // if !vessel.controlled {
-        //     continue;
-        // }
+        if !vessel.controlled {
+            continue;
+        }
 
         if keyboard_input.just_pressed(KeyCode::CapsLock) {
             vessel.control_mode = match vessel.control_mode {
