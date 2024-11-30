@@ -9,6 +9,7 @@ use rand::{thread_rng, Rng};
 use crate::{
     audio::SineAudio,
     camera::{Autoscale, Focusable},
+    hud::HudSubject,
     lifetime::Ephemeral,
     physics::{dynamics, NoGravity, RigidBody},
     scene::Planet,
@@ -81,6 +82,7 @@ pub fn setup_vessel(
             },
             Autoscale,
             Focusable,
+            HudSubject,
             Vessel::default(),
             GridCell::<i32>::default(),
             AudioSourceBundle {
