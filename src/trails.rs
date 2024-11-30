@@ -1,4 +1,8 @@
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{
+    ecs::query::QueryData,
+    prelude::*,
+    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+};
 use big_space::{BigSpace, GridCell};
 
 use crate::{camera::Autoscale, lifetime::Ephemeral};
@@ -8,6 +12,8 @@ pub struct TrailsPlugin;
 impl Plugin for TrailsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(TrailTimer(Timer::from_seconds(0.2, TimerMode::Repeating)));
+        app.insert_resource(TrailAssets { mesh: Option::None });
+        app.add_systems(Startup, setup);
         app.add_systems(FixedUpdate, trail_system);
     }
 }
@@ -18,37 +24,45 @@ pub struct Trailable;
 #[derive(Resource)]
 struct TrailTimer(Timer);
 
+#[derive(Resource)]
+struct TrailAssets {
+    mesh: Option<Mesh2dHandle>,
+}
+
+fn setup(mut meshes: ResMut<Assets<Mesh>>, mut assets: ResMut<TrailAssets>) {
+    assets.mesh = Some(meshes.add(Mesh::from(Circle::new(1.0))).into());
+}
+
+#[derive(QueryData)]
+#[query_data(mutable)]
+struct TrailableQuery {
+    transform: &'static Transform,
+    grid_cell: &'static GridCell<i32>,
+    material: &'static Handle<ColorMaterial>,
+}
+
 fn trail_system(
     mut commands: Commands,
     time: Res<Time>,
     mut timer: ResMut<TrailTimer>,
-    query: Query<
-        (
-            &Transform,
-            &GridCell<i32>,
-            &Handle<ColorMaterial>,
-            // &Mesh2dHandle,
-        ),
-        With<Trailable>,
-    >,
+    assets: Res<TrailAssets>,
+    query: Query<TrailableQuery, With<Trailable>>,
     big_space_query: Query<Entity, With<BigSpace>>,
-    mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     if timer.0.tick(time.delta()).just_finished() {
         let big_space = big_space_query.single();
-        for (transform, grid_cell, material) in query.iter() {
-            let color = materials.get(material).unwrap().color;
+        for (trailable) in query.iter() {
+            let color = materials.get(trailable.material).unwrap().color;
             let mut trail = commands.spawn((
-                // Name::new("trail"),
                 MaterialMesh2dBundle {
-                    transform: Transform::from_translation(transform.translation),
-                    mesh: meshes.add(Mesh::from(Circle::new(1.0))).into(),
+                    transform: Transform::from_translation(trailable.transform.translation),
+                    mesh: assets.mesh.as_ref().unwrap().clone(),
                     material: materials.add(ColorMaterial::from(color)),
                     ..default()
                 },
                 Ephemeral { ttl: 60 * 30 },
-                *grid_cell,
+                *trailable.grid_cell,
                 Autoscale,
             ));
             trail.set_parent(big_space);
