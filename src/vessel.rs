@@ -67,7 +67,7 @@ pub fn setup_vessel(
                         half_length: 20.0,
                     }))
                     .into(),
-                transform: Transform::from_xyz(147.10e9, Planet::EARTH.radius, 1.0),
+                transform: Transform::from_xyz(147.10e9, Planet::EARTH.radius, 3.0),
                 material: materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16))),
                 ..default()
             },
