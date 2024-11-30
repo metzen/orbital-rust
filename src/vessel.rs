@@ -93,19 +93,32 @@ pub fn setup_vessel(
         .set_parent(big_space)
         .with_children(|vessel| {
             vessel.spawn((
-                Name::new("Hot dog bun"),
+                Name::new("Hot dog bun 1"),
                 MaterialMesh2dBundle {
                     mesh: meshes
                         .add(Mesh::from(Capsule2d {
-                            radius: 15.0,
+                            radius: 10.0,
                             half_length: 20.0,
                         }))
                         .into(),
-                    transform: Transform::from_xyz(0.0, 0.0, -1.0),
+                    transform: Transform::from_xyz(-10.0, 0.0, -1.0),
                     material: materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27))),
                     ..default()
                 },
-                Autoscale,
+            ));
+            vessel.spawn((
+                Name::new("Hot dog bun 2"),
+                MaterialMesh2dBundle {
+                    mesh: meshes
+                        .add(Mesh::from(Capsule2d {
+                            radius: 10.0,
+                            half_length: 20.0,
+                        }))
+                        .into(),
+                    transform: Transform::from_xyz(10.0, 0.0, -1.0),
+                    material: materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27))),
+                    ..default()
+                },
             ));
         });
 }
