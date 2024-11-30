@@ -266,7 +266,7 @@ pub fn vessel_systems(
             commands
                 .spawn((
                     MaterialMesh2dBundle {
-                        mesh: meshes.add(Mesh::from(Circle::new(2.5))).into(),
+                        mesh: meshes.add(Mesh::from(Cuboid::new(2.5, 2.5, 1.0))).into(),
                         transform: Transform::from_translation(
                             transform.translation
                             + Vec3 {
