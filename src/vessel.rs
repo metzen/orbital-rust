@@ -18,7 +18,7 @@ pub struct VesselPlugin;
 
 impl Plugin for VesselPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostStartup, (setup_vessel));
+        app.add_systems(Startup, setup_vessel);
         app.add_systems(Update, (vessel_control, vessel_engine_audio));
         app.add_systems(FixedPreUpdate, vessel_systems.before(dynamics));
     }

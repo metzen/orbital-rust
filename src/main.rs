@@ -80,7 +80,8 @@ fn main() {
         .add_audio_source::<SineAudio>()
         .insert_resource(Time::<Fixed>::from_hz(64.0))
         .insert_resource(Msaa::Off)
-        .add_systems(Startup, (setup_scene, setup_camera).chain())
+        .add_systems(PreStartup, setup_scene)
+        .add_systems(PostStartup, setup_camera)
         .add_systems(Update, (fit_canvas, app_control, change_focus))
         .add_systems(
             PostUpdate,

@@ -15,6 +15,8 @@ use big_space::{
     reference_frame::local_origin::ReferenceFrames, BigSpace, FloatingOrigin, GridCell,
 };
 
+use crate::vessel::Vessel;
+
 /// In-game resolution width.
 pub const RES_WIDTH: u32 = 16 * 12;
 
@@ -55,6 +57,7 @@ pub fn setup_camera(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
     query: Query<Entity, With<BigSpace>>,
+    vessel_query: Query<Entity, With<Vessel>>,
 ) {
     let big_space = query.single();
     let canvas_size = Extent3d {
@@ -97,7 +100,8 @@ pub fn setup_camera(
                     ..default()
                 },
                 projection: OrthographicProjection {
-                    // scale: 1e6,
+                    scale: 2.0,
+                    // scale: 1e9,  // Solar system view.
                     far: 1000.,
                     near: -1000.,
                     ..default()
@@ -109,7 +113,7 @@ pub fn setup_camera(
             HighPrecisionScale(1.0),
             GridCell::<i32>::default(),
             Autofollow {
-                target: Option::None,
+                target: vessel_query.iter().next(),
             },
             BloomSettings::OLD_SCHOOL,
         ))
