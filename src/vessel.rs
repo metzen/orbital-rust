@@ -85,10 +85,14 @@ pub fn setup_vessel(
             Focusable,
             Vessel::default(),
             GridCell::<i32>::default(),
-            // AudioSourceBundle {
-            //     source: assets.add(SineAudio { frequency: 150.0 }),
-            //     ..default()
-            // },
+            AudioSourceBundle {
+                source: assets.add(SineAudio { frequency: 120.0 }),
+                settings: PlaybackSettings {
+                    spatial: true,
+                    speed: 0.1,
+                    ..default()
+                },
+            },
         ))
         .set_parent(big_space);
     commands
@@ -121,7 +125,11 @@ pub fn setup_vessel(
             GridCell::<i32>::default(),
             AudioSourceBundle {
                 source: assets.add(SineAudio { frequency: 150.0 }),
-                settings: PlaybackSettings{spatial: true, ..default()},
+                settings: PlaybackSettings {
+                    spatial: true,
+                    speed: 0.1,
+                    ..default()
+                },
             },
         ))
         .set_parent(big_space)
