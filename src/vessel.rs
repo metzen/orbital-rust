@@ -261,19 +261,17 @@ pub fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
 pub fn vessel_systems(
     mut commands: Commands,
     mut query: Query<(
-        Entity,
         &mut Transform,
         &mut RigidBody,
         &Vessel,
         &GridCell<i32>,
-        Option<&AudioSink>,
     )>,
     time: Res<Time>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     big_space_query: Query<Entity, With<BigSpace>>,
 ) {
-    for (entity, mut transform, mut rigidbody, vessel, grid_cell, audiosink) in query.iter_mut() {
+    for (mut transform, mut rigidbody, vessel, grid_cell) in query.iter_mut() {
         if vessel.rotate != 0.0 {
             transform.rotate_z(vessel.rotate * time.delta_seconds());
         }
