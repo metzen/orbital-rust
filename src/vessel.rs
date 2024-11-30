@@ -85,7 +85,7 @@ pub fn setup_vessel(
             GridCell::<i32>::default(),
             AudioSourceBundle {
                 source: assets.add(SineAudio { frequency: 150.0 }),
-                ..default()
+                settings: PlaybackSettings{spatial: true, ..default()},
             },
         ))
         .set_parent(big_space)

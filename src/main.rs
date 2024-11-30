@@ -1,5 +1,5 @@
 use bevy::{
-    audio::{AddAudioSource, AudioPlugin},
+    audio::{AddAudioSource, AudioPlugin, SpatialScale},
     prelude::*,
 };
 use bevy::{transform::TransformSystem, window::WindowResolution};
@@ -44,6 +44,11 @@ use vessel::VesselPlugin;
 //     });
 // }
 
+/// Spatial audio uses the distance to attenuate the sound volume. In 2D with the default camera,
+/// 1 pixel is 1 unit of distance, so we use a scale so that 100 pixels is 1 unit of distance for
+/// audio.
+const AUDIO_SCALE: f32 = 1.0 / 100.0;
+
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::BLACK))
@@ -63,7 +68,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest())
                 .set(AudioPlugin {
                     global_volume: GlobalVolume::new(1.0),
-                    ..default()
+                    default_spatial_scale: SpatialScale::new_2d(AUDIO_SCALE),
                 }),
             BigSpacePlugin::<i32>::default(),
             FramepacePlugin,

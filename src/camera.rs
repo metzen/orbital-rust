@@ -116,6 +116,7 @@ pub fn setup_camera(
                 target: vessel_query.iter().next(),
             },
             BloomSettings::OLD_SCHOOL,
+            SpatialListener::new(100.0),
         ))
         .id();
 
