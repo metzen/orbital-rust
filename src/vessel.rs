@@ -67,7 +67,7 @@ pub fn setup_vessel(
                         half_length: 10.0,
                     }))
                     .into(),
-                material: materials.add(ColorMaterial::from(Color::from(TEAL))),
+                material: MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(TEAL)))),
                 transform: Transform::from_xyz(147.10e9 + 100.0, Planet::EARTH.radius, 2.0),
                 // transform: Transform::from_xyz(147.10e9 + 500.0, Planet::EARTH.radius, 2.0),
                 ..default()
@@ -86,7 +86,7 @@ pub fn setup_vessel(
             Vessel::default(),
             GridCell::<i32>::default(),
             AudioSourceBundle {
-                source: assets.add(SineAudio { frequency: 120.0 }),
+                source: AudioPlayer(assets.add(SineAudio { frequency: 120.0 })),
                 settings: PlaybackSettings {
                     spatial: true,
                     speed: 0.1,
@@ -106,7 +106,9 @@ pub fn setup_vessel(
                     }))
                     .into(),
                 transform: Transform::from_xyz(147.10e9, Planet::EARTH.radius, 3.0),
-                material: materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16))),
+                material: MeshMaterial2d(
+                    materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16))),
+                ),
                 ..default()
             },
             RigidBody {
@@ -124,7 +126,7 @@ pub fn setup_vessel(
             Vessel::default(),
             GridCell::<i32>::default(),
             AudioSourceBundle {
-                source: assets.add(SineAudio { frequency: 150.0 }),
+                source: AudioPlayer(assets.add(SineAudio { frequency: 150.0 })),
                 settings: PlaybackSettings {
                     spatial: true,
                     speed: 0.1,
@@ -144,7 +146,9 @@ pub fn setup_vessel(
                         }))
                         .into(),
                     transform: Transform::from_xyz(-10.0, 0.0, -1.0),
-                    material: materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27))),
+                    material: MeshMaterial2d(
+                        materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27))),
+                    ),
                     ..default()
                 },
             ));
@@ -158,7 +162,9 @@ pub fn setup_vessel(
                         }))
                         .into(),
                     transform: Transform::from_xyz(10.0, 0.0, -1.0),
-                    material: materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27))),
+                    material: MeshMaterial2d(
+                        materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27))),
+                    ),
                     ..default()
                 },
             ));
@@ -268,12 +274,7 @@ pub fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
 // Applies effects of active vessel controls.
 pub fn vessel_systems(
     mut commands: Commands,
-    mut query: Query<(
-        &mut Transform,
-        &mut RigidBody,
-        &Vessel,
-        &GridCell<i32>,
-    )>,
+    mut query: Query<(&mut Transform, &mut RigidBody, &Vessel, &GridCell<i32>)>,
     time: Res<Time>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -281,7 +282,7 @@ pub fn vessel_systems(
 ) {
     for (mut transform, mut rigidbody, vessel, grid_cell) in query.iter_mut() {
         if vessel.rotate != 0.0 {
-            transform.rotate_z(vessel.rotate * time.delta_seconds());
+            transform.rotate_z(vessel.rotate * time.delta_secs());
         }
         if vessel.throttle > 0.0 {
             // info!("Throttle: {}", vessel.throttle);
@@ -318,7 +319,9 @@ pub fn vessel_systems(
                         ),
                         // transform: Transform::from_xyz(0.0, 0.0, 0.0),
                         // material: materials.add(ColorMaterial::from(Color::srgb(0.96, 0.79, 0.11))),
-                        material: materials.add(ColorMaterial::from(Color::from(WHITE))),
+                        material: MeshMaterial2d(
+                            materials.add(ColorMaterial::from(Color::from(WHITE))),
+                        ),
                         ..default()
                     },
                     *grid_cell,
@@ -332,7 +335,7 @@ pub fn vessel_systems(
                                     z: 0.0,
                                 })
                                 * (force_magnitude / (rigidbody.mass / 1000.0))
-                                * time.delta_seconds()),
+                                * time.delta_secs()),
                         mass: 1.0,
                         ..default()
                     },

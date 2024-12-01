@@ -78,7 +78,9 @@ pub fn setup_scene(
                     .add(Mesh::from(Circle::new(Planet::SUN.radius)))
                     .into(),
                 transform: Transform::from_xyz(0.0, 0.0, 1.0),
-                material: materials.add(ColorMaterial::from(Color::srgb(3.0, 3.0, 3.0))),
+                material: MeshMaterial2d(
+                    materials.add(ColorMaterial::from(Color::srgb(3.0, 3.0, 3.0))),
+                ),
                 ..default()
             },
             RigidBody {
@@ -97,7 +99,7 @@ pub fn setup_scene(
                         .add(Mesh::from(Circle::new(Planet::MERCURY.radius)))
                         .into(),
                     transform: Transform::from_xyz(0.0, 46e9, 0.0),
-                    material: materials.add(ColorMaterial::from(Color::from(GRAY))),
+                    material: MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(GRAY)))),
                     ..default()
                 },
                 rigidbody: RigidBody {
@@ -120,7 +122,7 @@ pub fn setup_scene(
                     .add(Mesh::from(Circle::new(Planet::VENUS.radius)))
                     .into(),
                 transform: Transform::from_xyz(0.0, -108.2e9, 0.0),
-                material: materials.add(ColorMaterial::from(Color::from(YELLOW))),
+                material: MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(YELLOW)))),
                 ..default()
             },
             RigidBody {
@@ -146,7 +148,9 @@ pub fn setup_scene(
                     )))
                     .into(),
                 transform: Transform::from_xyz(147.10e9, 0.0, 0.0),
-                material: materials.add(ColorMaterial::from(Color::srgb_u8(17, 145, 250))),
+                material: MeshMaterial2d(
+                    materials.add(ColorMaterial::from(Color::srgb_u8(17, 145, 250))),
+                ),
                 ..default()
             },
             RigidBody {
@@ -171,49 +175,49 @@ pub fn setup_scene(
             // Spawn Earth atmosphere layers.
             earth.spawn(MaterialMesh2dBundle {
                 mesh: meshes
-                .add(Mesh::from(CircleMeshBuilder::new(
-                    Planet::EARTH.radius + 100_000.0,
-                    2000,
-                )))
-                .into(),
+                    .add(Mesh::from(CircleMeshBuilder::new(
+                        Planet::EARTH.radius + 100_000.0,
+                        2000,
+                    )))
+                    .into(),
                 // transform: Transform::from_xyz(147.10e9, 0.0, 0.0),
-                material: materials.add(ColorMaterial::from(Color::srgb_u8(
+                material: MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb_u8(
                     17 / 7,
                     145 / 7,
                     250 / 7,
-                ))),
+                )))),
                 transform: Transform::from_xyz(0.0, 0.0, -1.0),
                 ..default()
             });
             earth.spawn(MaterialMesh2dBundle {
                 mesh: meshes
-                .add(Mesh::from(CircleMeshBuilder::new(
-                    Planet::EARTH.radius + 50_000.0,
-                    2000,
-                )))
-                .into(),
+                    .add(Mesh::from(CircleMeshBuilder::new(
+                        Planet::EARTH.radius + 50_000.0,
+                        2000,
+                    )))
+                    .into(),
                 // transform: Transform::from_xyz(147.10e9, 0.0, 0.0),
-                material: materials.add(ColorMaterial::from(Color::srgb_u8(
+                material: MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb_u8(
                     17 / 5,
                     145 / 5,
                     250 / 5,
-                ))),
+                )))),
                 transform: Transform::from_xyz(0.0, 0.0, -1.0),
                 ..default()
             });
             earth.spawn(MaterialMesh2dBundle {
                 mesh: meshes
-                .add(Mesh::from(CircleMeshBuilder::new(
-                    Planet::EARTH.radius + 12_000.0,
-                    2000,
-                )))
-                .into(),
+                    .add(Mesh::from(CircleMeshBuilder::new(
+                        Planet::EARTH.radius + 12_000.0,
+                        2000,
+                    )))
+                    .into(),
                 // transform: Transform::from_xyz(147.10e9, 0.0, 0.0),
-                material: materials.add(ColorMaterial::from(Color::srgb_u8(
+                material: MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb_u8(
                     17 / 3,
                     145 / 3,
                     250 / 3,
-                ))),
+                )))),
                 transform: Transform::from_xyz(0.0, 0.0, -1.0),
                 ..default()
             });
@@ -225,7 +229,7 @@ pub fn setup_scene(
                     .add(Mesh::from(Circle::new(Planet::MOON.radius)))
                     .into(),
                 transform: Transform::from_xyz(147.10e9 + 385e6, 0.0, 0.0),
-                material: materials.add(ColorMaterial::from(Color::WHITE)),
+                material: MeshMaterial2d(materials.add(ColorMaterial::from(Color::WHITE))),
                 ..default()
             },
             RigidBody {
@@ -248,7 +252,7 @@ pub fn setup_scene(
                     .add(Mesh::from(Circle::new(Planet::MARS.radius)))
                     .into(),
                 transform: Transform::from_xyz(206.7e9, 0.0, 0.0),
-                material: materials.add(ColorMaterial::from(Color::from(RED))),
+                material: MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(RED)))),
                 ..default()
             },
             RigidBody {

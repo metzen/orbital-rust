@@ -5,9 +5,12 @@ edition = "2021"
 
 [dependencies]
 #bevy = { version = "0.14.2" }
-bevy = { version = "0.14.2", features = ["dynamic_linking"] }
+bevy = { version = "0.15.0", features = ["dynamic_linking"] }
 bevy_framepace = "0.17"
-big_space = "0.7"
+# big_space = "0.7"
+# big_space = { git = "https://github.com/aevyrie/big_space.git", rev = "750a9a7398dbecf00d0d6e493afcc11f46adf5c0" }
+big_space = { path = "../big_space" }
+
 rand = "0.8.5"
 
 [profile.release]

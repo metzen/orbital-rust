@@ -2,13 +2,10 @@ use bevy::{
     core_pipeline::bloom::BloomSettings,
     prelude::*,
     render::{
-        camera::RenderTarget,
-        render_resource::{
+        camera::RenderTarget, mesh::MeshAabb, render_resource::{
             Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-        },
-        view::RenderLayers,
+        }, view::RenderLayers
     },
-    sprite::Mesh2dHandle,
     window::WindowResized,
 };
 use big_space::{
@@ -91,6 +88,7 @@ pub fn setup_camera(
     // this camera renders whatever is on `PIXEL_PERFECT_LAYERS` to the canvas
     let in_game_camera = commands
         .spawn((
+            // Camera2d::default(),
             Camera2dBundle {
                 camera: Camera {
                     // render before the "main pass" camera
@@ -99,13 +97,16 @@ pub fn setup_camera(
                     hdr: true,
                     ..default()
                 },
-                projection: OrthographicProjection {
-                    scale: 2.0,
-                    // scale: 1e9,  // Solar system view.
-                    far: 1000.,
-                    near: -1000.,
-                    ..default()
-                },
+                msaa: Msaa::Off,
+                projection: OrthographicProjection::default_2d(),
+                // projection: OrthographicProjection {
+                //     scale: 2.0,
+                //     // scale: 1e9,  // Solar system view.
+                //     far: 1000.,
+                //     near: -1000.,
+
+                //     // ..default()
+                // },
                 ..default()
             },
             InGameCamera,
@@ -124,8 +125,8 @@ pub fn setup_camera(
     commands.entity(in_game_camera).set_parent(big_space);
 
     commands.spawn((
-        SpriteBundle {
-            texture: image_handle,
+        Sprite {
+            image: image_handle,
             ..default()
         },
         Canvas,
@@ -207,7 +208,7 @@ pub fn camera_control(
             continue;
         };
         if keyboard_input.pressed(KeyCode::ArrowLeft) {
-            transform.translation.x -= projection.scale * time.delta_seconds() * 200.0;
+            transform.translation.x -= projection.scale * time.delta_secs() * 200.0;
         }
         if keyboard_input.pressed(KeyCode::ArrowRight) {
             // Example from https://github.com/aevyrie/big_space/blob/main/src/camera.rs
@@ -228,30 +229,30 @@ pub fn camera_control(
             // *grid_cell += cell_offset;
             // transform.translation += new_translation;
             // info!("transform: {:?}", transform);
-            transform.translation.x += projection.scale * time.delta_seconds() * 200.0;
+            transform.translation.x += projection.scale * time.delta_secs() * 200.0;
         }
         if keyboard_input.pressed(KeyCode::ArrowDown) {
-            transform.translation.y -= projection.scale * time.delta_seconds() * 200.0;
+            transform.translation.y -= projection.scale * time.delta_secs() * 200.0;
         }
         if keyboard_input.pressed(KeyCode::ArrowUp) {
-            transform.translation.y += projection.scale * time.delta_seconds() * 200.0;
+            transform.translation.y += projection.scale * time.delta_secs() * 200.0;
         }
 
         let scale_factor: f64 = 5.0;
         if keyboard_input.pressed(KeyCode::Equal) {
-            projection.scale *= (1.0 - scale_factor * time.delta_seconds_f64()) as f32;
-            scale.0 *= 1.0 - scale_factor * time.delta_seconds_f64();
+            projection.scale *= (1.0 - scale_factor * time.delta_secs_f64()) as f32;
+            scale.0 *= 1.0 - scale_factor * time.delta_secs_f64();
         }
         if keyboard_input.pressed(KeyCode::Minus) {
-            projection.scale *= (1.0 + scale_factor * time.delta_seconds_f64()) as f32;
-            scale.0 *= 1.0 + scale_factor * time.delta_seconds_f64();
+            projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
+            scale.0 *= 1.0 + scale_factor * time.delta_secs_f64();
         }
     }
 }
 
 /// Scale entities up if they end up becoming smaller than one pixel in the current projection scale.
 pub fn scale_entities(
-    mut query: Query<(&mut Transform, &Mesh2dHandle), With<Autoscale>>,
+    mut query: Query<(&mut Transform, &Mesh2d), With<Autoscale>>,
     projections: Query<&OrthographicProjection, With<InGameCamera>>,
     meshes: ResMut<Assets<Mesh>>,
 ) {

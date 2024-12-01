@@ -1,8 +1,4 @@
-use bevy::{
-    ecs::query::QueryData,
-    prelude::*,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-};
+use bevy::{ecs::query::QueryData, prelude::*, sprite::MaterialMesh2dBundle};
 use big_space::{BigSpace, GridCell};
 
 use crate::{camera::Autoscale, lifetime::Ephemeral};
@@ -26,11 +22,11 @@ struct TrailTimer(Timer);
 
 #[derive(Resource)]
 struct TrailAssets {
-    mesh: Option<Mesh2dHandle>,
+    mesh: Option<Mesh2d>,
 }
 
 fn setup(mut meshes: ResMut<Assets<Mesh>>, mut assets: ResMut<TrailAssets>) {
-    assets.mesh = Some(meshes.add(Mesh::from(Circle::new(1.0))).into());
+    assets.mesh = Some(Mesh2d(meshes.add(Mesh::from(Circle::new(1.0)))));
 }
 
 #[derive(QueryData)]
@@ -38,7 +34,7 @@ fn setup(mut meshes: ResMut<Assets<Mesh>>, mut assets: ResMut<TrailAssets>) {
 struct TrailableQuery {
     transform: &'static Transform,
     grid_cell: &'static GridCell<i32>,
-    material: &'static Handle<ColorMaterial>,
+    material: &'static MeshMaterial2d<ColorMaterial>,
 }
 
 fn trail_system(
@@ -58,7 +54,7 @@ fn trail_system(
                 MaterialMesh2dBundle {
                     transform: Transform::from_translation(trailable.transform.translation),
                     mesh: assets.mesh.as_ref().unwrap().clone(),
-                    material: materials.add(ColorMaterial::from(color)),
+                    material: MeshMaterial2d(materials.add(ColorMaterial::from(color))),
                     ..default()
                 },
                 Ephemeral { ttl: 60 * 30 },

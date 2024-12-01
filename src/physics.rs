@@ -98,7 +98,7 @@ fn drag(mut query: Query<&mut RigidBody, With<Ephemeral>>) {
 
 pub fn dynamics(mut query: Query<&mut RigidBody>, time: Res<Time>, time_warp: Res<TimeWarp>) {
     for mut rigidbody in query.iter_mut() {
-        let delta_time = time.delta_seconds() * time_warp.value;
+        let delta_time = time.delta_secs() * time_warp.value;
         let old_acceleration = rigidbody.acceleration;
         let new_acceleration = rigidbody.force / rigidbody.mass;
         // TODO: inverse mass
@@ -114,7 +114,7 @@ fn kinematics(
     time_warp: Res<TimeWarp>,
 ) {
     for (mut transform, mut rigidbody) in query.iter_mut() {
-        let dt = time.delta_seconds() * time_warp.value;
+        let dt = time.delta_secs() * time_warp.value;
         let velocity = rigidbody.velocity;
         let acceleration = rigidbody.acceleration;
         // rigidbody.transform.translation += dt * (velocity + 0.5 * acceleration * dt);

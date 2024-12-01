@@ -11,7 +11,7 @@ pub fn reaper(
     mut query: Query<(
         Entity,
         &mut Transform,
-        &Handle<ColorMaterial>,
+        &MeshMaterial2d<ColorMaterial>,
         &mut Ephemeral,
     )>,
     mut color_materials: ResMut<Assets<ColorMaterial>>,

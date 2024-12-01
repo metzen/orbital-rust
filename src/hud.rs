@@ -41,80 +41,54 @@ struct AltitudeText;
 pub struct HudSubject;
 
 fn setup_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let font = asset_server.load("fonts/Roboto-Medium.ttf");
-    let text_style = TextStyle {
-        font: font.clone(),
-        font_size: 10.0,
-        color: Color::WHITE,
-    };
-    commands
-        .spawn(NodeBundle {
-            style: Style {
-                // fill the entire window
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                flex_direction: FlexDirection::Column,
-                align_items: AlignItems::Start,
-                // padding: UiRect::all(MARGIN),
-                // row_gap: Val::Px(),
-                margin: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(30.0), Val::Px(0.0)),
-                ..default()
-            },
-            // background_color: BackgroundColor(Color::BLACK),
-            ..default()
-        })
-        .with_children(|root| {
-            root.spawn((
-                TextBundle::from_sections([
-                    TextSection::new("TIME.WARP: ", text_style.clone()),
-                    TextSection::from_style(text_style.clone()),
-                ]),
-                TimeWarpText,
-                HIGH_RES_LAYERS,
-            ));
-            root.spawn((
-                TextBundle::from_sections([
-                    TextSection::new("THR: ", text_style.clone()),
-                    TextSection::from_style(text_style.clone()),
-                ]),
-                ThrottleText,
-                HIGH_RES_LAYERS,
-            ));
-            root.spawn((
-                TextBundle::from_sections([
-                    TextSection::new("VEL: ", text_style.clone()),
-                    TextSection::from_style(text_style.clone()),
-                ]),
-                VelocityText,
-                HIGH_RES_LAYERS,
-            ));
-            root.spawn((
-                TextBundle::from_sections([
-                    TextSection::new("ACC: ", text_style.clone()),
-                    TextSection::from_style(text_style.clone()),
-                ]),
-                AccelerationText,
-                HIGH_RES_LAYERS,
-            ));
-            root.spawn((
-                TextBundle::from_sections([
-                    TextSection::new("ALT: ", text_style.clone()),
-                    TextSection::from_style(text_style.clone()),
-                ]),
-                AltitudeText,
-                HIGH_RES_LAYERS,
-            ));
-        });
+    // let font = asset_server.load("fonts/Roboto-Medium.ttf");
+    // let text_style = TextStyle {
+    //     font: font.clone(),
+    //     font_size: 10.0,
+    //     color: Color::WHITE,
+    // };
+    // commands
+    //     .spawn(NodeBundle {
+    //         style: Style {
+    //             // fill the entire window
+    //             width: Val::Percent(100.0),
+    //             height: Val::Percent(100.0),
+    //             flex_direction: FlexDirection::Column,
+    //             align_items: AlignItems::Start,
+    //             // padding: UiRect::all(MARGIN),
+    //             // row_gap: Val::Px(),
+    //             margin: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(30.0), Val::Px(0.0)),
+    //             ..default()
+    //         },
+    //         // background_color: BackgroundColor(Color::BLACK),
+    //         ..default()
+    //     })
+    // .with_children(|root| {
+    let mut root = commands;
+    root.spawn((Text::new("TIME.WARP: "), HIGH_RES_LAYERS));
+    root.spawn((Text::default(), TimeWarpText, HIGH_RES_LAYERS));
+    root.spawn((Text::new("THR: "), HIGH_RES_LAYERS));
+    root.spawn((Text::default(), ThrottleText, HIGH_RES_LAYERS));
+    root.spawn((Text::new("VEL: "), HIGH_RES_LAYERS));
+    root.spawn((Text::default(), VelocityText, HIGH_RES_LAYERS));
+    root.spawn((Text::new("ACC: "), HIGH_RES_LAYERS));
+    root.spawn((Text::default(), AccelerationText, HIGH_RES_LAYERS));
+    root.spawn((Text::new("ALT: "), HIGH_RES_LAYERS));
+    root.spawn((Text::default(), AltitudeText, HIGH_RES_LAYERS));
+    // });
 }
 
 fn update_fps(mut query: Query<&mut Text, With<TimeWarpText>>, time_warp: Res<TimeWarp>) {
     let mut text = query.single_mut();
-    text.sections[1].value = format!("{:.2}", time_warp.value);
+    text.0 = format!("{:.2}", time_warp.value);
 }
 
-fn update_throttle(mut query: Query<&mut Text, With<ThrottleText>>, vessel_query: Query<&Vessel, With<HudSubject>>) {
+fn update_throttle(
+    mut query: Query<&mut Text, With<ThrottleText>>,
+    vessel_query: Query<&Vessel, With<HudSubject>>,
+) {
     if let Some(vessel) = vessel_query.iter().next() {
-        query.single_mut().sections[1].value = format!("{:.2}", vessel.throttle);
+        query.single_mut().0 = format!("{:.2}", vessel.throttle);
     }
 }
 
@@ -123,7 +97,7 @@ fn update_velocity(
     vessel_rigidbody_query: Query<&RigidBody, With<HudSubject>>,
 ) {
     if let Some(rigidbody) = vessel_rigidbody_query.iter().next() {
-        query.single_mut().sections[1].value = format!("{:.2}", rigidbody.velocity);
+        query.single_mut().0 = format!("{:.2}", rigidbody.velocity);
     }
 }
 
@@ -132,7 +106,7 @@ fn update_acceleration(
     vessel_rigidbody_query: Query<&RigidBody, With<HudSubject>>,
 ) {
     if let Some(rigidbody) = vessel_rigidbody_query.iter().next() {
-        query.single_mut().sections[1].value = format!("{:.2}", rigidbody.acceleration);
+        query.single_mut().0 = format!("{:.2}", rigidbody.acceleration);
     }
 }
 
@@ -156,7 +130,7 @@ fn update_altitude(
             let distance = primary_transform
                 .translation
                 .distance(vessel_transform.translation);
-            query.single_mut().sections[1].value = format!("{:.2}", distance);
+            query.single_mut().0 = format!("{:.2}", distance);
         }
     }
 }
@@ -170,7 +144,6 @@ pub fn update_hud_subject(
     if keyboard_input.just_pressed(KeyCode::BracketLeft) {
         info!("backet left");
         for (entity, mut vessel, hud_subject) in vessels_query.iter_mut() {
-
             info!("hud subj vessel");
             if hud_subject.is_some() {
                 info!("vessel is subject");
@@ -182,9 +155,6 @@ pub fn update_hud_subject(
                 vessel.controlled = true;
             }
         }
-
     }
-    if keyboard_input.just_pressed(KeyCode::BracketRight) {
-        
-    }
+    if keyboard_input.just_pressed(KeyCode::BracketRight) {}
 }

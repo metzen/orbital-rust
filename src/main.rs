@@ -71,7 +71,7 @@ fn main() {
                     default_spatial_scale: SpatialScale::new_2d(AUDIO_SCALE),
                 }),
             BigSpacePlugin::<i32>::default(),
-            FramepacePlugin,
+            // FramepacePlugin,
             DiagnosticsPlugin,
             TimeWarpPlugin,
             PhysicsPlugin,
@@ -84,7 +84,6 @@ fn main() {
         ))
         .add_audio_source::<SineAudio>()
         .insert_resource(Time::<Fixed>::from_hz(64.0))
-        .insert_resource(Msaa::Off)
         .add_systems(PreStartup, setup_scene)
         .add_systems(PostStartup, setup_camera)
         .add_systems(Update, (fit_canvas, app_control, change_focus))
