@@ -1,4 +1,4 @@
-use bevy::{ecs::query::QueryData, prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{ecs::query::QueryData, prelude::*};
 use big_space::{BigSpace, GridCell};
 
 use crate::{camera::Autoscale, lifetime::Ephemeral};
@@ -48,17 +48,14 @@ fn trail_system(
 ) {
     if timer.0.tick(time.delta()).just_finished() {
         let big_space = big_space_query.single();
-        for (trailable) in query.iter() {
+        for trailable in query.iter() {
             let color = materials.get(trailable.material).unwrap().color;
             let mut trail = commands.spawn((
-                MaterialMesh2dBundle {
-                    transform: Transform::from_translation(trailable.transform.translation),
-                    mesh: assets.mesh.as_ref().unwrap().clone(),
-                    material: MeshMaterial2d(materials.add(ColorMaterial::from(color))),
-                    ..default()
-                },
-                Ephemeral { ttl: 60 * 30 },
+                Transform::from_translation(trailable.transform.translation),
                 *trailable.grid_cell,
+                assets.mesh.clone().unwrap(),
+                MeshMaterial2d(materials.add(ColorMaterial::from(color))),
+                Ephemeral { ttl: 60 * 30 },
                 Autoscale,
             ));
             trail.set_parent(big_space);

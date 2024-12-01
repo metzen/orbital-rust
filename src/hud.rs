@@ -41,41 +41,36 @@ struct AltitudeText;
 pub struct HudSubject;
 
 fn setup_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // let font = asset_server.load("fonts/Roboto-Medium.ttf");
-    // let text_style = TextStyle {
-    //     font: font.clone(),
-    //     font_size: 10.0,
-    //     color: Color::WHITE,
-    // };
-    // commands
-    //     .spawn(NodeBundle {
-    //         style: Style {
-    //             // fill the entire window
-    //             width: Val::Percent(100.0),
-    //             height: Val::Percent(100.0),
-    //             flex_direction: FlexDirection::Column,
-    //             align_items: AlignItems::Start,
-    //             // padding: UiRect::all(MARGIN),
-    //             // row_gap: Val::Px(),
-    //             margin: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(30.0), Val::Px(0.0)),
-    //             ..default()
-    //         },
-    //         // background_color: BackgroundColor(Color::BLACK),
-    //         ..default()
-    //     })
-    // .with_children(|root| {
-    let mut root = commands;
-    root.spawn((Text::new("TIME.WARP: "), HIGH_RES_LAYERS));
-    root.spawn((Text::default(), TimeWarpText, HIGH_RES_LAYERS));
-    root.spawn((Text::new("THR: "), HIGH_RES_LAYERS));
-    root.spawn((Text::default(), ThrottleText, HIGH_RES_LAYERS));
-    root.spawn((Text::new("VEL: "), HIGH_RES_LAYERS));
-    root.spawn((Text::default(), VelocityText, HIGH_RES_LAYERS));
-    root.spawn((Text::new("ACC: "), HIGH_RES_LAYERS));
-    root.spawn((Text::default(), AccelerationText, HIGH_RES_LAYERS));
-    root.spawn((Text::new("ALT: "), HIGH_RES_LAYERS));
-    root.spawn((Text::default(), AltitudeText, HIGH_RES_LAYERS));
-    // });
+    let font = asset_server.load("fonts/Roboto-Medium.ttf");
+    let text_font = TextFont {
+        font: font.clone(),
+        font_size: 10.0,
+        font_smoothing: bevy::text::FontSmoothing::AntiAliased,
+    };
+    commands
+        .spawn(Node {
+            // fill the entire window
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::End,
+            // padding: UiRect::all(MARGIN),
+            // row_gap: Val::Px(),
+            margin: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(30.0), Val::Px(0.0)),
+            ..default()
+        })
+        .with_children(|root| {
+            root.spawn((Text::new("TIME.WARP: "), HIGH_RES_LAYERS));
+            root.spawn((Text::default(), TimeWarpText, HIGH_RES_LAYERS));
+            root.spawn((Text::new("THR: "), HIGH_RES_LAYERS));
+            root.spawn((Text::default(), ThrottleText, HIGH_RES_LAYERS));
+            root.spawn((Text::new("VEL: "), HIGH_RES_LAYERS));
+            root.spawn((Text::default(), VelocityText, HIGH_RES_LAYERS));
+            root.spawn((Text::new("ACC: "), HIGH_RES_LAYERS));
+            root.spawn((Text::default(), AccelerationText, HIGH_RES_LAYERS));
+            root.spawn((Text::new("ALT: "), HIGH_RES_LAYERS));
+            root.spawn((Text::default(), AltitudeText, HIGH_RES_LAYERS));
+        });
 }
 
 fn update_fps(mut query: Query<&mut Text, With<TimeWarpText>>, time_warp: Res<TimeWarp>) {

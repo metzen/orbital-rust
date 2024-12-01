@@ -25,31 +25,35 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let font = asset_server.load("fonts/Roboto-Medium.ttf");
     let text_style = TextFont {
         font: font.clone(),
-        font_size: 10.0,
+        font_size: 11.0,
         font_smoothing: bevy::text::FontSmoothing::AntiAliased,
     };
-    let text_color = TextColor(Color::WHITE);
-    // commands
-    //     .spawn(NodeBundle {
-    //         style: Style {
-    //             // fill the entire window
-    //             width: Val::Percent(100.0),
-    //             height: Val::Percent(100.0),
-    //             flex_direction: FlexDirection::Column,
-    //             align_items: AlignItems::Start,
-    //             // padding: UiRect::all(MARGIN),
-    //             // row_gap: Val::Px(),
-    //             margin: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(0.0), Val::Px(0.0)),
-    //             ..default()
-    //         },
-    //         // background_color: BackgroundColor(Color::BLACK),
-    //         ..default()
-    //     })
-    let mut root = commands;
-    root.spawn((Text::new("FPS: "), text_style.clone(), HIGH_RES_LAYERS));
-    root.spawn((Text::default(), text_style.clone(), Fps, HIGH_RES_LAYERS));
-    root.spawn((Text::new("Entities: "), text_style.clone(), HIGH_RES_LAYERS));
-    root.spawn((Text::default(), EntityCount, HIGH_RES_LAYERS));
+    commands
+        .spawn(
+            Node {
+                // fill the entire window
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Start,
+                // padding: UiRect::all(MARGIN),
+                // row_gap: Val::Px(),
+                margin: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(50.0), Val::Px(0.0)),
+                ..default()
+            },
+            // background_color: BackgroundColor(Color::BLACK),
+        )
+        .with_children(|root| {
+            root.spawn((Text::new("FPS: "), text_style.clone(), HIGH_RES_LAYERS));
+            root.spawn((Text::default(), text_style.clone(), Fps, HIGH_RES_LAYERS));
+            root.spawn((Text::new("Entities: "), text_style.clone(), HIGH_RES_LAYERS));
+            root.spawn((
+                Text::default(),
+                text_style.clone(),
+                EntityCount,
+                HIGH_RES_LAYERS,
+            ));
+        });
 }
 
 fn update_fps(mut query: Query<&mut Text, With<Fps>>, diagnostics: Res<DiagnosticsStore>) {

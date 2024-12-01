@@ -1,7 +1,6 @@
 use bevy::{
-    color::palettes::css::{TEAL, WHITE, YELLOW},
+    color::palettes::css::{TEAL, WHITE},
     prelude::*,
-    sprite::MaterialMesh2dBundle,
 };
 use big_space::{BigSpace, GridCell};
 use rand::{thread_rng, Rng};
@@ -60,18 +59,13 @@ pub fn setup_vessel(
     commands
         .spawn((
             Name::new("Pickle"),
-            MaterialMesh2dBundle {
-                mesh: meshes
-                    .add(Mesh::from(Capsule2d {
-                        radius: 8.0,
-                        half_length: 10.0,
-                    }))
-                    .into(),
-                material: MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(TEAL)))),
-                transform: Transform::from_xyz(147.10e9 + 100.0, Planet::EARTH.radius, 2.0),
-                // transform: Transform::from_xyz(147.10e9 + 500.0, Planet::EARTH.radius, 2.0),
-                ..default()
-            },
+            Mesh2d(meshes.add(Mesh::from(Capsule2d {
+                radius: 8.0,
+                half_length: 10.0,
+            }))),
+            MeshMaterial2d(materials.add(ColorMaterial::from_color(TEAL))),
+            Transform::from_xyz(147.10e9 + 100.0, Planet::EARTH.radius, 2.0),
+            // Transform::from_xyz(147.10e9 + 500.0, Planet::EARTH.radius, 2.0),
             RigidBody {
                 velocity: Vec3 {
                     x: 0.0,
@@ -85,32 +79,23 @@ pub fn setup_vessel(
             Focusable,
             Vessel::default(),
             GridCell::<i32>::default(),
-            AudioSourceBundle {
-                source: AudioPlayer(assets.add(SineAudio { frequency: 120.0 })),
-                settings: PlaybackSettings {
-                    spatial: true,
-                    speed: 0.1,
-                    ..default()
-                },
+            AudioPlayer(assets.add(SineAudio { frequency: 120.0 })),
+            PlaybackSettings {
+                spatial: true,
+                speed: 0.1,
+                ..default()
             },
         ))
         .set_parent(big_space);
     commands
         .spawn((
             Name::new("FlySafe"),
-            MaterialMesh2dBundle {
-                mesh: meshes
-                    .add(Mesh::from(Capsule2d {
-                        radius: 10.0,
-                        half_length: 20.0,
-                    }))
-                    .into(),
-                transform: Transform::from_xyz(147.10e9, Planet::EARTH.radius, 3.0),
-                material: MeshMaterial2d(
-                    materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16))),
-                ),
-                ..default()
-            },
+            Mesh2d(meshes.add(Mesh::from(Capsule2d {
+                radius: 10.0,
+                half_length: 20.0,
+            }))),
+            Transform::from_xyz(147.10e9, Planet::EARTH.radius, 3.0),
+            MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16)))),
             RigidBody {
                 velocity: Vec3 {
                     x: 0.0,
@@ -125,54 +110,38 @@ pub fn setup_vessel(
             HudSubject,
             Vessel::default(),
             GridCell::<i32>::default(),
-            AudioSourceBundle {
-                source: AudioPlayer(assets.add(SineAudio { frequency: 150.0 })),
-                settings: PlaybackSettings {
-                    spatial: true,
-                    speed: 0.1,
-                    ..default()
-                },
+            AudioPlayer(assets.add(SineAudio { frequency: 150.0 })),
+            PlaybackSettings {
+                spatial: true,
+                speed: 0.1,
+                ..default()
             },
         ))
         .set_parent(big_space)
         .with_children(|vessel| {
             vessel.spawn((
                 Name::new("Hot dog bun 1"),
-                MaterialMesh2dBundle {
-                    mesh: meshes
-                        .add(Mesh::from(Capsule2d {
-                            radius: 10.0,
-                            half_length: 20.0,
-                        }))
-                        .into(),
-                    transform: Transform::from_xyz(-10.0, 0.0, -1.0),
-                    material: MeshMaterial2d(
-                        materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27))),
-                    ),
-                    ..default()
-                },
+                Mesh2d(meshes.add(Mesh::from(Capsule2d {
+                    radius: 10.0,
+                    half_length: 20.0,
+                }))),
+                Transform::from_xyz(-10.0, 0.0, -1.0),
+                MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27)))),
             ));
             vessel.spawn((
                 Name::new("Hot dog bun 2"),
-                MaterialMesh2dBundle {
-                    mesh: meshes
-                        .add(Mesh::from(Capsule2d {
-                            radius: 10.0,
-                            half_length: 20.0,
-                        }))
-                        .into(),
-                    transform: Transform::from_xyz(10.0, 0.0, -1.0),
-                    material: MeshMaterial2d(
-                        materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27))),
-                    ),
-                    ..default()
-                },
+                Mesh2d(meshes.add(Mesh::from(Capsule2d {
+                    radius: 10.0,
+                    half_length: 20.0,
+                }))),
+                Transform::from_xyz(10.0, 0.0, -1.0),
+                MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27)))),
             ));
         });
 }
 
-pub fn vessel_control(mut query: Query<(&mut Vessel)>, keyboard_input: Res<ButtonInput<KeyCode>>) {
-    for (mut vessel) in query.iter_mut() {
+pub fn vessel_control(mut query: Query<&mut Vessel>, keyboard_input: Res<ButtonInput<KeyCode>>) {
+    for mut vessel in query.iter_mut() {
         if !vessel.controlled {
             continue;
         }
@@ -306,24 +275,19 @@ pub fn vessel_systems(
             // TODO: Do this with an api that clones from entity.
             commands
                 .spawn((
-                    MaterialMesh2dBundle {
-                        mesh: meshes.add(Mesh::from(Cuboid::new(2.5, 2.5, 1.0))).into(),
-                        transform: Transform::from_translation(
-                            transform.translation
+                    Mesh2d(meshes.add(Mesh::from(Cuboid::new(2.5, 2.5, 1.0)))),
+                    Transform::from_translation(
+                        transform.translation
                             + Vec3 {
                                 z: -1.0,
                                 ..default()
                             }
                             // Emit from rear of vessel.
                             + transform.rotation * -Vec3::Y * 25.0,
-                        ),
-                        // transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                        // material: materials.add(ColorMaterial::from(Color::srgb(0.96, 0.79, 0.11))),
-                        material: MeshMaterial2d(
-                            materials.add(ColorMaterial::from(Color::from(WHITE))),
-                        ),
-                        ..default()
-                    },
+                    ),
+                    // transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                    // material: materials.add(ColorMaterial::from(Color::srgb(0.96, 0.79, 0.11))),
+                    MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(WHITE)))),
                     *grid_cell,
                     // TODO: Fix this velocity
                     RigidBody {

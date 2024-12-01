@@ -1,10 +1,13 @@
 use bevy::{
-    core_pipeline::bloom::BloomSettings,
+    core_pipeline::bloom::Bloom,
     prelude::*,
     render::{
-        camera::RenderTarget, mesh::MeshAabb, render_resource::{
+        camera::RenderTarget,
+        mesh::MeshAabb,
+        render_resource::{
             Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-        }, view::RenderLayers
+        },
+        view::RenderLayers,
     },
     window::WindowResized,
 };
@@ -88,27 +91,23 @@ pub fn setup_camera(
     // this camera renders whatever is on `PIXEL_PERFECT_LAYERS` to the canvas
     let in_game_camera = commands
         .spawn((
-            // Camera2d::default(),
-            Camera2dBundle {
-                camera: Camera {
-                    // render before the "main pass" camera
-                    order: -1,
-                    target: RenderTarget::Image(image_handle.clone()),
-                    hdr: true,
-                    ..default()
-                },
-                msaa: Msaa::Off,
-                projection: OrthographicProjection::default_2d(),
-                // projection: OrthographicProjection {
-                //     scale: 2.0,
-                //     // scale: 1e9,  // Solar system view.
-                //     far: 1000.,
-                //     near: -1000.,
-
-                //     // ..default()
-                // },
+            Camera {
+                // render before the "main pass" camera
+                order: -1,
+                target: RenderTarget::Image(image_handle.clone()),
+                hdr: true,
                 ..default()
             },
+            Camera2d,
+            Msaa::Off,
+            OrthographicProjection::default_2d(),
+            // projection: OrthographicProjection {
+            //     scale: 2.0,
+            //     // scale: 1e9,  // Solar system view.
+            //     far: 1000.,
+            //     near: -1000.,
+            //     // ..default()
+            // },
             InGameCamera,
             FloatingOrigin,
             HighPrecisionScale(1.0),
@@ -116,7 +115,7 @@ pub fn setup_camera(
             Autofollow {
                 target: vessel_query.iter().next(),
             },
-            BloomSettings::OLD_SCHOOL,
+            Bloom::OLD_SCHOOL,
             SpatialListener::new(100.0),
         ))
         .id();
@@ -135,7 +134,8 @@ pub fn setup_camera(
 
     // the "outer" camera renders whatever is on `HIGH_RES_LAYERS` to the screen.
     // here, the canvas and one of the sample sprites will be rendered by this camera
-    commands.spawn((Camera2dBundle::default(), OuterCamera, HIGH_RES_LAYERS));
+    // commands.spawn((Camera2dBundle::default(), OuterCamera, HIGH_RES_LAYERS));
+    commands.spawn((Camera2d, OuterCamera, HIGH_RES_LAYERS));
 }
 
 /// Scales camera projection to fit the window (integer multiples only).
