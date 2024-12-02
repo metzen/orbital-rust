@@ -78,8 +78,6 @@ fn main() {
             VesselPlugin,
             TrailsPlugin,
             HudPlugin,
-            // FloatingOriginPlugin::<i32>::default(),
-            // FloatingOriginDebugPlugin::<i32>::default(),
             // LogDiagnosticsPlugin::default(),
         ))
         .add_audio_source::<SineAudio>()
