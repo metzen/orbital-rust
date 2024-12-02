@@ -11,7 +11,7 @@ impl Plugin for HudPlugin {
         app.add_systems(
             Update,
             (
-                update_fps,
+                update_time_warp,
                 update_throttle,
                 update_velocity,
                 update_acceleration,
@@ -61,42 +61,65 @@ fn setup_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .with_children(|root| {
             root.spawn((
-                Text::new("TIME.WARP: "),
-                RenderLayers::layer(HIGH_RES_LAYER),
-            ));
-            root.spawn((
                 Text::default(),
-                TimeWarpText,
+                TextLayout {
+                    justify: JustifyText::Right,
+                    linebreak: LineBreak::NoWrap,
+                },
+                text_font.clone(),
+            ))
+            .with_children(|time_warp| {
+                time_warp.spawn((TextSpan::new("TIME.WARP: "), text_font.clone()));
+                time_warp.spawn((TextSpan::default(), TimeWarpText, text_font.clone()));
+            });
+            root.spawn((
+                Text::new("THR: "),
                 RenderLayers::layer(HIGH_RES_LAYER),
+                text_font.clone(),
             ));
-            root.spawn((Text::new("THR: "), RenderLayers::layer(HIGH_RES_LAYER)));
             root.spawn((
                 Text::default(),
                 ThrottleText,
                 RenderLayers::layer(HIGH_RES_LAYER),
+                text_font.clone(),
             ));
-            root.spawn((Text::new("VEL: "), RenderLayers::layer(HIGH_RES_LAYER)));
+            root.spawn((
+                Text::new("VEL: "),
+                RenderLayers::layer(HIGH_RES_LAYER),
+                text_font.clone(),
+            ));
             root.spawn((
                 Text::default(),
                 VelocityText,
                 RenderLayers::layer(HIGH_RES_LAYER),
+                text_font.clone(),
             ));
-            root.spawn((Text::new("ACC: "), RenderLayers::layer(HIGH_RES_LAYER)));
+            root.spawn((
+                Text::new("ACC: "),
+                RenderLayers::layer(HIGH_RES_LAYER),
+                text_font.clone(),
+            ));
             root.spawn((
                 Text::default(),
                 AccelerationText,
                 RenderLayers::layer(HIGH_RES_LAYER),
+                text_font.clone(),
             ));
-            root.spawn((Text::new("ALT: "), RenderLayers::layer(HIGH_RES_LAYER)));
+            root.spawn((
+                Text::new("ALT: "),
+                RenderLayers::layer(HIGH_RES_LAYER),
+                text_font.clone(),
+            ));
             root.spawn((
                 Text::default(),
                 AltitudeText,
                 RenderLayers::layer(HIGH_RES_LAYER),
+                text_font.clone(),
             ));
         });
 }
 
-fn update_fps(mut query: Query<&mut Text, With<TimeWarpText>>, time_warp: Res<TimeWarp>) {
+fn update_time_warp(mut query: Query<&mut TextSpan, With<TimeWarpText>>, time_warp: Res<TimeWarp>) {
     let mut text = query.single_mut();
     text.0 = format!("{:.2}", time_warp.value);
 }
