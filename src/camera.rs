@@ -7,7 +7,7 @@ use bevy::{
         render_resource::{
             Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
         },
-        view::RenderLayers,
+        view::{Layer, RenderLayers},
     },
     window::WindowResized,
 };
@@ -23,18 +23,14 @@ pub const RES_WIDTH: u32 = 16 * 12;
 /// In-game resolution height.
 pub const RES_HEIGHT: u32 = 10 * 12;
 
-/// Default render layers for pixel-perfect rendering.
-/// You can skip adding this component, as this is the default.
-pub const PIXEL_PERFECT_LAYERS: RenderLayers = RenderLayers::layer(0);
-
-/// Render layers for high-resolution rendering.
-pub const HIGH_RES_LAYERS: RenderLayers = RenderLayers::layer(1);
+// High-res rendering layer.
+pub const HIGH_RES_LAYER: Layer = 1;
 
 /// Camera that renders the pixel-perfect world to the [`Canvas`].
 #[derive(Component)]
 pub struct InGameCamera;
 
-/// Camera that renders the [`Canvas`] (and other graphics on [`HIGH_RES_LAYERS`]) to the screen.
+/// Camera that renders the [`Canvas`] (and other graphics on [`HIGH_RES_LAYER`]) to the screen.
 #[derive(Component)]
 pub struct OuterCamera;
 
@@ -129,13 +125,13 @@ pub fn setup_camera(
             ..default()
         },
         Canvas,
-        HIGH_RES_LAYERS,
+        RenderLayers::layer(HIGH_RES_LAYER),
     ));
 
-    // the "outer" camera renders whatever is on `HIGH_RES_LAYERS` to the screen.
+    // the "outer" camera renders whatever is on `HIGH_RES_LAYER` to the screen.
     // here, the canvas and one of the sample sprites will be rendered by this camera
-    // commands.spawn((Camera2dBundle::default(), OuterCamera, HIGH_RES_LAYERS));
-    commands.spawn((Camera2d, OuterCamera, HIGH_RES_LAYERS));
+    // commands.spawn((Camera2dBundle::default(), OuterCamera, RenderLayers::layer(HIGH_RES_LAYER)));
+    commands.spawn((Camera2d, OuterCamera, RenderLayers::layer(HIGH_RES_LAYER)));
 }
 
 /// Scales camera projection to fit the window (integer multiples only).

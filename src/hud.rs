@@ -1,7 +1,7 @@
-use bevy::{math::NormedVectorSpace, prelude::*};
+use bevy::{math::NormedVectorSpace, prelude::*, render::view::RenderLayers};
 use big_space::{reference_frame, GridCell, ReferenceFrame};
 
-use crate::{camera::HIGH_RES_LAYERS, physics::RigidBody, timewarp::TimeWarp, vessel::Vessel};
+use crate::{camera::HIGH_RES_LAYER, physics::RigidBody, timewarp::TimeWarp, vessel::Vessel};
 
 pub struct HudPlugin;
 
@@ -60,16 +60,39 @@ fn setup_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         })
         .with_children(|root| {
-            root.spawn((Text::new("TIME.WARP: "), HIGH_RES_LAYERS));
-            root.spawn((Text::default(), TimeWarpText, HIGH_RES_LAYERS));
-            root.spawn((Text::new("THR: "), HIGH_RES_LAYERS));
-            root.spawn((Text::default(), ThrottleText, HIGH_RES_LAYERS));
-            root.spawn((Text::new("VEL: "), HIGH_RES_LAYERS));
-            root.spawn((Text::default(), VelocityText, HIGH_RES_LAYERS));
-            root.spawn((Text::new("ACC: "), HIGH_RES_LAYERS));
-            root.spawn((Text::default(), AccelerationText, HIGH_RES_LAYERS));
-            root.spawn((Text::new("ALT: "), HIGH_RES_LAYERS));
-            root.spawn((Text::default(), AltitudeText, HIGH_RES_LAYERS));
+            root.spawn((
+                Text::new("TIME.WARP: "),
+                RenderLayers::layer(HIGH_RES_LAYER),
+            ));
+            root.spawn((
+                Text::default(),
+                TimeWarpText,
+                RenderLayers::layer(HIGH_RES_LAYER),
+            ));
+            root.spawn((Text::new("THR: "), RenderLayers::layer(HIGH_RES_LAYER)));
+            root.spawn((
+                Text::default(),
+                ThrottleText,
+                RenderLayers::layer(HIGH_RES_LAYER),
+            ));
+            root.spawn((Text::new("VEL: "), RenderLayers::layer(HIGH_RES_LAYER)));
+            root.spawn((
+                Text::default(),
+                VelocityText,
+                RenderLayers::layer(HIGH_RES_LAYER),
+            ));
+            root.spawn((Text::new("ACC: "), RenderLayers::layer(HIGH_RES_LAYER)));
+            root.spawn((
+                Text::default(),
+                AccelerationText,
+                RenderLayers::layer(HIGH_RES_LAYER),
+            ));
+            root.spawn((Text::new("ALT: "), RenderLayers::layer(HIGH_RES_LAYER)));
+            root.spawn((
+                Text::default(),
+                AltitudeText,
+                RenderLayers::layer(HIGH_RES_LAYER),
+            ));
         });
 }
 

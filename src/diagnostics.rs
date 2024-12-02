@@ -1,9 +1,10 @@
 use bevy::{
     diagnostic::{DiagnosticsStore, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin},
     prelude::*,
+    render::view::RenderLayers,
 };
 
-use crate::camera::HIGH_RES_LAYERS;
+use crate::camera::HIGH_RES_LAYER;
 
 #[derive(Component)]
 struct Fps;
@@ -44,14 +45,27 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             // background_color: BackgroundColor(Color::BLACK),
         )
         .with_children(|root| {
-            root.spawn((Text::new("FPS: "), text_style.clone(), HIGH_RES_LAYERS));
-            root.spawn((Text::default(), text_style.clone(), Fps, HIGH_RES_LAYERS));
-            root.spawn((Text::new("Entities: "), text_style.clone(), HIGH_RES_LAYERS));
+            root.spawn((
+                Text::new("FPS: "),
+                text_style.clone(),
+                RenderLayers::layer(HIGH_RES_LAYER),
+            ));
+            root.spawn((
+                Text::default(),
+                text_style.clone(),
+                Fps,
+                RenderLayers::layer(HIGH_RES_LAYER),
+            ));
+            root.spawn((
+                Text::new("Entities: "),
+                text_style.clone(),
+                RenderLayers::layer(HIGH_RES_LAYER),
+            ));
             root.spawn((
                 Text::default(),
                 text_style.clone(),
                 EntityCount,
-                HIGH_RES_LAYERS,
+                RenderLayers::layer(HIGH_RES_LAYER),
             ));
         });
 }
