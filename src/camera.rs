@@ -144,7 +144,7 @@ pub fn fit_canvas(
         let v_scale = event.height / RES_HEIGHT as f32;
         let mut projection = projections.single_mut();
         projection.scale = 0.2;
-        // projection.scale = 1. / h_scale.min(v_scale);
+        projection.scale = 1. / h_scale.min(v_scale);
     }
 }
 
