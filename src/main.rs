@@ -19,7 +19,7 @@ use audio::SineAudio;
 use bevy_framepace::FramepacePlugin;
 use big_space::BigSpacePlugin;
 use camera::{
-    camera_control, change_focus, fit_canvas, scale_entities, setup_camera,
+    camera_control, change_focus, scale_entities, setup_camera,
     update_camera_position_for_autofollow,
 };
 use diagnostics::DiagnosticsPlugin;

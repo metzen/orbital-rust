@@ -131,22 +131,31 @@ pub fn setup_camera(
     // the "outer" camera renders whatever is on `HIGH_RES_LAYER` to the screen.
     // here, the canvas and one of the sample sprites will be rendered by this camera
     // commands.spawn((Camera2dBundle::default(), OuterCamera, RenderLayers::layer(HIGH_RES_LAYER)));
-    commands.spawn((Camera2d, OuterCamera, RenderLayers::layer(HIGH_RES_LAYER)));
+    commands.spawn((
+        Camera2d,
+        OuterCamera,
+        OrthographicProjection {
+            scale: 0.15,
+            ..OrthographicProjection::default_2d()
+        },
+        RenderLayers::layer(HIGH_RES_LAYER),
+    ));
 }
 
 /// Scales camera projection to fit the window (integer multiples only).
-pub fn fit_canvas(
-    mut resize_events: EventReader<WindowResized>,
-    mut projections: Query<&mut OrthographicProjection, With<OuterCamera>>,
-) {
-    for event in resize_events.read() {
-        let h_scale = event.width / RES_WIDTH as f32;
-        let v_scale = event.height / RES_HEIGHT as f32;
-        let mut projection = projections.single_mut();
-        projection.scale = 0.2;
-        projection.scale = 1. / h_scale.min(v_scale);
-    }
-}
+// pub fn fit_canvas(
+//     mut resize_events: EventReader<WindowResized>,
+//     mut projections: Query<&mut OrthographicProjection, With<OuterCamera>>,
+// ) {
+//     for event in resize_events.read() {
+//         let h_scale = event.width / RES_WIDTH as f32;
+//         let v_scale = event.height / RES_HEIGHT as f32;
+//         let mut projection = projections.single_mut();
+//         projection.scale = 0.15;
+//         info!("{:?}", event);
+//         projection.scale = 1. / h_scale.min(v_scale);
+//     }
+// }
 
 pub fn update_camera_position_for_autofollow(
     mut camera: Query<(&mut Transform, &mut GridCell<i32>, &Autofollow), With<InGameCamera>>,
