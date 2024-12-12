@@ -54,8 +54,12 @@ fn trail_system(
                 Transform::from_translation(trailable.transform.translation),
                 *trailable.grid_cell,
                 assets.mesh.clone().unwrap(),
-                MeshMaterial2d(materials.add(ColorMaterial::from(color))),
-                Ephemeral { ttl: 60 * 30 },
+                MeshMaterial2d(materials.add(ColorMaterial {
+                    color,
+                    alpha_mode: bevy::sprite::AlphaMode2d::Blend,
+                    ..default()
+                })),
+                Ephemeral { ttl: 60 * 20 },
                 Autoscale,
             ));
             trail.set_parent(big_space);
