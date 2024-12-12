@@ -8,8 +8,7 @@ pub struct TrailsPlugin;
 impl Plugin for TrailsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(TrailTimer(Timer::from_seconds(0.2, TimerMode::Repeating)));
-        app.insert_resource(TrailAssets { mesh: Option::None });
-        app.add_systems(Startup, setup);
+        app.init_resource::<TrailAssets>();
         app.add_systems(FixedUpdate, trail_system);
     }
 }
@@ -22,11 +21,17 @@ struct TrailTimer(Timer);
 
 #[derive(Resource)]
 struct TrailAssets {
-    mesh: Option<Mesh2d>,
+    mesh: Handle<Mesh>,
 }
 
-fn setup(mut meshes: ResMut<Assets<Mesh>>, mut assets: ResMut<TrailAssets>) {
-    assets.mesh = Some(Mesh2d(meshes.add(Mesh::from(Circle::new(1.0)))));
+impl FromWorld for TrailAssets {
+    fn from_world(world: &mut World) -> Self {
+        Self {
+            mesh: world
+                .resource_mut::<Assets<Mesh>>()
+                .add(Mesh::from(Circle::new(1.0))),
+        }
+    }
 }
 
 #[derive(QueryData)]
@@ -53,7 +58,7 @@ fn trail_system(
             let mut trail = commands.spawn((
                 Transform::from_translation(trailable.transform.translation),
                 *trailable.grid_cell,
-                assets.mesh.clone().unwrap(),
+                Mesh2d(assets.mesh.clone()),
                 MeshMaterial2d(materials.add(ColorMaterial {
                     color,
                     alpha_mode: bevy::sprite::AlphaMode2d::Blend,
