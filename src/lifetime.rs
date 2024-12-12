@@ -22,7 +22,7 @@ pub fn reaper(
         transform.scale *= 1.01;
         let material = color_materials.get_mut(color_material_handle).unwrap();
         material.color.set_alpha(material.color.alpha() * 0.98);
-        // Psychadelic!
+        // Psychedelic!
         // material.color = material.color.rotate_hue(10.0);
         if ephemeral.ttl <= 0 {
             commands.entity(entity).remove_parent().despawn();
