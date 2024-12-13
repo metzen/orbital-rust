@@ -309,7 +309,7 @@ pub fn vessel_systems(
                         velocity: rigidbody.velocity
                             + ((transform.rotation
                                 * Vec3 {
-                                    x: thread_rng().gen_range(-0.15..0.15),
+                                    x: thread_rng().gen_range(-0.2..0.2),
                                     y: -1.0,
                                     z: 0.0,
                                 })
