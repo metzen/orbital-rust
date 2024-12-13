@@ -129,7 +129,7 @@ pub fn setup_scene(
             },
             CelestialBody {
                 atmosphere_height: 100_000.0,
-                atmosphere_color: Color::from(Srgba::new(0.0, 0.0, 0.0, 0.0)),
+                atmosphere_color: Color::srgba(0.0, 0.0, 0.0, 0.0),
             },
             Trailable,
             Autoscale,
