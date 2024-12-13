@@ -207,7 +207,7 @@ fn vessel_control(mut query: Query<&mut Vessel>, keyboard_input: Res<ButtonInput
             } else {
                 10.0
             };
-            vessel.direction_lock = Option::None;
+            vessel.direction_lock = None;
             vessel.rotate = angle.to_radians();
 
             // transform.rotation = (transform.rotation + PI * 2.0 / 360.0 * factor) % (2 * PI)
@@ -220,7 +220,7 @@ fn vessel_control(mut query: Query<&mut Vessel>, keyboard_input: Res<ButtonInput
             } else {
                 -10.0
             };
-            vessel.direction_lock = Option::None;
+            vessel.direction_lock = None;
             vessel.rotate = angle.to_radians();
 
             // transform.rotation = (transform.rotation + PI * 2.0 / 360.0 * factor) % (2 * PI)
@@ -311,7 +311,7 @@ fn vessel_systems(
                     MeshMaterial2d(materials.add(ColorMaterial {
                         color: Color::srgba(10.0, 6.0, 1.0, 1.0),
                         alpha_mode: bevy::sprite::AlphaMode2d::Blend,
-                        texture: Option::None,
+                        texture: None,
                     })),
                     *grid_cell,
                     // TODO: Fix this velocity

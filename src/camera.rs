@@ -291,7 +291,7 @@ pub fn change_focus(
     focus_targets_query: Query<(Entity, &Name), With<Focusable>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
-        autofollow_query.single_mut().target = Option::None;
+        autofollow_query.single_mut().target = None;
     }
     if keyboard_input.just_pressed(KeyCode::Tab) {
         info!("Focus change");
