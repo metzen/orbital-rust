@@ -326,4 +326,3 @@ fn vessel_systems(
         }
     }
 }
-
