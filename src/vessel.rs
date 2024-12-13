@@ -1,8 +1,9 @@
 use bevy::{
     color::palettes::css::{TEAL, WHITE},
+    math::DVec3,
     prelude::*,
 };
-use big_space::{BigSpace, GridCell};
+use big_space::{BigSpace, GridCell, ReferenceFrame};
 use rand::{thread_rng, Rng};
 
 use crate::{
@@ -53,18 +54,24 @@ pub fn setup_vessel(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut assets: ResMut<Assets<SineAudio>>,
-    big_space_query: Query<Entity, With<BigSpace>>,
+    big_space_query: Query<(Entity, &ReferenceFrame<i32>), With<BigSpace>>,
 ) {
-    let big_space = big_space_query.single();
+    let (big_space, reference_frame) = big_space_query.single();
+    let (grid_cell, translation) = reference_frame.translation_to_grid(DVec3 {
+        x: 147.10e9 + 50.0,
+        y: Planet::EARTH.radius as f64 + 40.0,
+        z: 2.0,
+    });
     commands
         .spawn((
             Name::new("Pickle"),
+            Transform::from_translation(translation),
+            grid_cell,
             Mesh2d(meshes.add(Mesh::from(Capsule2d {
                 radius: 8.0,
                 half_length: 10.0,
             }))),
             MeshMaterial2d(materials.add(ColorMaterial::from_color(TEAL))),
-            Transform::from_xyz(147.10e9 + 100.0, Planet::EARTH.radius, 2.0),
             // Transform::from_xyz(147.10e9 + 500.0, Planet::EARTH.radius, 2.0),
             RigidBody {
                 velocity: Vec3 {
@@ -78,7 +85,6 @@ pub fn setup_vessel(
             Autoscale,
             Focusable,
             Vessel::default(),
-            GridCell::<i32>::default(),
             AudioPlayer(assets.add(SineAudio { frequency: 120.0 })),
             PlaybackSettings {
                 spatial: true,
@@ -87,6 +93,11 @@ pub fn setup_vessel(
             },
         ))
         .set_parent(big_space);
+    let (grid_cell, translation) = reference_frame.translation_to_grid(DVec3 {
+        x: 147.10e9,
+        y: Planet::EARTH.radius as f64 + 40.0,
+        z: 3.0,
+    });
     commands
         .spawn((
             Name::new("FlySafe"),
@@ -94,7 +105,8 @@ pub fn setup_vessel(
                 radius: 10.0,
                 half_length: 20.0,
             }))),
-            Transform::from_xyz(147.10e9, Planet::EARTH.radius, 3.0),
+            Transform::from_translation(translation),
+            grid_cell,
             MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16)))),
             RigidBody {
                 velocity: Vec3 {
@@ -109,7 +121,6 @@ pub fn setup_vessel(
             Focusable,
             HudSubject,
             Vessel::default(),
-            GridCell::<i32>::default(),
             AudioPlayer(assets.add(SineAudio { frequency: 150.0 })),
             PlaybackSettings {
                 spatial: true,
