@@ -49,7 +49,7 @@ pub struct Vessel {
     control_mode: ControlMode,
 }
 
-pub fn setup_vessel(
+fn setup_vessel(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -151,7 +151,7 @@ pub fn setup_vessel(
         });
 }
 
-pub fn vessel_control(mut query: Query<&mut Vessel>, keyboard_input: Res<ButtonInput<KeyCode>>) {
+fn vessel_control(mut query: Query<&mut Vessel>, keyboard_input: Res<ButtonInput<KeyCode>>) {
     for mut vessel in query.iter_mut() {
         if !vessel.controlled {
             continue;
@@ -238,7 +238,7 @@ pub fn vessel_control(mut query: Query<&mut Vessel>, keyboard_input: Res<ButtonI
     }
 }
 
-pub fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
+fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
     for (vessel, audiosink) in &query {
         if audiosink.is_some() {
             let sink = audiosink.unwrap();
@@ -252,7 +252,7 @@ pub fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
 }
 
 // Applies effects of active vessel controls.
-pub fn vessel_systems(
+fn vessel_systems(
     mut commands: Commands,
     mut query: Query<(&mut Transform, &mut RigidBody, &Vessel, &GridCell<i32>)>,
     time: Res<Time>,
@@ -326,3 +326,4 @@ pub fn vessel_systems(
         }
     }
 }
+
