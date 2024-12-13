@@ -180,9 +180,11 @@ pub fn update_hud_subject(
     mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut vessels_query: Query<(Entity, &mut Vessel, Option<&HudSubject>), With<Vessel>>,
-    subject_query: Query<Entity, With<HudSubject>>,
+    mut camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::BracketLeft) {
+    if keyboard_input.just_pressed(KeyCode::BracketLeft)
+        || keyboard_input.just_pressed(KeyCode::BracketRight)
+    {
         info!("backet left");
         for (entity, mut vessel, hud_subject) in vessels_query.iter_mut() {
             info!("hud subj vessel");
@@ -194,6 +196,7 @@ pub fn update_hud_subject(
                 info!("vessel is not subject");
                 commands.entity(entity).insert(HudSubject);
                 vessel.controlled = true;
+                camera_autofollow.target = Some(entity);
             }
         }
     }
