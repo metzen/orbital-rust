@@ -299,9 +299,9 @@ pub fn vessel_systems(
                     // transform: Transform::from_xyz(0.0, 0.0, 0.0),
                     // material: materials.add(ColorMaterial::from(Color::srgb(0.96, 0.79, 0.11))),
                     MeshMaterial2d(materials.add(ColorMaterial {
-                        color: Color::srgba(3.0, 2.0, 1.0, 1.0),
+                        color: Color::srgba(10.0, 6.0, 1.0, 1.0),
                         alpha_mode: bevy::sprite::AlphaMode2d::Blend,
-                        ..default()
+                        texture: Option::None,
                     })),
                     *grid_cell,
                     // TODO: Fix this velocity
