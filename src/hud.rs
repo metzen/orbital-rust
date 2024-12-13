@@ -1,7 +1,11 @@
-use bevy::{math::NormedVectorSpace, prelude::*, render::view::RenderLayers};
-use big_space::{reference_frame, GridCell, ReferenceFrame};
-
-use crate::{camera::HIGH_RES_LAYER, physics::RigidBody, timewarp::TimeWarp, vessel::Vessel};
+use bevy::{prelude::*, render::view::RenderLayers};
+use big_space::GridCell;
+use crate::{
+    camera::{Autofollow, InGameCamera, HIGH_RES_LAYER},
+    physics::RigidBody,
+    timewarp::TimeWarp,
+    vessel::Vessel,
+};
 
 pub struct HudPlugin;
 
