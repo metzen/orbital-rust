@@ -71,7 +71,7 @@ fn main() {
                     default_spatial_scale: SpatialScale::new_2d(AUDIO_SCALE),
                 }),
             BigSpacePlugin::<i32>::default(),
-            // FramepacePlugin,
+            FramepacePlugin,
             DiagnosticsPlugin,
             TimeWarpPlugin,
             PhysicsPlugin,
