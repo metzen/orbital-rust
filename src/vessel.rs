@@ -20,7 +20,14 @@ pub struct VesselPlugin;
 impl Plugin for VesselPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_vessel);
-        app.add_systems(Update, (vessel_control, vessel_engine_audio));
+        app.add_systems(
+            Update,
+            (
+                vessel_control,
+                vessel_engine_audio,
+                animate_engine_particles,
+            ),
+        );
         app.add_systems(FixedPreUpdate, vessel_systems.before(dynamics));
     }
 }
@@ -48,6 +55,9 @@ pub struct Vessel {
     // # TODO: Maybe initialize to FINE if ecodes.LED_CAPSL in KEYBOARD.leds()
     control_mode: ControlMode,
 }
+
+#[derive(Component, Default)]
+pub struct EngineParticle;
 
 fn setup_vessel(
     mut commands: Commands,
@@ -321,8 +331,26 @@ fn vessel_systems(
                     NoGravity,
                     Autoscale,
                     Ephemeral { ttl: 60 * 5 },
+                    EngineParticle,
                 ))
                 .set_parent(big_space_query.single());
+        }
+    }
+}
+
+fn animate_engine_particles(
+    mut query: Query<(&mut Transform, &MeshMaterial2d<ColorMaterial>), With<EngineParticle>>,
+    mut color_materials: ResMut<Assets<ColorMaterial>>,
+) {
+    for (mut transform, color_material_handle) in query.iter_mut() {
+        transform.scale *= 1.005;
+        let material = color_materials.get_mut(color_material_handle).unwrap();
+        if material.color.luminance() > 1.0 {
+            material.color.mix_assign(material.color.darker(0.5), 0.1);
+        } else {
+            material
+                .color
+                .mix_assign(Color::srgba(1.0, 1.0, 1.0, material.color.alpha()), 0.3);
         }
     }
 }
