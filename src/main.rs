@@ -59,6 +59,7 @@ fn main() {
                 .disable::<TransformPlugin>()
                 .set(WindowPlugin {
                     primary_window: Some(Window {
+                        title: String::from("Orbital"),
                         present_mode: bevy::window::PresentMode::AutoNoVsync,
                         resolution: WindowResolution::new(1024.0, 768.0),
                         ..default()
