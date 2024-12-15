@@ -9,8 +9,11 @@ bevy = { version = "0.15.0", features = ["dynamic_linking"] }
 # bevy_framepace = "0.17"
 bevy_framepace = { path = "../bevy_framepace" }
 big_space = "0.8"
-
 rand = "0.8.5"
+
+[build-dependencies]
+embed-resource = "1.6.3"
+
 
 [profile.release]
 lto = true
