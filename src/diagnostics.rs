@@ -22,12 +22,11 @@ impl Plugin for DiagnosticsPlugin {
     }
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let font = asset_server.load("fonts/Roboto-Medium.ttf");
+fn setup(mut commands: Commands) {
     let text_style = TextFont {
-        font: font.clone(),
         font_size: 11.0,
         font_smoothing: bevy::text::FontSmoothing::AntiAliased,
+        ..default()
     };
     commands
         .spawn(

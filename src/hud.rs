@@ -44,12 +44,11 @@ struct AltitudeText;
 #[derive(Component)]
 pub struct HudSubject;
 
-fn setup_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let font = asset_server.load("fonts/Roboto-Medium.ttf");
+fn setup_hud(mut commands: Commands) {
     let text_font = TextFont {
-        font: font.clone(),
         font_size: 10.0,
         font_smoothing: bevy::text::FontSmoothing::AntiAliased,
+        ..default()
     };
     commands
         .spawn(Node {
