@@ -5,8 +5,7 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.15.0" }
-# bevy_framepace = "0.17"
-bevy_framepace = { path = "../bevy_framepace" }
+bevy_framepace = { git = "https://github.com/eero-lehtinen/bevy_framepace", branch = "bevy-15" }
 big_space = "0.8"
 rand = "0.8.5"
 
