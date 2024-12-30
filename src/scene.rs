@@ -4,7 +4,7 @@ use crate::{
     trails::Trailable,
 };
 use bevy::{
-    color::palettes::css::{GRAY, RED, YELLOW},
+    color::palettes::css::{BLUE, DARK_BLUE, GRAY, LIGHT_BLUE, MAGENTA, PURPLE, RED, YELLOW},
     prelude::*,
     render::mesh::CircleMeshBuilder,
 };
@@ -39,6 +39,22 @@ impl Planet {
     pub const MARS: Self = Self {
         mass: 6.421e23,
         radius: 3.3972e6,
+    };
+    pub const JUPITER: Self = Self {
+        mass: 1.9e27,
+        radius: 71.492e6,
+    };
+    pub const SATURN: Self = Self {
+        mass: 5.688e26,
+        radius: 60.268e6,
+    };
+    pub const URANUS: Self = Self {
+        mass: 8.686e25,
+        radius: 25.559e6,
+    };
+    pub const NEPTUNE: Self = Self {
+        mass: 1.024e26,
+        radius: 24.746e6,
     };
 }
 
@@ -206,6 +222,78 @@ pub fn setup_scene(
                 velocity: Vec3 {
                     x: 0.0,
                     y: 26.5e3,
+                    z: 0.0,
+                },
+                ..default()
+            },
+            Trailable,
+            Autoscale,
+            Focusable,
+        ));
+        root.spawn_spatial((
+            Name::new("Jupiter"),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::JUPITER.radius)))),
+            Transform::from_xyz(740.595e9, 0.0, 0.0),
+            MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(MAGENTA)))),
+            RigidBody {
+                mass: Planet::JUPITER.mass,
+                velocity: Vec3 {
+                    x: 0.0,
+                    y: 13.72e3,
+                    z: 0.0,
+                },
+                ..default()
+            },
+            Trailable,
+            Autoscale,
+            Focusable,
+        ));
+        root.spawn_spatial((
+            Name::new("Saturn"),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::SATURN.radius)))),
+            Transform::from_xyz(1352.55e9, 0.0, 0.0),
+            MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(YELLOW)))),
+            RigidBody {
+                mass: Planet::MARS.mass,
+                velocity: Vec3 {
+                    x: 0.0,
+                    y: 10.14e3,
+                    z: 0.0,
+                },
+                ..default()
+            },
+            Trailable,
+            Autoscale,
+            Focusable,
+        ));
+        root.spawn_spatial((
+            Name::new("Uranus"),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::URANUS.radius)))),
+            Transform::from_xyz(2735.56e9, 0.0, 0.0),
+            MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(LIGHT_BLUE)))),
+            RigidBody {
+                mass: Planet::MARS.mass,
+                velocity: Vec3 {
+                    x: 0.0,
+                    y: 7130.0,
+                    z: 0.0,
+                },
+                ..default()
+            },
+            Trailable,
+            Autoscale,
+            Focusable,
+        ));
+        root.spawn_spatial((
+            Name::new("Neptune"),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::NEPTUNE.radius)))),
+            Transform::from_xyz(4471.050e9, 0.0, 0.0),
+            MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(DARK_BLUE)))),
+            RigidBody {
+                mass: Planet::MARS.mass,
+                velocity: Vec3 {
+                    x: 0.0,
+                    y: 5470.0,
                     z: 0.0,
                 },
                 ..default()
