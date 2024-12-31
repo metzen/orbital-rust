@@ -98,13 +98,6 @@ pub fn setup_camera(
             Camera2d,
             Msaa::Off,
             OrthographicProjection::default_2d(),
-            // projection: OrthographicProjection {
-            //     scale: 2.0,
-            //     // scale: 1e9,  // Solar system view.
-            //     far: 1000.,
-            //     near: -1000.,
-            //     // ..default()
-            // },
             InGameCamera,
             FloatingOrigin,
             HighPrecisionScale(1.0),
