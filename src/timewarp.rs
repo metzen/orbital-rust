@@ -18,23 +18,19 @@ pub struct TimeWarp {
     pub value: f32,
 }
 
-pub fn timewarp_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut timewarp: ResMut<TimeWarp>) {
+fn timewarp_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut timewarp: ResMut<TimeWarp>) {
     if keyboard_input.just_pressed(KeyCode::Period) {
         let relative_speed = (*timewarp).value;
         let idx = TIME_WARPS.iter().position(|&i| i == relative_speed);
         if idx.unwrap() < TIME_WARPS.len() - 1 {
-            let new_time_warp = TIME_WARPS[(idx.unwrap() + 1).min(TIME_WARPS.len())];
-            info!("Setting time warp: {}", new_time_warp);
-            timewarp.value = new_time_warp;
+            timewarp.value = TIME_WARPS[(idx.unwrap() + 1).min(TIME_WARPS.len())];
         }
     }
     if keyboard_input.just_pressed(KeyCode::Comma) {
         let relative_speed = timewarp.value;
         let idx = TIME_WARPS.iter().position(|&i| i == relative_speed);
         if idx.unwrap() > 0 {
-            let new_time_warp = TIME_WARPS[(idx.unwrap() - 1).max(0)];
-            info!("Setting time warp: {}", new_time_warp);
-            timewarp.value = new_time_warp;
+            timewarp.value = TIME_WARPS[(idx.unwrap() - 1).max(0)];
         }
     }
 }
