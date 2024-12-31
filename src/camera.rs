@@ -1,5 +1,6 @@
 use bevy::{
     core_pipeline::bloom::Bloom,
+    ecs::query::QueryData,
     prelude::*,
     render::{
         camera::RenderTarget,
@@ -193,27 +194,28 @@ pub fn update_camera_position_for_autofollow(
 #[derive(Component)]
 pub struct HighPrecisionScale(pub f64);
 
+#[derive(QueryData)]
+#[query_data(mutable)]
+pub struct CameraQuery {
+    entity: Entity,
+    transform: &'static mut Transform,
+    projection: &'static mut OrthographicProjection,
+    grid_cell: &'static mut GridCell<i32>,
+    scale: &'static mut HighPrecisionScale,
+}
+
 pub fn camera_control(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<
-        (
-            Entity,
-            &mut Transform,
-            &mut OrthographicProjection,
-            &mut GridCell<i32>,
-            &mut HighPrecisionScale,
-        ),
-        With<InGameCamera>,
-    >,
+    mut query: Query<CameraQuery, With<InGameCamera>>,
     frames: ReferenceFrames<i32>,
     time: Res<Time>,
 ) {
-    for (entity, mut transform, mut projection, mut grid_cell, mut scale) in query.iter_mut() {
-        let Some(reference_frame) = frames.parent_frame(entity) else {
+    for mut camera in query.iter_mut() {
+        let Some(reference_frame) = frames.parent_frame(camera.entity) else {
             continue;
         };
         if keyboard_input.pressed(KeyCode::ArrowLeft) {
-            transform.translation.x -= projection.scale * time.delta_secs() * 200.0;
+            camera.transform.translation.x -= camera.projection.scale * time.delta_secs() * 200.0;
         }
         if keyboard_input.pressed(KeyCode::ArrowRight) {
             // Example from https://github.com/aevyrie/big_space/blob/main/src/camera.rs
@@ -234,23 +236,23 @@ pub fn camera_control(
             // *grid_cell += cell_offset;
             // transform.translation += new_translation;
             // info!("transform: {:?}", transform);
-            transform.translation.x += projection.scale * time.delta_secs() * 200.0;
+            camera.transform.translation.x += camera.projection.scale * time.delta_secs() * 200.0;
         }
         if keyboard_input.pressed(KeyCode::ArrowDown) {
-            transform.translation.y -= projection.scale * time.delta_secs() * 200.0;
+            camera.transform.translation.y -= camera.projection.scale * time.delta_secs() * 200.0;
         }
         if keyboard_input.pressed(KeyCode::ArrowUp) {
-            transform.translation.y += projection.scale * time.delta_secs() * 200.0;
+            camera.transform.translation.y += camera.projection.scale * time.delta_secs() * 200.0;
         }
 
         let scale_factor: f64 = 5.0;
         if keyboard_input.pressed(KeyCode::Equal) {
-            projection.scale *= (1.0 - scale_factor * time.delta_secs_f64()) as f32;
-            scale.0 *= 1.0 - scale_factor * time.delta_secs_f64();
+            camera.projection.scale *= (1.0 - scale_factor * time.delta_secs_f64()) as f32;
+            camera.scale.0 *= 1.0 - scale_factor * time.delta_secs_f64();
         }
         if keyboard_input.pressed(KeyCode::Minus) {
-            projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
-            scale.0 *= 1.0 + scale_factor * time.delta_secs_f64();
+            camera.projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
+            camera.scale.0 *= 1.0 + scale_factor * time.delta_secs_f64();
         }
     }
 }
