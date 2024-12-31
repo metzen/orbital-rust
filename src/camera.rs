@@ -19,10 +19,10 @@ use big_space::{
 use crate::vessel::Vessel;
 
 /// In-game resolution width.
-pub const RES_WIDTH: u32 = 16 * 12;
+pub const RES_WIDTH: u32 = 16 * 20;
 
 /// In-game resolution height.
-pub const RES_HEIGHT: u32 = 10 * 12;
+pub const RES_HEIGHT: u32 = 10 * 20;
 
 // High-res rendering layer.
 pub const HIGH_RES_LAYER: Layer = 1;
