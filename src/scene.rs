@@ -273,6 +273,13 @@ pub fn setup_scene(
             Trailable,
             Autoscale,
             Focusable,
+        ))
+        .with_child((
+            Mesh2d(meshes.add(Mesh::from(Annulus::new(
+                Planet::SATURN.radius * 1.4,
+                Planet::SATURN.radius * 1.8,
+            )))),
+            MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.44, 0.44, 0.44)))),
         ));
         root.spawn_spatial((
             Name::new("Uranus"),
