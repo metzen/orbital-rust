@@ -121,10 +121,7 @@ pub fn setup_camera(
     commands.entity(in_game_camera).set_parent(big_space);
 
     commands.spawn((
-        Sprite {
-            image: image_handle,
-            ..default()
-        },
+        Sprite::from_image(image_handle),
         Canvas,
         RenderLayers::layer(HIGH_RES_LAYER),
     ));
