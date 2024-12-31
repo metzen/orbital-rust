@@ -90,8 +90,8 @@ pub fn setup_scene(
     commands.spawn_big_space(ReferenceFrame::<i32>::default(), |root| {
         root.spawn_spatial((
             Name::new("Sun"),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::SUN.radius)))),
             Transform::from_xyz(0.0, 0.0, 1.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::SUN.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::SUN.color))),
             RigidBody {
                 mass: Planet::SUN.mass,
@@ -103,8 +103,8 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Mercury"),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MERCURY.radius)))),
             Transform::from_xyz(0.0, 46e9, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MERCURY.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::MERCURY.color))),
             RigidBody {
                 mass: Planet::MERCURY.mass,
@@ -121,8 +121,8 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Venus"),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::VENUS.radius)))),
             Transform::from_xyz(0.0, -108.2e9, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::VENUS.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::VENUS.color))),
             RigidBody {
                 mass: Planet::VENUS.mass,
@@ -139,11 +139,11 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Earth"),
+            Transform::from_xyz(147.10e9, 0.0, 0.0),
             Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
                 Planet::EARTH.radius,
                 2000,
             )))),
-            Transform::from_xyz(147.10e9, 0.0, 0.0),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::EARTH.color))),
             RigidBody {
                 velocity: Vec3 {
@@ -166,49 +166,46 @@ pub fn setup_scene(
         .with_children(|earth| {
             // Spawn Earth atmosphere layers.
             earth.spawn((
+                Transform::from_xyz(0.0, 0.0, -1.0),
                 Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
                     Planet::EARTH.radius + 100_000.0,
                     2000,
                 )))),
-                // transform: Transform::from_xyz(147.10e9, 0.0, 0.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb_u8(
                     17 / 7,
                     145 / 7,
                     250 / 7,
                 )))),
-                Transform::from_xyz(0.0, 0.0, -1.0),
             ));
             earth.spawn((
+                Transform::from_xyz(0.0, 0.0, -1.0),
                 Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
                     Planet::EARTH.radius + 50_000.0,
                     2000,
                 )))),
-                // transform: Transform::from_xyz(147.10e9, 0.0, 0.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb_u8(
                     17 / 5,
                     145 / 5,
                     250 / 5,
                 )))),
-                Transform::from_xyz(0.0, 0.0, -1.0),
             ));
             earth.spawn((
+                Transform::from_xyz(0.0, 0.0, -1.0),
                 Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
                     Planet::EARTH.radius + 12_000.0,
                     2000,
                 )))),
-                // transform: Transform::from_xyz(147.10e9, 0.0, 0.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb_u8(
                     17 / 3,
                     145 / 3,
                     250 / 3,
                 )))),
-                Transform::from_xyz(0.0, 0.0, -1.0),
             ));
         });
         root.spawn_spatial((
             Name::new("Moon"),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MOON.radius)))),
             Transform::from_xyz(147.10e9 + 385e6, 0.0, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MOON.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::MOON.color))),
             RigidBody {
                 mass: Planet::MOON.mass,
@@ -225,8 +222,8 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Mars"),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MARS.radius)))),
             Transform::from_xyz(206.7e9, 0.0, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MARS.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::MARS.color))),
             RigidBody {
                 mass: Planet::MARS.mass,
@@ -243,8 +240,8 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Jupiter"),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::JUPITER.radius)))),
             Transform::from_xyz(740.595e9, 0.0, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::JUPITER.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::JUPITER.color))),
             RigidBody {
                 mass: Planet::JUPITER.mass,
@@ -261,8 +258,8 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Saturn"),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::SATURN.radius)))),
             Transform::from_xyz(1352.55e9, 0.0, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::SATURN.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::SATURN.color))),
             RigidBody {
                 mass: Planet::MARS.mass,
@@ -279,8 +276,8 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Uranus"),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::URANUS.radius)))),
             Transform::from_xyz(2735.56e9, 0.0, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::URANUS.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::URANUS.color))),
             RigidBody {
                 mass: Planet::MARS.mass,
@@ -297,8 +294,8 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Neptune"),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::NEPTUNE.radius)))),
             Transform::from_xyz(4471.050e9, 0.0, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::NEPTUNE.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::NEPTUNE.color))),
             RigidBody {
                 mass: Planet::MARS.mass,
