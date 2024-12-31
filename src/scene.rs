@@ -4,7 +4,7 @@ use crate::{
     trails::Trailable,
 };
 use bevy::{
-    color::palettes::css::{BLUE, DARK_BLUE, GRAY, LIGHT_BLUE, MAGENTA, PURPLE, RED, YELLOW},
+    color::palettes::css::{DARK_BLUE, GRAY, LIGHT_BLUE, MAGENTA, RED},
     prelude::*,
     render::mesh::CircleMeshBuilder,
 };
@@ -68,18 +68,6 @@ impl Planet {
         color: Color::Srgba(DARK_BLUE),
     };
 }
-
-// impl Default for PlanetBundle {
-//     fn default() -> Self {
-//         Self {
-//             name: Name::new(""),
-//             material_mesh_2d: MaterialMesh2dBundle::default(),
-//             rigidbody: RigidBody::default(),
-//             autoscale: Autoscale,
-//             focusable: Focusable::default(),
-//         }
-//     }
-// }
 
 /// Spawn the simulation entities.
 pub fn setup_scene(
