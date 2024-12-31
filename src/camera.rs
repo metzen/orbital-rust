@@ -133,7 +133,7 @@ pub fn setup_camera(
         Camera2d,
         OuterCamera,
         OrthographicProjection {
-            scale: 0.15,
+            scale: 0.3,
             ..OrthographicProjection::default_2d()
         },
         RenderLayers::layer(HIGH_RES_LAYER),
