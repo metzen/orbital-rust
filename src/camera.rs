@@ -257,10 +257,9 @@ pub fn camera_control(
 /// Scale entities up if they end up becoming smaller than one pixel in the current projection scale.
 pub fn scale_entities(
     mut query: Query<(&mut Transform, &Mesh2d), With<Autoscale>>,
-    projections: Query<&OrthographicProjection, With<InGameCamera>>,
+    projection: Single<&OrthographicProjection, With<InGameCamera>>,
     meshes: ResMut<Assets<Mesh>>,
 ) {
-    let projection = projections.single();
     for (mut transform, mesh) in query.iter_mut() {
         // TODO: This needs some fixing.
         let Some(m) = meshes.get(&mesh.0) else {
