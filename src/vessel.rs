@@ -1,5 +1,7 @@
+use std::f32::consts::PI;
+
 use bevy::{
-    color::palettes::css::{TEAL, WHITE},
+    color::palettes::css::{RED, TEAL},
     math::DVec3,
     prelude::*,
 };
@@ -70,7 +72,7 @@ fn setup_vessel(
     let (grid_cell, translation) = reference_frame.translation_to_grid(DVec3 {
         x: 147.10e9 + 50.0,
         y: Planet::EARTH.radius as f64 + 40.0,
-        z: 2.0,
+        z: 4.0,
     });
     commands
         .spawn((
@@ -110,7 +112,70 @@ fn setup_vessel(
     });
     commands
         .spawn((
-            Name::new("FlySafe"),
+            Name::new("Pizza"),
+            Mesh2d(meshes.add(Mesh::from(Triangle2d::new(
+                Vec2::new(0.0, 20.0),
+                Vec2::new(-13.0, -15.0),
+                Vec2::new(13.0, -15.0),
+            )))),
+            Transform::from_translation(translation + Vec3::X * 20.0),
+            grid_cell,
+            MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgba(1.0, 0.8, 0.54, 1.0)))),
+            RigidBody {
+                velocity: Vec3 {
+                    x: 0.0,
+                    y: 30.29e3,
+                    z: 0.0,
+                },
+                mass: 100.0,
+                ..default()
+            },
+            Autoscale,
+            Focusable,
+            HudSubject,
+            Vessel::default(),
+            AudioPlayer(assets.add(SineAudio { frequency: 150.0 })),
+            PlaybackSettings {
+                spatial: true,
+                speed: 0.1,
+                ..default()
+            },
+        ))
+        .set_parent(big_space)
+        .with_children(|vessel| {
+            vessel.spawn((
+                Name::new("pepperoni"),
+                Mesh2d(meshes.add(Mesh::from(Circle { radius: 2.0 }))),
+                Transform::from_xyz(-2.0, -2.0, 1.0),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
+            ));
+            vessel.spawn((
+                Name::new("pepperoni"),
+                Mesh2d(meshes.add(Mesh::from(Circle { radius: 2.0 }))),
+                Transform::from_xyz(3.0, -8.0, 1.0),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
+            ));
+            vessel.spawn((
+                Name::new("pepperoni"),
+                Mesh2d(meshes.add(Mesh::from(Circle { radius: 2.0 }))),
+                Transform::from_xyz(1.0, 5.0, 1.0),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
+            ));
+            vessel.spawn((
+                Name::new("crust"),
+                Mesh2d(meshes.add(Mesh::from(Capsule2d {
+                    radius: 3.0,
+                    half_length: 10.0,
+                }))),
+                Transform::from_xyz(0.0, -15.0, 1.0).with_rotation(Quat::from_rotation_z(PI / 2.0)),
+                MeshMaterial2d(
+                    materials.add(ColorMaterial::from(Color::srgba(0.96, 0.69, 0.24, 1.0))),
+                ),
+            ));
+        });
+    commands
+        .spawn((
+            Name::new("Hotdog"),
             Mesh2d(meshes.add(Mesh::from(Capsule2d {
                 radius: 10.0,
                 half_length: 20.0,
