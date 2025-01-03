@@ -70,14 +70,3 @@ fn trail_system(
         }
     }
 }
-// options = self._simulation.get_component(RenderingOptions)
-// if not (options and options.trails):
-//     return
-// self._elapsed_time += delta_time
-// self._total_frames += 1
-// # if self._elapsed_time - self._last_emit_time > 0.1:
-// if self._total_frames - self._last_emit_frame > 5:
-// logging.info("Creating trail entities")
-// self._last_emit_time = self._elapsed_time
-// self._last_emit_frame = self._total_frames
-// entities = (entity for entity in self._entities if Trailable in entity)
