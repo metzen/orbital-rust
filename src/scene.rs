@@ -47,6 +47,16 @@ impl Planet {
         radius: 3.3972e6,
         color: Color::Srgba(RED),
     };
+    pub const PHOBOS: Self = Self {
+        mass: 1.06e16,
+        radius: 11.08e3,
+        color: Color::srgb(0.78, 0.71, 0.65),
+    };
+    pub const DEIMOS: Self = Self {
+        mass: 1.51e15,
+        radius: 6.2e3,
+        color: Color::srgb(0.87, 0.72, 0.58),
+    };
     pub const JUPITER: Self = Self {
         mass: 1.9e27,
         radius: 71.492e6,
@@ -218,6 +228,42 @@ pub fn setup_scene(
                 velocity: Vec3 {
                     x: 0.0,
                     y: 26.5e3,
+                    z: 0.0,
+                },
+                ..default()
+            },
+            Trailable,
+            Autoscale,
+            Focusable,
+        ));
+        root.spawn_spatial((
+            Name::new("Phobos"),
+            Transform::from_xyz(206.7e9 + 9_376e3, 0.0, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::PHOBOS.radius)))),
+            MeshMaterial2d(materials.add(ColorMaterial::from(Planet::PHOBOS.color))),
+            RigidBody {
+                mass: Planet::PHOBOS.mass,
+                velocity: Vec3 {
+                    x: 0.0,
+                    y: 26.5e3 + 2.1704e3,
+                    z: 0.0,
+                },
+                ..default()
+            },
+            Trailable,
+            Autoscale,
+            Focusable,
+        ));
+        root.spawn_spatial((
+            Name::new("Deimos"),
+            Transform::from_xyz(206.7e9 + 23_455e3, 0.0, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::DEIMOS.radius)))),
+            MeshMaterial2d(materials.add(ColorMaterial::from(Planet::DEIMOS.color))),
+            RigidBody {
+                mass: Planet::DEIMOS.mass,
+                velocity: Vec3 {
+                    x: 0.0,
+                    y: 26.5e3 + 1.352e3,
                     z: 0.0,
                 },
                 ..default()
