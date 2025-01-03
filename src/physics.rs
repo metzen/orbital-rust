@@ -1,6 +1,7 @@
-use bevy::{ecs::query::QueryData, prelude::*};
+use bevy::{ecs::query::QueryData, prelude::*, render::mesh::MeshAabb};
+use big_space::{BigSpace, GridCell, ReferenceFrame};
 
-use crate::{lifetime::Ephemeral, scene::Planet, timewarp::*};
+use crate::{lifetime::Ephemeral, timewarp::*};
 
 /// Gravitational constant.
 const G: f64 = 6.67430e-11; // (N * m**2) / kg**2
@@ -17,7 +18,7 @@ impl Plugin for PhysicsPlugin {
                 // then use new position to calculate new acceleration and velocity.
                 (previous_transform_sync, kinematics, gravity, dynamics).chain(),
                 drag,
-                // collision,
+                collision,
             ),
         );
         app.add_systems(Update, transform_sync);
@@ -149,42 +150,90 @@ fn transform_sync(
     }
 }
 
-fn collision(mut query: Query<(&mut Transform, &mut RigidBody)>) {
+#[derive(QueryData)]
+#[query_data(mutable)]
+struct CollisionQueryData {
+    entity: Entity,
+    name: &'static Name,
+    transform: &'static mut Transform,
+    rigidbody: &'static mut RigidBody,
+    grid_cell: &'static mut GridCell<i32>,
+    mesh: &'static Mesh2d,
+}
+
+// TODO: Replace NoGravity here.
+fn collision(
+    mut query: Query<CollisionQueryData, Without<NoGravity>>,
+    reference_frame_query: Query<&ReferenceFrame<i32>, With<BigSpace>>,
+    meshes: ResMut<Assets<Mesh>>,
+) {
     // # TODO: Remove the 0.9 multiplier hack and fix the rendering instead.
     // # TODO: Move shape from renderable to collision.
-
+    let reference_frame = reference_frame_query.single();
     let mut iter = query.iter_combinations_mut();
-    while let Some([(mut at, mut ar), (mut bt, mut br)]) = iter.fetch_next() {
+    while let Some([a, b]) = iter.fetch_next() {
+        // info!("Checking for collision between {} and {}", a.name, b.name);
         // let Some(primary) = rigidbody.primary else {return};
         // let primary_transform = world.get_mut::<Transform>(primary).unwrap();
         // let primary_rigidbody = world.get_mut::<RigidBody>(primary).unwrap();
-        let (pt, pr, mut st, mut sr) = if ar.mass > br.mass {
-            (at, ar, bt, br)
+        let (primary, mut secondary) = if a.rigidbody.mass > b.rigidbody.mass {
+            (a, b)
         } else {
-            (bt, br, at, ar)
+            (b, a)
         };
-        let relative_position = st.translation - pt.translation;
 
-        // collision_distance = (
-        //     cast(Circle, rigidbody.primary[Renderable].shape).radius
-        //     + cast(Circle, entity[Renderable].shape).radius * 0.9
-        // )
-        // TODO: Remove this hardcoded.
-        let collision_distance = Planet::EARTH.radius + 10.0;
+        // let relative_position = (reference_frame.grid_to_float(secondary.grid_cell)
+        //     + reference_frame.grid_position_double(secondary.grid_cell, &secondary.transform))
+        //     - (reference_frame.grid_to_float(primary.grid_cell)
+        //         + reference_frame.grid_position_double(primary.grid_cell, &primary.transform));
+        let primary_position =
+            reference_frame.grid_position_double(&primary.grid_cell, &primary.transform);
+        let secondary_position =
+            reference_frame.grid_position_double(&secondary.grid_cell, &secondary.transform);
+        let relative_position = secondary_position - primary_position;
+
+        let Some(primary_mesh) = meshes.get(&primary.mesh.0) else {
+            continue;
+        };
+        let Some(secondary_mesh) = meshes.get(&secondary.mesh.0) else {
+            continue;
+        };
+        let collision_distance = (primary_mesh.compute_aabb().unwrap().half_extents.y
+            + secondary_mesh.compute_aabb().unwrap().half_extents.y)
+            as f64;
         let diff = relative_position.length_squared() - collision_distance * collision_distance;
         if diff < 0.0 {
+            debug!(
+                "Collision between {} and {} ({} < {})",
+                primary.name,
+                secondary.name,
+                relative_position.length(),
+                collision_distance
+            );
             // Landed -- prevent moving below surface.
-            st.translation = pt.translation + relative_position.normalize() * collision_distance;
+            // secondary.transform.translation = primary.transform.translation
+            //     + (relative_position.normalize() * collision_distance).as_vec3();
+
+            let (new_grid_cell, new_translation) = reference_frame.translation_to_grid(
+                primary_position + relative_position.normalize() * collision_distance,
+            );
+
+            // let (new_grid_cell, new_translation) = reference_frame.translation_to_grid(
+            //     primary_position + DVec3::Y * (Planet::EARTH.radius + 30.0) as f64,
+            // );
+            *secondary.grid_cell = new_grid_cell;
+            secondary.transform.translation = new_translation;
+            secondary.transform.translation.z = secondary_position.z.round() as f32;
         }
         if diff <= collision_distance * 0.05 {
             // # Simulate the effect of a normal force.
             // # rigidbody.velocity.update_from(rigidbody.primary[Rigidbody].velocity)
-            sr.velocity.y = pr.velocity.y;
-            sr.acceleration += Vec3 {
-                x: 0.0,
-                y: 9.81,
-                z: 0.0,
-            }
+            secondary.rigidbody.velocity.y = primary.rigidbody.velocity.y;
+            // secondary.rigidbody.acceleration += Vec3 {
+            //     x: 0.0,
+            //     y: 9.81,
+            //     z: 0.0,
+            // }
         }
     }
 }
