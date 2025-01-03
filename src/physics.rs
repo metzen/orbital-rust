@@ -92,7 +92,7 @@ fn drag(mut query: Query<&mut RigidBody, With<Ephemeral>>) {
             y: 30.29e3,
             z: 0.0,
         };
-        rigidbody.velocity = rigidbody.velocity.lerp(vel, 0.05);
+        rigidbody.velocity = rigidbody.velocity.lerp(vel, 0.2);
     }
 }
 
