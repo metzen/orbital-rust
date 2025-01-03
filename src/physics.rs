@@ -56,7 +56,7 @@ fn gravitation_force(m1: f64, m2: f64, distance: Vec3) -> Vec3 {
 #[query_data(mutable)]
 struct GravityQuery {
     entity: Entity,
-    transform: &'static GlobalTransform,
+    global_transform: &'static GlobalTransform,
     rigidbody: &'static mut RigidBody,
 }
 
@@ -66,7 +66,7 @@ fn gravity(mut query: Query<GravityQuery, Without<NoGravity>>) {
         let force = gravitation_force(
             a.rigidbody.mass.into(),
             b.rigidbody.mass.into(),
-            a.transform.translation() - b.transform.translation(),
+            a.global_transform.translation() - b.global_transform.translation(),
         );
         let force_magnitude = force.length();
         a.rigidbody.force -= force;
