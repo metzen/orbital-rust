@@ -186,7 +186,7 @@ pub struct HighPrecisionScale(pub f64);
 
 #[derive(QueryData)]
 #[query_data(mutable)]
-pub struct CameraQuery {
+pub struct CameraQueryData {
     entity: Entity,
     transform: &'static mut Transform,
     projection: &'static mut OrthographicProjection,
@@ -196,7 +196,7 @@ pub struct CameraQuery {
 
 pub fn camera_control(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<CameraQuery, With<InGameCamera>>,
+    mut query: Query<CameraQueryData, With<InGameCamera>>,
     frames: ReferenceFrames<i32>,
     time: Res<Time>,
 ) {
