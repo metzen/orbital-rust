@@ -53,10 +53,9 @@ pub struct Focusable;
 pub fn setup_camera(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
-    query: Query<Entity, With<BigSpace>>,
+    big_space: Single<Entity, With<BigSpace>>,
     vessel_query: Query<Entity, With<Vessel>>,
 ) {
-    let big_space = query.single();
     let canvas_size = Extent3d {
         width: RES_WIDTH,
         height: RES_HEIGHT,
@@ -111,7 +110,7 @@ pub fn setup_camera(
         .id();
 
     // Put the in game camera inside the BigSpace.
-    commands.entity(in_game_camera).set_parent(big_space);
+    commands.entity(in_game_camera).set_parent(*big_space);
 
     commands.spawn((
         Sprite::from_image(image_handle),

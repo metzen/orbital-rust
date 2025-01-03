@@ -48,11 +48,10 @@ fn trail_system(
     mut timer: ResMut<TrailTimer>,
     assets: Res<TrailAssets>,
     query: Query<TrailableQuery, With<Trailable>>,
-    big_space_query: Query<Entity, With<BigSpace>>,
+    big_space: Single<Entity, With<BigSpace>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     if timer.0.tick(time.delta()).just_finished() {
-        let big_space = big_space_query.single();
         for trailable in query.iter() {
             let color = materials.get(trailable.material).unwrap().color;
             let mut trail = commands.spawn((
@@ -67,7 +66,7 @@ fn trail_system(
                 Ephemeral { ttl: 60 * 20 },
                 Autoscale,
             ));
-            trail.set_parent(big_space);
+            trail.set_parent(*big_space);
         }
     }
 }
