@@ -3126,6 +3126,7 @@ dependencies = [
  "bevy_framepace",
  "big_space",
  "embed-resource",
+ "log",
  "rand",
 ]
 
