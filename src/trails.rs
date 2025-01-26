@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::{ecs::query::QueryData, prelude::*};
 use big_space::{BigSpace, GridCell};
 
@@ -63,7 +65,9 @@ fn trail_system(
                     alpha_mode: bevy::sprite::AlphaMode2d::Blend,
                     ..default()
                 })),
-                Ephemeral { ttl: 60 * 20 },
+                Ephemeral {
+                    ttl: Timer::new(Duration::from_secs(20), TimerMode::Once),
+                },
                 Autoscale,
             ));
             trail.set_parent(*big_space);

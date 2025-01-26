@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, time::Duration};
 
 use bevy::{
     color::palettes::css::{RED, TEAL},
@@ -395,7 +395,9 @@ fn vessel_systems(
                     },
                     NoGravity,
                     Autoscale,
-                    Ephemeral { ttl: 60 * 5 },
+                    Ephemeral {
+                        ttl: Timer::new(Duration::from_secs(5), TimerMode::Once),
+                    },
                     EngineParticle,
                 ))
                 .set_parent(big_space_query.single());
