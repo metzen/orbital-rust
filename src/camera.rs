@@ -133,19 +133,19 @@ pub fn setup_camera(
 }
 
 /// Scales camera projection to fit the window (integer multiples only).
-// pub fn fit_canvas(
-//     mut resize_events: EventReader<WindowResized>,
-//     mut projections: Query<&mut OrthographicProjection, With<OuterCamera>>,
-// ) {
-//     for event in resize_events.read() {
-//         let h_scale = event.width / RES_WIDTH as f32;
-//         let v_scale = event.height / RES_HEIGHT as f32;
-//         let mut projection = projections.single_mut();
-//         projection.scale = 0.15;
-//         info!("{:?}", event);
-//         projection.scale = 1. / h_scale.min(v_scale);
-//     }
-// }
+pub fn fit_canvas(
+    mut resize_events: EventReader<WindowResized>,
+    mut projections: Query<&mut OrthographicProjection, With<OuterCamera>>,
+) {
+    for event in resize_events.read() {
+        let h_scale = event.width / RES_WIDTH as f32;
+        let v_scale = event.height / RES_HEIGHT as f32;
+        let mut projection = projections.single_mut();
+        projection.scale = 0.15;
+        info!("{:?}", event);
+        projection.scale = 1. / h_scale.min(v_scale);
+    }
+}
 
 pub fn update_camera_position_for_autofollow(
     mut camera: Query<(&mut Transform, &mut GridCell<i32>, &Autofollow), With<InGameCamera>>,

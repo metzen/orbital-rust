@@ -21,8 +21,7 @@ use audio::SineAudio;
 use bevy_framepace::FramepacePlugin;
 use big_space::BigSpacePlugin;
 use camera::{
-    camera_control, change_focus, scale_entities, setup_camera,
-    update_camera_position_for_autofollow,
+    camera_control, change_focus, fit_canvas, scale_entities, setup_camera, update_camera_position_for_autofollow
 };
 use diagnostics::DiagnosticsPlugin;
 use hud::HudPlugin;
@@ -90,7 +89,7 @@ fn main() {
         .add_systems(
             Update,
             (
-                //fit_canvas,
+                fit_canvas,
                 app_control,
                 change_focus,
             ),
