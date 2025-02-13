@@ -66,7 +66,7 @@ fn trail_system(
                     ..default()
                 })),
                 Ephemeral {
-                    ttl: Timer::new(Duration::from_secs(20), TimerMode::Once),
+                    ttl: Timer::new(Duration::from_secs(5), TimerMode::Once),
                 },
                 Autoscale,
             ));
