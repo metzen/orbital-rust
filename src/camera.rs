@@ -195,53 +195,61 @@ pub struct CameraQueryData {
 
 pub fn camera_control(
     keyboard_input: Res<ButtonInput<KeyCode>>,
+    gamepads: Query<&Gamepad>,
     mut query: Query<CameraQueryData, With<InGameCamera>>,
     frames: ReferenceFrames<i32>,
     time: Res<Time>,
 ) {
-    for mut camera in query.iter_mut() {
-        let Some(reference_frame) = frames.parent_frame(camera.entity) else {
-            continue;
-        };
-        if keyboard_input.pressed(KeyCode::ArrowLeft) {
-            camera.transform.translation.x -= camera.projection.scale * time.delta_secs() * 200.0;
-        }
-        if keyboard_input.pressed(KeyCode::ArrowRight) {
-            // Example from https://github.com/aevyrie/big_space/blob/main/src/camera.rs
-            // Calculates a high precision translation using a f64 movement, and then
-            // converts it into a grid cell and low precision translation.
-            //
-            // let translation_next = DVec3 {
-            //     x: 2.0 * scale.0,
-            //     y: 0.0,
-            //     z: 0.0,
-            // };
-            // let (cell_offset, new_translation) =
-            //     reference_frame.translation_to_grid(translation_next);
-            // info!(
-            //     "Grid cell: {:?}, cell_offset: {:?}, next: {}, new_translation: {}",
-            //     grid_cell, cell_offset, translation_next, new_translation
-            // );
-            // *grid_cell += cell_offset;
-            // transform.translation += new_translation;
-            // info!("transform: {:?}", transform);
-            camera.transform.translation.x += camera.projection.scale * time.delta_secs() * 200.0;
-        }
-        if keyboard_input.pressed(KeyCode::ArrowDown) {
-            camera.transform.translation.y -= camera.projection.scale * time.delta_secs() * 200.0;
-        }
-        if keyboard_input.pressed(KeyCode::ArrowUp) {
-            camera.transform.translation.y += camera.projection.scale * time.delta_secs() * 200.0;
-        }
+    for gamepad in &gamepads {
+        for mut camera in query.iter_mut() {
+            let Some(reference_frame) = frames.parent_frame(camera.entity) else {
+                continue;
+            };
+            if keyboard_input.pressed(KeyCode::ArrowLeft) {
+                camera.transform.translation.x -=
+                    camera.projection.scale * time.delta_secs() * 200.0;
+            }
+            if keyboard_input.pressed(KeyCode::ArrowRight) {
+                // Example from https://github.com/aevyrie/big_space/blob/main/src/camera.rs
+                // Calculates a high precision translation using a f64 movement, and then
+                // converts it into a grid cell and low precision translation.
+                //
+                // let translation_next = DVec3 {
+                //     x: 2.0 * scale.0,
+                //     y: 0.0,
+                //     z: 0.0,
+                // };
+                // let (cell_offset, new_translation) =
+                //     reference_frame.translation_to_grid(translation_next);
+                // info!(
+                //     "Grid cell: {:?}, cell_offset: {:?}, next: {}, new_translation: {}",
+                //     grid_cell, cell_offset, translation_next, new_translation
+                // );
+                // *grid_cell += cell_offset;
+                // transform.translation += new_translation;
+                // info!("transform: {:?}", transform);
+                camera.transform.translation.x +=
+                    camera.projection.scale * time.delta_secs() * 200.0;
+            }
+            if keyboard_input.pressed(KeyCode::ArrowDown) {
+                camera.transform.translation.y -=
+                    camera.projection.scale * time.delta_secs() * 200.0;
+            }
+            if keyboard_input.pressed(KeyCode::ArrowUp) {
+                camera.transform.translation.y +=
+                    camera.projection.scale * time.delta_secs() * 200.0;
+            }
 
-        let scale_factor: f64 = 5.0;
-        if keyboard_input.pressed(KeyCode::Equal) {
-            camera.projection.scale *= (1.0 - scale_factor * time.delta_secs_f64()) as f32;
-            camera.scale.0 *= 1.0 - scale_factor * time.delta_secs_f64();
-        }
-        if keyboard_input.pressed(KeyCode::Minus) {
-            camera.projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
-            camera.scale.0 *= 1.0 + scale_factor * time.delta_secs_f64();
+            let scale_factor: f64 = 5.0;
+            if keyboard_input.pressed(KeyCode::Equal) || gamepad.pressed(GamepadButton::RightThumb)
+            {
+                camera.projection.scale *= (1.0 - scale_factor * time.delta_secs_f64()) as f32;
+                camera.scale.0 *= 1.0 - scale_factor * time.delta_secs_f64();
+            }
+            if keyboard_input.pressed(KeyCode::Minus) || gamepad.pressed(GamepadButton::LeftThumb) {
+                camera.projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
+                camera.scale.0 *= 1.0 + scale_factor * time.delta_secs_f64();
+            }
         }
     }
 }
