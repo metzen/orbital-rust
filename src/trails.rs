@@ -10,6 +10,7 @@ pub struct TrailsPlugin;
 impl Plugin for TrailsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(TrailTimer(Timer::from_seconds(0.2, TimerMode::Repeating)));
+        app.insert_resource(TrailsOptions { enabled: true });
         app.init_resource::<TrailAssets>();
         app.add_systems(FixedUpdate, trail_system);
     }
@@ -20,6 +21,11 @@ pub struct Trailable;
 
 #[derive(Resource)]
 struct TrailTimer(Timer);
+
+#[derive(Resource)]
+struct TrailsOptions {
+    enabled: bool,
+}
 
 #[derive(Resource)]
 struct TrailAssets {
@@ -45,6 +51,7 @@ struct TrailableQuery {
 }
 
 fn trail_system(
+    options: Res<TrailsOptions>,
     mut commands: Commands,
     time: Res<Time>,
     mut timer: ResMut<TrailTimer>,
@@ -53,6 +60,9 @@ fn trail_system(
     big_space: Single<Entity, With<BigSpace>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
+    if !options.enabled {
+        return;
+    }
     if timer.0.tick(time.delta()).just_finished() {
         for trailable in query.iter() {
             let color = materials.get(trailable.material).unwrap().color;
