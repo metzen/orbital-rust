@@ -17,7 +17,7 @@ pub fn reaper(
         // TODO: Move scale and transperency to an animation system.
 
         let material = color_materials.get_mut(color_material_handle).unwrap();
-        material.color.set_alpha(material.color.alpha() * 0.99);
+        material.color.set_alpha(ephemeral.ttl.fraction_remaining());
         // Psychedelic!
         // material.color = material.color.rotate_hue(10.0);
         if ephemeral.ttl.finished() {
