@@ -1,7 +1,7 @@
 use bevy::{ecs::query::QueryData, prelude::*, render::mesh::MeshAabb};
 use big_space::{BigSpace, GridCell, ReferenceFrame};
 
-use crate::{lifetime::Ephemeral, timewarp::*};
+use crate::timewarp::*;
 
 /// Gravitational constant.
 const G: f64 = 6.67430e-11; // (N * m**2) / kg**2
@@ -70,6 +70,7 @@ fn gravity(mut query: Query<GravityQuery, Without<NoGravity>>) {
         let force = gravitation_force(
             a.rigidbody.mass.into(),
             b.rigidbody.mass.into(),
+            // TODO: Maybe use high precision positions here?
             a.global_transform.translation() - b.global_transform.translation(),
         );
         let force_magnitude = force.length();
@@ -121,6 +122,7 @@ fn kinematics(
         let dt = time.delta_secs() * time_warp.value;
         let velocity = rigidbody.velocity;
         let acceleration = rigidbody.acceleration;
+        // TODO: High precision f64 velocity and accel?
         // rigidbody.transform.translation += dt * (velocity + 0.5 * acceleration * dt);
         transform.translation += dt * (rigidbody.velocity + 0.5 * rigidbody.acceleration * dt);
     }
