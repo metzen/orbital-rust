@@ -13,7 +13,7 @@ use crate::{
     camera::{Autoscale, Focusable},
     hud::HudSubject,
     lifetime::Ephemeral,
-    physics::{dynamics, NoGravity, RigidBody},
+    physics::{dynamics, Drag, NoGravity, RigidBody},
     scene::Planet,
 };
 
@@ -420,6 +420,7 @@ fn vessel_systems(
                         ttl: Timer::new(Duration::from_secs(5), TimerMode::Once),
                     },
                     EngineParticle,
+                    Drag,
                 ))
                 .set_parent(big_space_query.single());
         }

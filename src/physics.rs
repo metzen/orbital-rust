@@ -48,6 +48,9 @@ pub struct CelestialBody {
 #[derive(Component)]
 pub struct NoGravity;
 
+#[derive(Component)]
+pub struct Drag;
+
 fn gravitation_force(m1: f64, m2: f64, distance: Vec3) -> Vec3 {
     let unit = distance.normalize();
     unit * (G * m1 * m2 / distance.length_squared() as f64) as f32
@@ -81,7 +84,7 @@ fn gravity(mut query: Query<GravityQuery, Without<NoGravity>>) {
     }
 }
 
-fn drag(mut query: Query<&mut RigidBody, With<Ephemeral>>) {
+fn drag(mut query: Query<&mut RigidBody, With<Drag>>) {
     for mut rigidbody in query.iter_mut() {
         // let primary_transform = world.get_mut::<Transform>(primary).unwrap();
         // let Some(primary) = rigidbody.primary else { todo!(); };
@@ -93,7 +96,7 @@ fn drag(mut query: Query<&mut RigidBody, With<Ephemeral>>) {
             y: 30.29e3,
             z: 0.0,
         };
-        rigidbody.velocity = rigidbody.velocity.lerp(vel, 0.2);
+        rigidbody.velocity = rigidbody.velocity.lerp(vel, 0.01);
     }
 }
 
