@@ -22,7 +22,7 @@ use bevy_framepace::FramepacePlugin;
 use big_space::BigSpacePlugin;
 use camera::{
     camera_control, change_focus, fit_canvas, scale_entities, setup_camera,
-    update_camera_position_for_autofollow,
+    update_camera_position_for_autofollow, CameraPlugin,
 };
 use diagnostics::DiagnosticsPlugin;
 use hud::HudPlugin;
@@ -74,6 +74,7 @@ fn main() {
                     default_spatial_scale: SpatialScale::new_2d(AUDIO_SCALE),
                 }),
             BigSpacePlugin::<i32>::default(),
+            CameraPlugin,
             FramepacePlugin,
             DiagnosticsPlugin,
             TimeWarpPlugin,

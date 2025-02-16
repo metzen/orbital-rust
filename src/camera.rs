@@ -15,6 +15,7 @@ use bevy::{
 use big_space::{
     reference_frame::local_origin::ReferenceFrames, BigSpace, FloatingOrigin, GridCell,
 };
+use leafwing_input_manager::prelude::*;
 
 use crate::vessel::Vessel;
 
@@ -49,6 +50,38 @@ struct Canvas;
 /// Entities with this component are able to hold camera focus.
 #[derive(Component, Default)]
 pub struct Focusable;
+
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
+pub enum CameraAction {
+    #[actionlike(DualAxis)]
+    Pan,
+    ZoomIn,
+    ZoomOut,
+}
+
+pub struct CameraPlugin;
+
+impl Plugin for CameraPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(InputManagerPlugin::<CameraAction>::default());
+        app.init_resource::<ActionState<CameraAction>>();
+        app.insert_resource(CameraAction::default_input_map());
+    }
+}
+
+impl CameraAction {
+    fn default_input_map() -> InputMap<Self> {
+        let mut input_map = InputMap::default();
+        input_map
+            .insert_dual_axis(Self::Pan, GamepadStick::RIGHT.with_deadzone_symmetric(0.2))
+            .insert_dual_axis(Self::Pan, VirtualDPad::arrow_keys())
+            .insert(Self::ZoomIn, KeyCode::Equal)
+            .insert(Self::ZoomIn, GamepadButton::RightThumb)
+            .insert(Self::ZoomOut, KeyCode::Minus)
+            .insert(Self::ZoomOut, GamepadButton::LeftThumb);
+        input_map
+    }
+}
 
 pub fn setup_camera(
     mut commands: Commands,
@@ -194,62 +227,53 @@ pub struct CameraQueryData {
 }
 
 pub fn camera_control(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    gamepads: Query<&Gamepad>,
+    action_state: Res<ActionState<CameraAction>>,
     mut query: Query<CameraQueryData, With<InGameCamera>>,
-    frames: ReferenceFrames<i32>,
     time: Res<Time>,
+    frames: ReferenceFrames<i32>,
 ) {
-    for gamepad in &gamepads {
-        for mut camera in query.iter_mut() {
-            let Some(reference_frame) = frames.parent_frame(camera.entity) else {
-                continue;
-            };
-            if keyboard_input.pressed(KeyCode::ArrowLeft) {
-                camera.transform.translation.x -=
-                    camera.projection.scale * time.delta_secs() * 200.0;
-            }
-            if keyboard_input.pressed(KeyCode::ArrowRight) {
-                // Example from https://github.com/aevyrie/big_space/blob/main/src/camera.rs
-                // Calculates a high precision translation using a f64 movement, and then
-                // converts it into a grid cell and low precision translation.
-                //
-                // let translation_next = DVec3 {
-                //     x: 2.0 * scale.0,
-                //     y: 0.0,
-                //     z: 0.0,
-                // };
-                // let (cell_offset, new_translation) =
-                //     reference_frame.translation_to_grid(translation_next);
-                // info!(
-                //     "Grid cell: {:?}, cell_offset: {:?}, next: {}, new_translation: {}",
-                //     grid_cell, cell_offset, translation_next, new_translation
-                // );
-                // *grid_cell += cell_offset;
-                // transform.translation += new_translation;
-                // info!("transform: {:?}", transform);
-                camera.transform.translation.x +=
-                    camera.projection.scale * time.delta_secs() * 200.0;
-            }
-            if keyboard_input.pressed(KeyCode::ArrowDown) {
-                camera.transform.translation.y -=
-                    camera.projection.scale * time.delta_secs() * 200.0;
-            }
-            if keyboard_input.pressed(KeyCode::ArrowUp) {
-                camera.transform.translation.y +=
-                    camera.projection.scale * time.delta_secs() * 200.0;
-            }
+    for mut camera in query.iter_mut() {
+        if action_state.axis_pair(&CameraAction::Pan) != Vec2::ZERO {
+            let delta = action_state.clamped_axis_pair(&CameraAction::Pan)
+                * camera.projection.scale
+                * time.delta_secs()
+                * 200.0;
+            camera.transform.translation += Vec3::new(delta.x, delta.y, 0.0);
+        }
 
-            let scale_factor: f64 = 5.0;
-            if keyboard_input.pressed(KeyCode::Equal) || gamepad.pressed(GamepadButton::RightThumb)
-            {
-                camera.projection.scale *= (1.0 - scale_factor * time.delta_secs_f64()) as f32;
-                camera.scale.0 *= 1.0 - scale_factor * time.delta_secs_f64();
-            }
-            if keyboard_input.pressed(KeyCode::Minus) || gamepad.pressed(GamepadButton::LeftThumb) {
-                camera.projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
-                camera.scale.0 *= 1.0 + scale_factor * time.delta_secs_f64();
-            }
+        // let Some(reference_frame) = frames.parent_frame(camera.entity) else {
+        //     continue;
+        // };
+        // if keyboard_input.pressed(KeyCode::ArrowRight) {
+        //     // Example from https://github.com/aevyrie/big_space/blob/main/src/camera.rs
+        //     // Calculates a high precision translation using a f64 movement, and then
+        //     // converts it into a grid cell and low precision translation.
+        //     //
+        //     // let translation_next = DVec3 {
+        //     //     x: 2.0 * scale.0,
+        //     //     y: 0.0,
+        //     //     z: 0.0,
+        //     // };
+        //     // let (cell_offset, new_translation) =
+        //     //     reference_frame.translation_to_grid(translation_next);
+        //     // info!(
+        //     //     "Grid cell: {:?}, cell_offset: {:?}, next: {}, new_translation: {}",
+        //     //     grid_cell, cell_offset, translation_next, new_translation
+        //     // );
+        //     // *grid_cell += cell_offset;
+        //     // transform.translation += new_translation;
+        //     // info!("transform: {:?}", transform);
+        //     camera.transform.translation.x += camera.projection.scale * time.delta_secs() * 200.0;
+        // }
+
+        let scale_factor: f64 = 5.0;
+        if action_state.pressed(&CameraAction::ZoomIn) {
+            camera.projection.scale *= (1.0 - scale_factor * time.delta_secs_f64()) as f32;
+            camera.scale.0 *= 1.0 - scale_factor * time.delta_secs_f64();
+        }
+        if action_state.pressed(&CameraAction::ZoomOut) {
+            camera.projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
+            camera.scale.0 *= 1.0 + scale_factor * time.delta_secs_f64();
         }
     }
 }
