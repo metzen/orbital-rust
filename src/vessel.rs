@@ -6,6 +6,7 @@ use bevy::{
     prelude::*,
 };
 use big_space::{BigSpace, GridCell, ReferenceFrame};
+use leafwing_input_manager::prelude::*;
 use rand::{thread_rng, Rng};
 
 use crate::{
@@ -31,6 +32,9 @@ impl Plugin for VesselPlugin {
             ),
         );
         app.add_systems(FixedPreUpdate, vessel_systems.before(dynamics));
+        app.add_plugins(InputManagerPlugin::<VesselAction>::default());
+        app.init_resource::<ActionState<VesselAction>>();
+        app.insert_resource(VesselAction::default_input_map());
     }
 }
 
@@ -46,6 +50,38 @@ enum Direction {
     Retrograde,
     Radial,
     AntiRadial,
+}
+
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
+enum VesselAction {
+    // #[actionlike(Axis)]
+    RotateClockwise,
+    RotateCounterClockwise,
+    ThrottleUp,
+    ThrottleDown,
+    ThrottleOpen,
+    ThrottleClose,
+}
+
+impl VesselAction {
+    fn default_input_map() -> InputMap<Self> {
+        let mut input_map = InputMap::default();
+        input_map
+            // TODO: Stick axis based rotate control.
+            .insert(Self::RotateCounterClockwise, KeyCode::KeyA)
+            .insert(Self::RotateCounterClockwise, GamepadButton::DPadLeft)
+            .insert(Self::RotateClockwise, KeyCode::KeyD)
+            .insert(Self::RotateClockwise, GamepadButton::DPadRight)
+            .insert(Self::ThrottleUp, KeyCode::ShiftLeft)
+            .insert(Self::ThrottleUp, GamepadButton::RightTrigger2)
+            .insert(Self::ThrottleDown, KeyCode::ControlLeft)
+            .insert(Self::ThrottleDown, GamepadButton::LeftTrigger2)
+            .insert(Self::ThrottleOpen, KeyCode::KeyZ)
+            .insert(Self::ThrottleOpen, GamepadButton::RightTrigger)
+            .insert(Self::ThrottleClose, KeyCode::KeyX)
+            .insert(Self::ThrottleClose, GamepadButton::LeftTrigger);
+        input_map
+    }
 }
 
 #[derive(Component, Default)]
@@ -229,14 +265,13 @@ fn setup_vessel(
 fn vessel_control(
     mut query: Query<&mut Vessel>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    gamepads: Query<&Gamepad>,
+    action_state: Res<ActionState<VesselAction>>,
 ) {
     for mut vessel in query.iter_mut() {
         if !vessel.controlled {
             continue;
         }
 
-        for gamepad in &gamepads {
         if keyboard_input.just_pressed(KeyCode::CapsLock) {
             vessel.control_mode = match vessel.control_mode {
                 ControlMode::Normal => ControlMode::Fine,
@@ -244,30 +279,22 @@ fn vessel_control(
             }
         }
 
-            if keyboard_input.pressed(KeyCode::KeyZ)
-                || gamepad.just_pressed(GamepadButton::RightTrigger)
-            {
+        if action_state.pressed(&VesselAction::ThrottleOpen) {
             vessel.throttle = 1.0
         }
 
-            if keyboard_input.pressed(KeyCode::KeyX)
-                || gamepad.just_pressed(GamepadButton::LeftTrigger)
-            {
+        if action_state.pressed(&VesselAction::ThrottleClose) {
             vessel.throttle = 0.0
         }
 
-            if keyboard_input.pressed(KeyCode::ShiftLeft)
-                || gamepad.get(GamepadButton::RightTrigger2).unwrap() > 0.01
-            {
+        if action_state.pressed(&VesselAction::ThrottleUp) {
             let change = match vessel.control_mode {
                 ControlMode::Normal => 0.01,
                 ControlMode::Fine => 0.0005,
             };
             vessel.throttle = (vessel.throttle + change).clamp(0.0, 1.0);
         }
-            if keyboard_input.pressed(KeyCode::ControlLeft)
-                || gamepad.get(GamepadButton::LeftTrigger2).unwrap() > 0.01
-            {
+        if action_state.pressed(&VesselAction::ThrottleDown) {
             let change = match vessel.control_mode {
                 ControlMode::Normal => -0.01,
                 ControlMode::Fine => -0.0005,
@@ -277,9 +304,7 @@ fn vessel_control(
 
         // TODO: Do this as angular torque instead of setting rotation directly.
         vessel.rotate = 0.0;
-            if keyboard_input.pressed(KeyCode::KeyA)
-                || gamepad.get(GamepadAxis::LeftStickX).unwrap() < -0.3
-            {
+        if action_state.pressed(&VesselAction::RotateCounterClockwise) {
             // # TODO: factor = 0.5 if ecodes.LED_CAPSL in KEYBOARD.leds() else 2
             let angle: f32 = if vessel.control_mode == ControlMode::Normal {
                 200.0
@@ -292,13 +317,7 @@ fn vessel_control(
             // transform.rotation = (transform.rotation + PI * 2.0 / 360.0 * factor) % (2 * PI)
         }
 
-            debug!(
-                "LeftStickX value is {}",
-                gamepad.get(GamepadAxis::LeftStickX).unwrap().abs()
-            );
-            if keyboard_input.pressed(KeyCode::KeyD)
-                || gamepad.get(GamepadAxis::LeftStickX).unwrap() > 0.3
-            {
+        if action_state.pressed(&VesselAction::RotateClockwise) {
             // # TODO: factor = 0.5 if ecodes.LED_CAPSL in KEYBOARD.leds() else 2
             let angle: f32 = if vessel.control_mode == ControlMode::Normal {
                 -200.0
@@ -329,7 +348,6 @@ fn vessel_control(
         }
         if keyboard_input.pressed(KeyCode::KeyI) {
             vessel.direction_lock = Some(Direction::AntiRadial);
-            }
         }
     }
 }
