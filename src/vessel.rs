@@ -112,14 +112,14 @@ fn setup_vessel(
 ) {
     let (big_space, reference_frame) = big_space_query.single();
     let (grid_cell, translation) = reference_frame.translation_to_grid(DVec3 {
-        x: 147.10e9 + 50.0,
+        x: 147.10e9,
         y: Planet::EARTH.radius as f64 + 40.0,
         z: 4.0,
     });
     commands
         .spawn((
             Name::new("Pickle"),
-            Transform::from_translation(translation),
+            Transform::from_translation(translation + Vec3::X * 150.0),
             grid_cell,
             Mesh2d(meshes.add(Mesh::from(Capsule2d {
                 radius: 8.0,
@@ -147,11 +147,6 @@ fn setup_vessel(
             },
         ))
         .set_parent(big_space);
-    let (grid_cell, translation) = reference_frame.translation_to_grid(DVec3 {
-        x: 147.10e9,
-        y: Planet::EARTH.radius as f64 + 40.0,
-        z: 3.0,
-    });
     commands
         .spawn((
             Name::new("Pizza"),
@@ -160,7 +155,7 @@ fn setup_vessel(
                 Vec2::new(-13.0, -15.0),
                 Vec2::new(13.0, -15.0),
             )))),
-            Transform::from_translation(translation + Vec3::X * 20.0),
+            Transform::from_translation(translation + Vec3::X * 75.0),
             grid_cell,
             MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgba(1.0, 0.8, 0.54, 1.0)))),
             RigidBody {
