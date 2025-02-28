@@ -76,8 +76,10 @@ impl CameraAction {
             .insert_dual_axis(Self::Pan, GamepadStick::RIGHT.with_deadzone_symmetric(0.2))
             .insert_dual_axis(Self::Pan, VirtualDPad::arrow_keys())
             .insert(Self::ZoomIn, KeyCode::Equal)
+            .insert(Self::ZoomIn, MouseScrollDirection::UP)
             .insert(Self::ZoomIn, GamepadButton::RightThumb)
             .insert(Self::ZoomOut, KeyCode::Minus)
+            .insert(Self::ZoomOut, MouseScrollDirection::DOWN)
             .insert(Self::ZoomOut, GamepadButton::LeftThumb);
         input_map
     }
