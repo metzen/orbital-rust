@@ -54,7 +54,8 @@ enum Direction {
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
 enum VesselAction {
-    // #[actionlike(Axis)]
+    #[actionlike(Axis)]
+    Rotate,
     RotateClockwise,
     RotateCounterClockwise,
     SasModeAntiRadial,
@@ -73,6 +74,10 @@ impl VesselAction {
         let mut input_map = InputMap::default();
         input_map
             // TODO: Stick axis based rotate control.
+            .insert_axis(
+                Self::Rotate,
+                GamepadControlAxis::LEFT_X.with_deadzone_symmetric(0.3),
+            )
             .insert(Self::RotateCounterClockwise, KeyCode::KeyA)
             .insert(Self::RotateCounterClockwise, GamepadButton::DPadLeft)
             .insert(Self::RotateClockwise, KeyCode::KeyD)
@@ -300,7 +305,8 @@ fn vessel_control(mut query: Query<&mut Vessel>, action_state: Res<ActionState<V
         }
 
         // TODO: Do this as angular torque instead of setting rotation directly.
-        vessel.rotate = 0.0;
+        vessel.rotate = -5.0 * action_state.clamped_value(&VesselAction::Rotate);
+
         if action_state.pressed(&VesselAction::RotateCounterClockwise) {
             let angle: f32 = match vessel.control_mode {
                 ControlMode::Normal => 200.0,
