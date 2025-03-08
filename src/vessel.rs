@@ -79,9 +79,7 @@ impl VesselAction {
                 GamepadControlAxis::LEFT_X.with_deadzone_symmetric(0.3),
             )
             .insert(Self::RotateCounterClockwise, KeyCode::KeyA)
-            .insert(Self::RotateCounterClockwise, GamepadButton::DPadLeft)
             .insert(Self::RotateClockwise, KeyCode::KeyD)
-            .insert(Self::RotateClockwise, GamepadButton::DPadRight)
             .insert(Self::ThrottleIncrease, KeyCode::ShiftLeft)
             .insert(Self::ThrottleIncrease, GamepadButton::RightTrigger2)
             .insert(Self::ThrottleDecrease, KeyCode::ControlLeft)
