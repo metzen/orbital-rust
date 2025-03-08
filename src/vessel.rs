@@ -304,9 +304,11 @@ fn vessel_control(mut query: Query<&mut Vessel>, action_state: Res<ActionState<V
             ControlMode::Normal => 200.0,
             ControlMode::Fine => 10.0,
         };
-        vessel.direction_lock = None;
         vessel.rotate =
             (-1.0 * angle * action_state.clamped_value(&VesselAction::Rotate)).to_radians();
+        if vessel.rotate != 0.0 {
+            vessel.direction_lock = None;
+        }
 
         if action_state.pressed(&VesselAction::SasModePrograde) {
             vessel.direction_lock = Some(Direction::Prograde);
