@@ -56,8 +56,6 @@ enum Direction {
 enum VesselAction {
     #[actionlike(Axis)]
     Rotate,
-    RotateClockwise,
-    RotateCounterClockwise,
     SasModeAntiRadial,
     SasModePrograde,
     SasModeRadial,
@@ -73,13 +71,11 @@ impl VesselAction {
     fn default_input_map() -> InputMap<Self> {
         let mut input_map = InputMap::default();
         input_map
-            // TODO: Stick axis based rotate control.
             .insert_axis(
                 Self::Rotate,
                 GamepadControlAxis::LEFT_X.with_deadzone_symmetric(0.3),
             )
-            .insert(Self::RotateCounterClockwise, KeyCode::KeyA)
-            .insert(Self::RotateClockwise, KeyCode::KeyD)
+            .insert_axis(Self::Rotate, VirtualAxis::ad())
             .insert(Self::ThrottleIncrease, KeyCode::ShiftLeft)
             .insert(Self::ThrottleIncrease, GamepadButton::RightTrigger2)
             .insert(Self::ThrottleDecrease, KeyCode::ControlLeft)
@@ -303,25 +299,13 @@ fn vessel_control(mut query: Query<&mut Vessel>, action_state: Res<ActionState<V
         }
 
         // TODO: Do this as angular torque instead of setting rotation directly.
-        vessel.rotate = -5.0 * action_state.clamped_value(&VesselAction::Rotate);
-
-        if action_state.pressed(&VesselAction::RotateCounterClockwise) {
-            let angle: f32 = match vessel.control_mode {
-                ControlMode::Normal => 200.0,
-                ControlMode::Fine => 10.0,
-            };
-            vessel.direction_lock = None;
-            vessel.rotate = angle.to_radians();
-        }
-
-        if action_state.pressed(&VesselAction::RotateClockwise) {
-            let angle: f32 = match vessel.control_mode {
-                ControlMode::Normal => -200.0,
-                ControlMode::Fine => -10.0,
-            };
-            vessel.direction_lock = None;
-            vessel.rotate = angle.to_radians();
-        }
+        let angle: f32 = match vessel.control_mode {
+            ControlMode::Normal => 200.0,
+            ControlMode::Fine => 10.0,
+        };
+        vessel.direction_lock = None;
+        vessel.rotate =
+            (-1.0 * angle * action_state.clamped_value(&VesselAction::Rotate)).to_radians();
 
         if action_state.pressed(&VesselAction::SasModePrograde) {
             vessel.direction_lock = Some(Direction::Prograde);
