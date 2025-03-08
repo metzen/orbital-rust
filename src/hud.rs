@@ -1,10 +1,15 @@
-use bevy::{prelude::*, render::view::RenderLayers};
-use big_space::GridCell;
 use crate::{
     camera::{Autofollow, InGameCamera, HIGH_RES_LAYER},
     physics::RigidBody,
     timewarp::TimeWarp,
     vessel::Vessel,
+};
+use bevy::{prelude::*, render::view::RenderLayers};
+use big_space::GridCell;
+use leafwing_input_manager::{
+    plugin::InputManagerPlugin,
+    prelude::{ActionState, InputMap},
+    Actionlike,
 };
 
 pub struct HudPlugin;
@@ -23,6 +28,9 @@ impl Plugin for HudPlugin {
                 update_hud_subject,
             ),
         );
+        app.add_plugins(InputManagerPlugin::<HudAction>::default());
+        app.init_resource::<ActionState<HudAction>>();
+        app.insert_resource(HudAction::default_input_map());
     }
 }
 
@@ -179,16 +187,31 @@ fn update_altitude(
     }
 }
 
-pub fn update_hud_subject(
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
+enum HudAction {
+    NextVessel,
+    PreviousVessel,
+}
+
+impl HudAction {
+    fn default_input_map() -> InputMap<Self> {
+        let mut input_map = InputMap::default();
+        input_map
+            .insert(Self::NextVessel, KeyCode::BracketRight)
+            .insert(Self::NextVessel, GamepadButton::DPadRight)
+            .insert(Self::PreviousVessel, KeyCode::BracketLeft)
+            .insert(Self::PreviousVessel, GamepadButton::DPadLeft);
+        input_map
+    }
+}
+
+fn update_hud_subject(
     mut commands: Commands,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
+    action_state: Res<ActionState<HudAction>>,
     mut vessels_query: Query<(Entity, &mut Vessel, Option<&HudSubject>), With<Vessel>>,
     mut camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::BracketLeft)
-        || keyboard_input.just_pressed(KeyCode::BracketRight)
-    {
-        info!("backet left");
+    if action_state.just_pressed(&HudAction::NextVessel) {
         for (entity, mut vessel, hud_subject) in vessels_query.iter_mut() {
             info!("hud subj vessel");
             if hud_subject.is_some() {
@@ -203,5 +226,7 @@ pub fn update_hud_subject(
             }
         }
     }
-    if keyboard_input.just_pressed(KeyCode::BracketRight) {}
+    if action_state.just_pressed(&HudAction::PreviousVessel) {
+        // TODO: Implement this.
+    }
 }
