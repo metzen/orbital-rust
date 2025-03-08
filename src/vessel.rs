@@ -288,7 +288,8 @@ fn vessel_control(mut query: Query<&mut Vessel>, action_state: Res<ActionState<V
                 ControlMode::Normal => 0.01,
                 ControlMode::Fine => 0.0005,
             };
-            vessel.throttle = (vessel.throttle + change).clamp(0.0, 1.0);
+            let input = action_state.clamped_button_value(&VesselAction::ThrottleIncrease);
+            vessel.throttle = (vessel.throttle + change * input).clamp(0.0, 1.0);
         }
         if action_state.pressed(&VesselAction::ThrottleDecrease) {
             let change = match vessel.control_mode {
