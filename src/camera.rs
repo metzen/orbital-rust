@@ -71,17 +71,15 @@ impl Plugin for CameraPlugin {
 
 impl CameraAction {
     fn default_input_map() -> InputMap<Self> {
-        let mut input_map = InputMap::default();
-        input_map
-            .insert_dual_axis(Self::Pan, GamepadStick::RIGHT.with_deadzone_symmetric(0.2))
-            .insert_dual_axis(Self::Pan, VirtualDPad::arrow_keys())
-            .insert(Self::ZoomIn, KeyCode::Equal)
-            .insert(Self::ZoomIn, MouseScrollDirection::UP)
-            .insert(Self::ZoomIn, GamepadButton::RightThumb)
-            .insert(Self::ZoomOut, KeyCode::Minus)
-            .insert(Self::ZoomOut, MouseScrollDirection::DOWN)
-            .insert(Self::ZoomOut, GamepadButton::LeftThumb);
-        input_map
+        InputMap::default()
+            .with_dual_axis(Self::Pan, GamepadStick::RIGHT.with_deadzone_symmetric(0.2))
+            .with_dual_axis(Self::Pan, VirtualDPad::arrow_keys())
+            .with(Self::ZoomIn, KeyCode::Equal)
+            .with(Self::ZoomIn, MouseScrollDirection::UP)
+            .with(Self::ZoomIn, GamepadButton::RightThumb)
+            .with(Self::ZoomOut, KeyCode::Minus)
+            .with(Self::ZoomOut, MouseScrollDirection::DOWN)
+            .with(Self::ZoomOut, GamepadButton::LeftThumb)
     }
 }
 

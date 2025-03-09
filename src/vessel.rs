@@ -69,23 +69,21 @@ enum VesselAction {
 
 impl VesselAction {
     fn default_input_map() -> InputMap<Self> {
-        let mut input_map = InputMap::default();
-        input_map
-            .insert_axis(
+        InputMap::default()
+            .with_axis(
                 Self::Rotate,
                 GamepadControlAxis::LEFT_X.with_deadzone_symmetric(0.3),
             )
-            .insert_axis(Self::Rotate, VirtualAxis::ad())
-            .insert(Self::ThrottleIncrease, KeyCode::ShiftLeft)
-            .insert(Self::ThrottleIncrease, GamepadButton::RightTrigger2)
-            .insert(Self::ThrottleDecrease, KeyCode::ControlLeft)
-            .insert(Self::ThrottleDecrease, GamepadButton::LeftTrigger2)
-            .insert(Self::ThrottleOpen, KeyCode::KeyZ)
-            .insert(Self::ThrottleOpen, GamepadButton::RightTrigger)
-            .insert(Self::ThrottleClose, KeyCode::KeyX)
-            .insert(Self::ThrottleClose, GamepadButton::LeftTrigger)
-            .insert(Self::TogglePrecisionControls, KeyCode::CapsLock);
-        input_map
+            .with_axis(Self::Rotate, VirtualAxis::ad())
+            .with(Self::ThrottleIncrease, KeyCode::ShiftLeft)
+            .with(Self::ThrottleIncrease, GamepadButton::RightTrigger2)
+            .with(Self::ThrottleDecrease, KeyCode::ControlLeft)
+            .with(Self::ThrottleDecrease, GamepadButton::LeftTrigger2)
+            .with(Self::ThrottleOpen, KeyCode::KeyZ)
+            .with(Self::ThrottleOpen, GamepadButton::RightTrigger)
+            .with(Self::ThrottleClose, KeyCode::KeyX)
+            .with(Self::ThrottleClose, GamepadButton::LeftTrigger)
+            .with(Self::TogglePrecisionControls, KeyCode::CapsLock)
     }
 }
 

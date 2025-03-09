@@ -195,13 +195,11 @@ enum HudAction {
 
 impl HudAction {
     fn default_input_map() -> InputMap<Self> {
-        let mut input_map = InputMap::default();
-        input_map
-            .insert(Self::NextVessel, KeyCode::BracketRight)
-            .insert(Self::NextVessel, GamepadButton::DPadRight)
-            .insert(Self::PreviousVessel, KeyCode::BracketLeft)
-            .insert(Self::PreviousVessel, GamepadButton::DPadLeft);
-        input_map
+        InputMap::default()
+            .with(Self::NextVessel, KeyCode::BracketRight)
+            .with(Self::NextVessel, GamepadButton::DPadRight)
+            .with(Self::PreviousVessel, KeyCode::BracketLeft)
+            .with(Self::PreviousVessel, GamepadButton::DPadLeft)
     }
 }
 
