@@ -24,6 +24,7 @@ use camera::{
     camera_control, change_focus, fit_canvas, scale_entities, setup_camera,
     update_camera_position_for_autofollow, CameraPlugin,
 };
+use clap::Parser;
 use diagnostics::DiagnosticsPlugin;
 use hud::HudPlugin;
 use lifetime::reaper;
@@ -51,7 +52,14 @@ use vessel::VesselPlugin;
 /// audio.
 const AUDIO_SCALE: f32 = 1.0 / 100.0;
 
+#[derive(Parser)]
+struct Args {
+    #[arg(long, default_value_t = 64.0)]
+    fixed_update_frequency: f64,
+}
+
 fn main() {
+    let args = Args::parse();
     App::new()
         .insert_resource(ClearColor(Color::BLACK))
         .add_plugins((
@@ -85,7 +93,7 @@ fn main() {
             // LogDiagnosticsPlugin::default(),
         ))
         .add_audio_source::<SineAudio>()
-        .insert_resource(Time::<Fixed>::from_hz(64.0))
+        .insert_resource(Time::<Fixed>::from_hz(args.fixed_update_frequency))
         .add_systems(PreStartup, setup_scene)
         .add_systems(PostStartup, setup_camera)
         .add_systems(Update, (fit_canvas, app_control, change_focus))
