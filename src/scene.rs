@@ -8,7 +8,7 @@ use bevy::{
     prelude::*,
     render::mesh::CircleMeshBuilder,
 };
-use big_space::{BigSpaceCommands, ReferenceFrame};
+use big_space::{commands::BigSpaceCommands, grid::Grid};
 
 pub struct Planet {
     pub mass: f32,
@@ -85,7 +85,7 @@ pub fn setup_scene(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    commands.spawn_big_space(ReferenceFrame::<i32>::default(), |root| {
+    commands.spawn_big_space(Grid::<i32>::default(), |root| {
         root.spawn_spatial((
             Name::new("Sun"),
             Transform::from_xyz(0.0, 0.0, 1.0),

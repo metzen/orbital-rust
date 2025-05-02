@@ -5,7 +5,7 @@ use crate::{
     vessel::Vessel,
 };
 use bevy::{prelude::*, render::view::RenderLayers};
-use big_space::GridCell;
+use big_space::grid::cell::GridCell;
 use leafwing_input_manager::{
     plugin::InputManagerPlugin,
     prelude::{ActionState, InputMap},

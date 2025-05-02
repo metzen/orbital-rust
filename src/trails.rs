@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use bevy::{ecs::query::QueryData, prelude::*};
-use big_space::{BigSpace, GridCell};
+use big_space::{floating_origins::BigSpace, grid::cell::GridCell};
 
 use crate::{camera::Autoscale, lifetime::Ephemeral};
 

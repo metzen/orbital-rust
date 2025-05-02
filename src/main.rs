@@ -19,7 +19,7 @@ mod vessel;
 
 use audio::SineAudio;
 use bevy_framepace::FramepacePlugin;
-use big_space::BigSpacePlugin;
+use big_space::plugin::BigSpacePlugin;
 use camera::{
     camera_control, change_focus, fit_canvas, scale_entities, setup_camera,
     update_camera_position_for_autofollow, CameraPlugin,

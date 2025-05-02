@@ -1,5 +1,8 @@
 use bevy::{ecs::query::QueryData, prelude::*, render::mesh::MeshAabb};
-use big_space::{BigSpace, GridCell, ReferenceFrame};
+use big_space::{
+    floating_origins::BigSpace,
+    grid::{cell::GridCell, Grid},
+};
 
 use crate::timewarp::*;
 
@@ -169,12 +172,12 @@ struct CollisionQueryData {
 // TODO: Replace NoGravity here.
 fn collision(
     mut query: Query<CollisionQueryData, Without<NoGravity>>,
-    reference_frame_query: Query<&ReferenceFrame<i32>, With<BigSpace>>,
+    grid_query: Query<&Grid<i32>, With<BigSpace>>,
     meshes: ResMut<Assets<Mesh>>,
 ) {
     // # TODO: Remove the 0.9 multiplier hack and fix the rendering instead.
     // # TODO: Move shape from renderable to collision.
-    let reference_frame = reference_frame_query.single();
+    let grid = grid_query.single();
     let mut iter = query.iter_combinations_mut();
     while let Some([a, b]) = iter.fetch_next() {
         // info!("Checking for collision between {} and {}", a.name, b.name);
@@ -191,10 +194,9 @@ fn collision(
         //     + reference_frame.grid_position_double(secondary.grid_cell, &secondary.transform))
         //     - (reference_frame.grid_to_float(primary.grid_cell)
         //         + reference_frame.grid_position_double(primary.grid_cell, &primary.transform));
-        let primary_position =
-            reference_frame.grid_position_double(&primary.grid_cell, &primary.transform);
+        let primary_position = grid.grid_position_double(&primary.grid_cell, &primary.transform);
         let secondary_position =
-            reference_frame.grid_position_double(&secondary.grid_cell, &secondary.transform);
+            grid.grid_position_double(&secondary.grid_cell, &secondary.transform);
         let relative_position = secondary_position - primary_position;
 
         let Some(primary_mesh) = meshes.get(&primary.mesh.0) else {
@@ -219,7 +221,7 @@ fn collision(
             // secondary.transform.translation = primary.transform.translation
             //     + (relative_position.normalize() * collision_distance).as_vec3();
 
-            let (new_grid_cell, new_translation) = reference_frame.translation_to_grid(
+            let (new_grid_cell, new_translation) = grid.translation_to_grid(
                 primary_position + relative_position.normalize() * collision_distance,
             );
 

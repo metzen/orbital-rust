@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.15.0" }
 bevy_framepace = "0.18"
-big_space = "0.8"
+big_space = "0.9.1"
 leafwing-input-manager = "0.16"
 log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
 rand = "0.8.5"

@@ -13,7 +13,8 @@ use bevy::{
     window::WindowResized,
 };
 use big_space::{
-    reference_frame::local_origin::ReferenceFrames, BigSpace, FloatingOrigin, GridCell,
+    floating_origins::{BigSpace, FloatingOrigin},
+    grid::cell::GridCell,
 };
 use leafwing_input_manager::prelude::*;
 
@@ -230,7 +231,7 @@ pub fn camera_control(
     action_state: Res<ActionState<CameraAction>>,
     mut query: Query<CameraQueryData, With<InGameCamera>>,
     time: Res<Time>,
-    frames: ReferenceFrames<i32>,
+    // frames: ReferenceFrames<i32>,
 ) {
     for mut camera in query.iter_mut() {
         if action_state.axis_pair(&CameraAction::Pan) != Vec2::ZERO {
