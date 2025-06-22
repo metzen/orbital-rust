@@ -5,7 +5,10 @@ use bevy::{
     math::DVec3,
     prelude::*,
 };
-use big_space::{floating_origins::BigSpace, grid::{Grid, cell::GridCell}};
+use big_space::{
+    floating_origins::BigSpace,
+    grid::{cell::GridCell, Grid},
+};
 use leafwing_input_manager::prelude::*;
 use rand::{thread_rng, Rng};
 
