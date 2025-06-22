@@ -91,6 +91,7 @@ impl VesselAction {
 pub struct Vessel {
     pub controlled: bool,
     pub throttle: f32, // [0, 1]
+    pub engine_translation: Vec3,
     rotate: f32,
     direction_lock: Option<Direction>,
     // # TODO: Maybe initialize to FINE if ecodes.LED_CAPSL in KEYBOARD.leds()
@@ -135,7 +136,10 @@ fn setup_vessel(
             },
             Autoscale,
             Focusable,
-            Vessel::default(),
+            Vessel {
+                engine_translation: -Vec3::Y * (8.0 + 10.0),
+                ..default()
+            },
             AudioPlayer(assets.add(SineAudio { frequency: 120.0 })),
             PlaybackSettings {
                 spatial: true,
@@ -167,7 +171,10 @@ fn setup_vessel(
             Autoscale,
             Focusable,
             HudSubject,
-            Vessel::default(),
+            Vessel {
+                engine_translation: -Vec3::Y * 15.0,
+                ..default()
+            },
             AudioPlayer(assets.add(SineAudio { frequency: 150.0 })),
             PlaybackSettings {
                 spatial: true,
@@ -229,7 +236,10 @@ fn setup_vessel(
             Autoscale,
             Focusable,
             HudSubject,
-            Vessel::default(),
+            Vessel {
+                engine_translation: -Vec3::Y * 30.0,
+                ..default()
+            },
             AudioPlayer(assets.add(SineAudio { frequency: 150.0 })),
             PlaybackSettings {
                 spatial: true,
@@ -374,12 +384,10 @@ fn vessel_systems(
                     Mesh2d(meshes.add(Mesh::from(Cuboid::new(2.5, 2.5, 1.0)))),
                     Transform::from_translation(
                         transform.translation
-                            + Vec3 {
-                                z: -1.0,
-                                ..default()
-                            }
+                            // One z-layer below vessel.
+                            -Vec3::Z
                             // Emit from rear of vessel.
-                            + transform.rotation * -Vec3::Y * 25.0,
+                            + transform.rotation * vessel.engine_translation,
                     ),
                     // transform: Transform::from_xyz(0.0, 0.0, 0.0),
                     // material: materials.add(ColorMaterial::from(Color::srgb(0.96, 0.79, 0.11))),
