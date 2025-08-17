@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 bevy = { version = "0.16.0" }
 bevy_framepace = "0.19.1"
-big_space = "0.10"
+big_space = { version = "0.10", features = ["bevy_render"] }
 clap = { version = "4.5.37", features = ["derive"] }
 leafwing-input-manager = "0.17"
 log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
