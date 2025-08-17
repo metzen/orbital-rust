@@ -19,7 +19,7 @@ mod vessel;
 
 use audio::SineAudio;
 use bevy_framepace::FramepacePlugin;
-use big_space::plugin::BigSpacePlugin;
+use big_space::plugin::BigSpaceDefaultPlugins;
 use camera::{
     camera_control, change_focus, fit_canvas, scale_entities, setup_camera,
     update_camera_position_for_autofollow, CameraPlugin,
@@ -65,7 +65,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins
                 .build()
-                // BigSpacePlugin will handle syncing Transforms to GlobalTransform.
+                // BigSpacePropagationPlugin will handle syncing Transforms to GlobalTransform.
                 .disable::<TransformPlugin>()
                 .set(WindowPlugin {
                     primary_window: Some(Window {
@@ -78,10 +78,10 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest())
                 .set(AudioPlugin {
-                    global_volume: GlobalVolume::new(1.0),
+                    global_volume: GlobalVolume::new(bevy::audio::Volume::Linear(1.0)),
                     default_spatial_scale: SpatialScale::new_2d(AUDIO_SCALE),
                 }),
-            BigSpacePlugin::<i32>::default(),
+            BigSpaceDefaultPlugins,
             CameraPlugin,
             FramepacePlugin,
             DiagnosticsPlugin,

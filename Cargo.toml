@@ -1,14 +1,14 @@
 [package]
 name = "orbital"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-bevy = { version = "0.15.0" }
-bevy_framepace = "0.18"
-big_space = "0.9.1"
+bevy = { version = "0.16.0" }
+bevy_framepace = "0.19.1"
+big_space = "0.10"
 clap = { version = "4.5.37", features = ["derive"] }
-leafwing-input-manager = "0.16"
+leafwing-input-manager = "0.17"
 log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
 rand = "0.8.5"
 

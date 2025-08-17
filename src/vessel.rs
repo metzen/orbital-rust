@@ -109,9 +109,9 @@ fn setup_vessel(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut assets: ResMut<Assets<SineAudio>>,
-    big_space_query: Query<(Entity, &Grid<i32>), With<BigSpace>>,
+    big_space_query: Query<(Entity, &Grid), With<BigSpace>>,
 ) {
-    let (big_space, grid) = big_space_query.single();
+    let Ok((big_space, grid)) = big_space_query.single() else { todo!() };
     let (grid_cell, translation) = grid.translation_to_grid(DVec3 {
         x: 147.10e9,
         y: Planet::EARTH.radius as f64 + 40.0,
@@ -352,7 +352,7 @@ fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
 // Applies effects of active vessel controls.
 fn vessel_systems(
     mut commands: Commands,
-    mut query: Query<(&mut Transform, &mut RigidBody, &Vessel, &GridCell<i32>)>,
+    mut query: Query<(&mut Transform, &mut RigidBody, &Vessel, &GridCell)>,
     time: Res<Time>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -398,6 +398,7 @@ fn vessel_systems(
                         color: Color::srgba(10.0, 6.0, 1.0, 1.0),
                         alpha_mode: bevy::sprite::AlphaMode2d::Blend,
                         texture: None,
+                        ..default()
                     })),
                     *grid_cell,
                     // TODO: Fix this velocity
@@ -422,7 +423,7 @@ fn vessel_systems(
                     EngineParticle,
                     Drag,
                 ))
-                .set_parent(big_space_query.single());
+                .set_parent(big_space_query.single().unwrap());
         }
     }
 }

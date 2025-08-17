@@ -165,19 +165,19 @@ struct CollisionQueryData {
     name: &'static Name,
     transform: &'static mut Transform,
     rigidbody: &'static mut RigidBody,
-    grid_cell: &'static mut GridCell<i32>,
+    grid_cell: &'static mut GridCell,
     mesh: &'static Mesh2d,
 }
 
 // TODO: Replace NoGravity here.
 fn collision(
     mut query: Query<CollisionQueryData, Without<NoGravity>>,
-    grid_query: Query<&Grid<i32>, With<BigSpace>>,
+    grid_query: Query<&Grid, With<BigSpace>>,
     meshes: ResMut<Assets<Mesh>>,
 ) {
     // # TODO: Remove the 0.9 multiplier hack and fix the rendering instead.
     // # TODO: Move shape from renderable to collision.
-    let grid = grid_query.single();
+    let grid = grid_query.single().unwrap();
     let mut iter = query.iter_combinations_mut();
     while let Some([a, b]) = iter.fetch_next() {
         // info!("Checking for collision between {} and {}", a.name, b.name);

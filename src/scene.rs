@@ -85,7 +85,7 @@ pub fn setup_scene(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    commands.spawn_big_space(Grid::<i32>::default(), |root| {
+    commands.spawn_big_space(Grid::default(), |root| {
         root.spawn_spatial((
             Name::new("Sun"),
             Transform::from_xyz(0.0, 0.0, 1.0),

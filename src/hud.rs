@@ -131,7 +131,7 @@ fn setup_hud(mut commands: Commands) {
 }
 
 fn update_time_warp(mut query: Query<&mut TextSpan, With<TimeWarpText>>, time_warp: Res<TimeWarp>) {
-    let mut text = query.single_mut();
+    let mut text = query.single_mut().unwrap();
     text.0 = format!("{:.2}", time_warp.value);
 }
 
@@ -140,7 +140,7 @@ fn update_throttle(
     vessel_query: Query<&Vessel, With<HudSubject>>,
 ) {
     if let Some(vessel) = vessel_query.iter().next() {
-        query.single_mut().0 = format!("{:.2}", vessel.throttle);
+        query.single_mut().unwrap().0 = format!("{:.2}", vessel.throttle);
     }
 }
 
@@ -149,7 +149,7 @@ fn update_velocity(
     vessel_rigidbody_query: Query<&RigidBody, With<HudSubject>>,
 ) {
     if let Some(rigidbody) = vessel_rigidbody_query.iter().next() {
-        query.single_mut().0 = format!("{:.2}", rigidbody.velocity);
+        query.single_mut().unwrap().0 = format!("{:.2}", rigidbody.velocity);
     }
 }
 
@@ -158,14 +158,14 @@ fn update_acceleration(
     vessel_rigidbody_query: Query<&RigidBody, With<HudSubject>>,
 ) {
     if let Some(rigidbody) = vessel_rigidbody_query.iter().next() {
-        query.single_mut().0 = format!("{:.2}", rigidbody.acceleration);
+        query.single_mut().unwrap().0 = format!("{:.2}", rigidbody.acceleration);
     }
 }
 
 fn update_altitude(
     mut query: Query<&mut Text, With<AltitudeText>>,
     vessel_rigidbody_query: Query<(&Transform, &RigidBody), With<HudSubject>>,
-    primary_transform_query: Query<(&Transform, &GridCell<i32>)>,
+    primary_transform_query: Query<(&Transform, &GridCell)>,
 ) {
     if let Some((vessel_transform, vessel_rigidbody)) = vessel_rigidbody_query.iter().next() {
         if vessel_rigidbody.primary.is_some() {
@@ -182,7 +182,7 @@ fn update_altitude(
             let distance = primary_transform
                 .translation
                 .distance(vessel_transform.translation);
-            query.single_mut().0 = format!("{:.2}", distance);
+            query.single_mut().unwrap().0 = format!("{:.2}", distance);
         }
     }
 }

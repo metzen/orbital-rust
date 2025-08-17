@@ -16,9 +16,12 @@ pub struct DiagnosticsPlugin;
 
 impl Plugin for DiagnosticsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((FrameTimeDiagnosticsPlugin, EntityCountDiagnosticsPlugin))
-            .add_systems(Startup, setup)
-            .add_systems(Update, (update_fps, update_entity_count));
+        app.add_plugins((
+            FrameTimeDiagnosticsPlugin::default(),
+            EntityCountDiagnosticsPlugin,
+        ))
+        .add_systems(Startup, setup)
+        .add_systems(Update, (update_fps, update_entity_count));
     }
 }
 
@@ -70,7 +73,7 @@ fn setup(mut commands: Commands) {
 }
 
 fn update_fps(mut query: Query<&mut Text, With<Fps>>, diagnostics: Res<DiagnosticsStore>) {
-    let mut text = query.single_mut();
+    let mut text = query.single_mut().unwrap();
     if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
         if let Some(fps_value) = fps.smoothed() {
             text.0 = format!("{fps_value:.2}");
@@ -82,7 +85,7 @@ fn update_entity_count(
     mut query: Query<&mut Text, With<EntityCount>>,
     diagnostics: Res<DiagnosticsStore>,
 ) {
-    let mut text = query.single_mut();
+    let mut text = query.single_mut().unwrap();
     if let Some(count) = diagnostics.get(&EntityCountDiagnosticsPlugin::ENTITY_COUNT) {
         if let Some(measurement) = count.measurement() {
             let value = measurement.value;

@@ -46,7 +46,7 @@ impl FromWorld for TrailAssets {
 #[query_data(mutable)]
 struct TrailableQuery {
     transform: &'static Transform,
-    grid_cell: &'static GridCell<i32>,
+    grid_cell: &'static GridCell,
     material: &'static MeshMaterial2d<ColorMaterial>,
 }
 

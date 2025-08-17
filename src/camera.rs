@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use bevy::{
     core_pipeline::bloom::Bloom,
     ecs::query::QueryData,
@@ -124,17 +126,17 @@ pub fn setup_camera(
             Camera {
                 // render before the "main pass" camera
                 order: -1,
-                target: RenderTarget::Image(image_handle.clone()),
+                target: RenderTarget::from(image_handle.clone()),
                 hdr: true,
                 ..default()
             },
             Camera2d,
             Msaa::Off,
-            OrthographicProjection::default_2d(),
+            Projection::from(OrthographicProjection::default_2d()),
             InGameCamera,
             FloatingOrigin,
             HighPrecisionScale(1.0),
-            GridCell::<i32>::default(),
+            GridCell::default(),
             Autofollow {
                 target: vessel_query.iter().next(),
             },
@@ -158,10 +160,10 @@ pub fn setup_camera(
     commands.spawn((
         Camera2d,
         OuterCamera,
-        OrthographicProjection {
+        Projection::from(OrthographicProjection {
             scale: 0.3,
             ..OrthographicProjection::default_2d()
-        },
+        }),
         RenderLayers::layer(HIGH_RES_LAYER),
     ));
 }
@@ -169,21 +171,22 @@ pub fn setup_camera(
 /// Scales camera projection to fit the window (integer multiples only).
 pub fn fit_canvas(
     mut resize_events: EventReader<WindowResized>,
-    mut projections: Query<&mut OrthographicProjection, With<OuterCamera>>,
+    mut projection: Single<&mut Projection, With<OuterCamera>>,
 ) {
     for event in resize_events.read() {
         let h_scale = event.width / RES_WIDTH as f32;
         let v_scale = event.height / RES_HEIGHT as f32;
-        let mut projection = projections.single_mut();
-        projection.scale = 0.15;
-        info!("{:?}", event);
-        projection.scale = 1. / h_scale.min(v_scale);
+        if let Projection::Orthographic(orthographic_projection) = &mut **projection {
+            orthographic_projection.scale = 0.15;
+            info!("{:?}", event);
+            orthographic_projection.scale = 1. / h_scale.min(v_scale);
+        }
     }
 }
 
 pub fn update_camera_position_for_autofollow(
-    mut camera: Query<(&mut Transform, &mut GridCell<i32>, &Autofollow), With<InGameCamera>>,
-    player: Query<(&Transform, &GridCell<i32>), Without<InGameCamera>>,
+    mut camera: Query<(&mut Transform, &mut GridCell, &Autofollow), With<InGameCamera>>,
+    player: Query<(&Transform, &GridCell), Without<InGameCamera>>,
 ) {
     let Ok(camera) = camera.get_single_mut() else {
         return;
@@ -222,8 +225,8 @@ pub struct HighPrecisionScale(pub f64);
 pub struct CameraQueryData {
     entity: Entity,
     transform: &'static mut Transform,
-    projection: &'static mut OrthographicProjection,
-    grid_cell: &'static mut GridCell<i32>,
+    projection: &'static mut Projection,
+    grid_cell: &'static mut GridCell,
     scale: &'static mut HighPrecisionScale,
 }
 
@@ -234,9 +237,12 @@ pub fn camera_control(
     // frames: ReferenceFrames<i32>,
 ) {
     for mut camera in query.iter_mut() {
+        let Projection::Orthographic(orthographic_projection) = &mut *camera.projection else {
+            continue;
+        };
         if action_state.axis_pair(&CameraAction::Pan) != Vec2::ZERO {
             let delta = action_state.clamped_axis_pair(&CameraAction::Pan)
-                * camera.projection.scale
+                * orthographic_projection.scale
                 * time.delta_secs()
                 * 200.0;
             camera.transform.translation += Vec3::new(delta.x, delta.y, 0.0);
@@ -269,11 +275,11 @@ pub fn camera_control(
 
         let scale_factor: f64 = 5.0;
         if action_state.pressed(&CameraAction::ZoomIn) {
-            camera.projection.scale *= (1.0 - scale_factor * time.delta_secs_f64()) as f32;
+            orthographic_projection.scale *= (1.0 - scale_factor * time.delta_secs_f64()) as f32;
             camera.scale.0 *= 1.0 - scale_factor * time.delta_secs_f64();
         }
         if action_state.pressed(&CameraAction::ZoomOut) {
-            camera.projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
+            orthographic_projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
             camera.scale.0 *= 1.0 + scale_factor * time.delta_secs_f64();
         }
     }
@@ -282,9 +288,12 @@ pub fn camera_control(
 /// Scale entities up if they end up becoming smaller than one pixel in the current projection scale.
 pub fn scale_entities(
     mut query: Query<(&mut Transform, &Mesh2d), With<Autoscale>>,
-    projection: Single<&OrthographicProjection, With<InGameCamera>>,
+    projection: Single<&Projection, With<InGameCamera>>,
     meshes: ResMut<Assets<Mesh>>,
 ) {
+    let Projection::Orthographic(orthographic_projection) = *projection else {
+        return;
+    };
     for (mut transform, mesh) in query.iter_mut() {
         // TODO: This needs some fixing.
         let Some(m) = meshes.get(&mesh.0) else {
@@ -295,8 +304,8 @@ pub fn scale_entities(
         };
 
         let size = f32::min(aabb.half_extents.x, aabb.half_extents.y);
-        if size / projection.scale < 1.0 {
-            transform.scale = Vec3::splat(projection.scale / size);
+        if size / orthographic_projection.scale < 1.0 {
+            transform.scale = Vec3::splat(orthographic_projection.scale / size);
         } else {
             transform.scale = Vec3::ONE;
         }
@@ -314,11 +323,11 @@ pub fn change_focus(
     focus_targets_query: Query<(Entity, &Name), With<Focusable>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
-        autofollow_query.single_mut().target = None;
+        autofollow_query.single_mut().unwrap().target = None;
     }
     if keyboard_input.just_pressed(KeyCode::Tab) {
         info!("Focus change");
-        let mut autofollow = autofollow_query.single_mut();
+        let mut autofollow = autofollow_query.single_mut().unwrap();
         let mut found = false;
         for (target, name) in focus_targets_query.iter() {
             info!("checking {}", name);
