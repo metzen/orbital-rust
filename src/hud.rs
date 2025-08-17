@@ -1,5 +1,5 @@
 use crate::{
-    camera::{Autofollow, InGameCamera, HIGH_RES_LAYER},
+    camera::{Autofollow, HIGH_RES_LAYER, InGameCamera},
     physics::RigidBody,
     timewarp::TimeWarp,
     vessel::Vessel,
@@ -7,9 +7,9 @@ use crate::{
 use bevy::{ecs::query::QuerySingleError, prelude::*, render::view::RenderLayers};
 use big_space::grid::cell::GridCell;
 use leafwing_input_manager::{
+    Actionlike,
     plugin::InputManagerPlugin,
     prelude::{ActionState, InputMap},
-    Actionlike,
 };
 
 pub struct HudPlugin;
@@ -246,15 +246,15 @@ fn update_hud_subject(
             1
         } else if action_state.just_pressed(&HudAction::PreviousVessel) {
             -1
-            } else {
+        } else {
             0
         };
         let new_subject_index = (current_subject_index + modifier).rem_euclid(i);
         let new_subject = entities[new_subject_index as usize];
         commands.entity(new_subject).insert(HudSubject);
         if let Ok((entity, mut vessel, hud_subject)) = vessels_query.get_mut(new_subject) {
-                vessel.controlled = true;
-                camera_autofollow.target = Some(entity);
-            }
+            vessel.controlled = true;
+            camera_autofollow.target = Some(entity);
+        }
     }
 }
