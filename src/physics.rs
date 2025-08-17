@@ -121,10 +121,10 @@ fn kinematics(
     time: Res<Time>,
     time_warp: Res<TimeWarp>,
 ) {
-    for (mut transform, mut rigidbody) in query.iter_mut() {
+    for (mut transform, rigidbody) in query.iter_mut() {
         let dt = time.delta_secs() * time_warp.value;
-        let velocity = rigidbody.velocity;
-        let acceleration = rigidbody.acceleration;
+        // let velocity = rigidbody.velocity;
+        // let acceleration = rigidbody.acceleration;
         // TODO: High precision f64 velocity and accel?
         // rigidbody.transform.translation += dt * (velocity + 0.5 * acceleration * dt);
         transform.translation += dt * (rigidbody.velocity + 0.5 * rigidbody.acceleration * dt);

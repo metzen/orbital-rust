@@ -74,10 +74,10 @@ fn setup(mut commands: Commands) {
 
 fn update_fps(mut query: Query<&mut Text, With<Fps>>, diagnostics: Res<DiagnosticsStore>) {
     let mut text = query.single_mut().unwrap();
-    if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
-        if let Some(fps_value) = fps.smoothed() {
-            text.0 = format!("{fps_value:.2}");
-        }
+    if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS)
+        && let Some(fps_value) = fps.smoothed()
+    {
+        **text = format!("{fps_value:.2}");
     }
 }
 
@@ -86,10 +86,10 @@ fn update_entity_count(
     diagnostics: Res<DiagnosticsStore>,
 ) {
     let mut text = query.single_mut().unwrap();
-    if let Some(count) = diagnostics.get(&EntityCountDiagnosticsPlugin::ENTITY_COUNT) {
-        if let Some(measurement) = count.measurement() {
-            let value = measurement.value;
-            text.0 = format!("{value:.2}");
-        }
+    if let Some(count) = diagnostics.get(&EntityCountDiagnosticsPlugin::ENTITY_COUNT)
+        && let Some(measurement) = count.measurement()
+    {
+        let value = measurement.value;
+        **text = format!("{value:.2}");
     }
 }

@@ -1,5 +1,3 @@
-use std::ops::DerefMut;
-
 use bevy::{
     core_pipeline::bloom::Bloom,
     ecs::query::QueryData,
@@ -121,32 +119,29 @@ pub fn setup_camera(
     let image_handle = images.add(canvas);
 
     // this camera renders whatever is on `PIXEL_PERFECT_LAYERS` to the canvas
-    let in_game_camera = commands
-        .spawn((
-            Camera {
-                // render before the "main pass" camera
-                order: -1,
-                target: RenderTarget::from(image_handle.clone()),
-                hdr: true,
-                ..default()
-            },
-            Camera2d,
-            Msaa::Off,
-            Projection::from(OrthographicProjection::default_2d()),
-            InGameCamera,
-            FloatingOrigin,
-            HighPrecisionScale(1.0),
-            GridCell::default(),
-            Autofollow {
-                target: vessel_query.iter().sort::<Entity>().next(),
-            },
-            Bloom::OLD_SCHOOL,
-            SpatialListener::new(100.0),
-        ))
-        .id();
-
-    // Put the in game camera inside the BigSpace.
-    commands.entity(in_game_camera).set_parent(*big_space);
+    commands.spawn((
+        Camera {
+            // render before the "main pass" camera
+            order: -1,
+            target: RenderTarget::from(image_handle.clone()),
+            hdr: true,
+            ..default()
+        },
+        Camera2d,
+        Msaa::Off,
+        Projection::from(OrthographicProjection::default_2d()),
+        InGameCamera,
+        FloatingOrigin,
+        HighPrecisionScale(1.0),
+        GridCell::default(),
+        Autofollow {
+            target: vessel_query.iter().sort::<Entity>().next(),
+        },
+        Bloom::OLD_SCHOOL,
+        SpatialListener::new(100.0),
+        // Put the in game camera inside the BigSpace.
+        ChildOf(*big_space),
+    ));
 
     commands.spawn((
         Sprite::from_image(image_handle),
@@ -188,16 +183,13 @@ pub fn update_camera_position_for_autofollow(
     mut camera: Query<(&mut Transform, &mut GridCell, &Autofollow), With<InGameCamera>>,
     player: Query<(&Transform, &GridCell), Without<InGameCamera>>,
 ) {
-    let Ok(camera) = camera.get_single_mut() else {
+    let Ok((mut camera_transform, mut camera_grid_cell, autofollow)) = camera.single_mut() else {
         return;
     };
-
-    if camera.2.target.is_none() {
+    let Some(target_entity) = autofollow.target else {
         return;
-    }
-
-    let (mut camera_transform, mut camera_grid_cell, autofollow) = camera;
-    let target = player.get(autofollow.target.unwrap());
+    };
+    let target = player.get(target_entity);
     let Ok((target_transform, target_grid_cell)) = target else {
         return;
     };

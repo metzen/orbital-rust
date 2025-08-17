@@ -7,17 +7,17 @@ use bevy::{
 };
 use big_space::{
     floating_origins::BigSpace,
-    grid::{cell::GridCell, Grid},
+    grid::{Grid, cell::GridCell},
 };
 use leafwing_input_manager::prelude::*;
-use rand::{thread_rng, Rng};
+use rand::{Rng, thread_rng};
 
 use crate::{
     audio::SineAudio,
     camera::{Autoscale, Focusable},
     hud::HudSubject,
     lifetime::Ephemeral,
-    physics::{dynamics, Drag, NoGravity, RigidBody},
+    physics::{Drag, NoGravity, RigidBody, dynamics},
     scene::Planet,
 };
 
@@ -111,48 +111,49 @@ fn setup_vessel(
     mut assets: ResMut<Assets<SineAudio>>,
     big_space_query: Query<(Entity, &Grid), With<BigSpace>>,
 ) {
-    let Ok((big_space, grid)) = big_space_query.single() else { todo!() };
+    let Ok((big_space, grid)) = big_space_query.single() else {
+        todo!()
+    };
     let (grid_cell, translation) = grid.translation_to_grid(DVec3 {
         x: 147.10e9,
         y: Planet::EARTH.radius as f64 + 40.0,
         z: 4.0,
     });
-    commands
-        .spawn((
-            Name::new("Pickle"),
-            Transform::from_translation(translation + Vec3::X * 150.0),
-            grid_cell,
-            Mesh2d(meshes.add(Mesh::from(Capsule2d {
-                radius: 8.0,
-                half_length: 10.0,
-            }))),
-            MeshMaterial2d(materials.add(ColorMaterial::from_color(TEAL))),
-            // Transform::from_xyz(147.10e9 + 500.0, Planet::EARTH.radius, 2.0),
-            RigidBody {
-                velocity: Vec3 {
-                    x: 0.0,
-                    y: 30.29e3,
-                    z: 0.0,
-                },
-                mass: 10.0,
-                ..default()
+    commands.spawn((
+        Name::new("Pickle"),
+        Transform::from_translation(translation + Vec3::X * 150.0),
+        grid_cell,
+        Mesh2d(meshes.add(Mesh::from(Capsule2d {
+            radius: 8.0,
+            half_length: 10.0,
+        }))),
+        MeshMaterial2d(materials.add(ColorMaterial::from_color(TEAL))),
+        // Transform::from_xyz(147.10e9 + 500.0, Planet::EARTH.radius, 2.0),
+        RigidBody {
+            velocity: Vec3 {
+                x: 0.0,
+                y: 30.29e3,
+                z: 0.0,
             },
-            Autoscale,
-            HudSubject,
-            Focusable,
-            Vessel {
-                engine_translation: -Vec3::Y * (8.0 + 10.0),
-                controlled: true,
-                ..default()
-            },
-            AudioPlayer(assets.add(SineAudio { frequency: 120.0 })),
-            PlaybackSettings {
-                spatial: true,
-                speed: 0.1,
-                ..default()
-            },
-        ))
-        .set_parent(big_space);
+            mass: 10.0,
+            ..default()
+        },
+        Autoscale,
+        HudSubject,
+        Focusable,
+        Vessel {
+            engine_translation: -Vec3::Y * (8.0 + 10.0),
+            controlled: true,
+            ..default()
+        },
+        AudioPlayer(assets.add(SineAudio { frequency: 120.0 })),
+        PlaybackSettings {
+            spatial: true,
+            speed: 0.1,
+            ..default()
+        },
+        ChildOf(big_space),
+    ));
     commands
         .spawn((
             Name::new("Pizza"),
@@ -185,8 +186,8 @@ fn setup_vessel(
                 speed: 0.1,
                 ..default()
             },
+            ChildOf(big_space),
         ))
-        .set_parent(big_space)
         .with_children(|vessel| {
             vessel.spawn((
                 Name::new("pepperoni"),
@@ -249,8 +250,8 @@ fn setup_vessel(
                 speed: 0.1,
                 ..default()
             },
+            ChildOf(big_space),
         ))
-        .set_parent(big_space)
         .with_children(|vessel| {
             vessel.spawn((
                 Name::new("Hot dog bun 1"),
@@ -315,8 +316,7 @@ fn vessel_control(mut query: Query<&mut Vessel>, action_state: Res<ActionState<V
             ControlMode::Normal => 200.0,
             ControlMode::Fine => 10.0,
         };
-        vessel.rotate =
-            (-1.0 * angle * action_state.clamped_value(&VesselAction::Rotate)).to_radians();
+        vessel.rotate = (-angle * action_state.clamped_value(&VesselAction::Rotate)).to_radians();
         if vessel.rotate != 0.0 {
             vessel.direction_lock = None;
         }
@@ -338,8 +338,7 @@ fn vessel_control(mut query: Query<&mut Vessel>, action_state: Res<ActionState<V
 
 fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
     for (vessel, audiosink) in &query {
-        if audiosink.is_some() {
-            let sink = audiosink.unwrap();
+        if let Some(sink) = audiosink {
             sink.set_speed(if vessel.throttle < 0.1 {
                 0.1
             } else {
@@ -356,7 +355,7 @@ fn vessel_systems(
     time: Res<Time>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    big_space_query: Query<Entity, With<BigSpace>>,
+    big_space: Single<Entity, With<BigSpace>>,
 ) {
     for (mut transform, mut rigidbody, vessel, grid_cell) in query.iter_mut() {
         if vessel.rotate != 0.0 {
@@ -382,48 +381,47 @@ fn vessel_systems(
             rigidbody.force += engine_force;
             // TODO: Refactor to a better particle system.
             // TODO: Do this with an api that clones from entity.
-            commands
-                .spawn((
-                    Mesh2d(meshes.add(Mesh::from(Cuboid::new(2.5, 2.5, 1.0)))),
-                    Transform::from_translation(
-                        transform.translation
+            commands.spawn((
+                Mesh2d(meshes.add(Mesh::from(Cuboid::new(2.5, 2.5, 1.0)))),
+                Transform::from_translation(
+                    transform.translation
                             // One z-layer below vessel.
                             -Vec3::Z
                             // Emit from rear of vessel.
                             + transform.rotation * vessel.engine_translation,
-                    ),
-                    // transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                    // material: materials.add(ColorMaterial::from(Color::srgb(0.96, 0.79, 0.11))),
-                    MeshMaterial2d(materials.add(ColorMaterial {
-                        color: Color::srgba(10.0, 6.0, 1.0, 1.0),
-                        alpha_mode: bevy::sprite::AlphaMode2d::Blend,
-                        texture: None,
-                        ..default()
-                    })),
-                    *grid_cell,
-                    // TODO: Fix this velocity
-                    RigidBody {
-                        velocity: rigidbody.velocity
-                            + ((transform.rotation
-                                * Vec3 {
-                                    x: thread_rng().gen_range(-0.2..0.2),
-                                    y: -1.0,
-                                    z: 0.0,
-                                })
-                                * (force_magnitude / (rigidbody.mass / 1000.0))
-                                * time.delta_secs()),
-                        mass: 1.0,
-                        ..default()
-                    },
-                    NoGravity,
-                    Autoscale,
-                    Ephemeral {
-                        ttl: Timer::new(Duration::from_secs(5), TimerMode::Once),
-                    },
-                    EngineParticle,
-                    Drag,
-                ))
-                .set_parent(big_space_query.single().unwrap());
+                ),
+                // transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                // material: materials.add(ColorMaterial::from(Color::srgb(0.96, 0.79, 0.11))),
+                MeshMaterial2d(materials.add(ColorMaterial {
+                    color: Color::srgba(10.0, 6.0, 1.0, 1.0),
+                    alpha_mode: bevy::sprite::AlphaMode2d::Blend,
+                    texture: None,
+                    ..default()
+                })),
+                *grid_cell,
+                // TODO: Fix this velocity
+                RigidBody {
+                    velocity: rigidbody.velocity
+                        + ((transform.rotation
+                            * Vec3 {
+                                x: thread_rng().gen_range(-0.2..0.2),
+                                y: -1.0,
+                                z: 0.0,
+                            })
+                            * (force_magnitude / (rigidbody.mass / 1000.0))
+                            * time.delta_secs()),
+                    mass: 1.0,
+                    ..default()
+                },
+                NoGravity,
+                Autoscale,
+                Ephemeral {
+                    ttl: Timer::new(Duration::from_secs(5), TimerMode::Once),
+                },
+                EngineParticle,
+                Drag,
+                ChildOf(*big_space),
+            ));
         }
     }
 }

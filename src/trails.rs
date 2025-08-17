@@ -66,7 +66,7 @@ fn trail_system(
     if timer.0.tick(time.delta()).just_finished() {
         for trailable in query.iter() {
             let color = materials.get(trailable.material).unwrap().color;
-            let mut trail = commands.spawn((
+            commands.spawn((
                 Transform::from_translation(trailable.transform.translation),
                 *trailable.grid_cell,
                 Mesh2d(assets.mesh.clone()),
@@ -79,8 +79,8 @@ fn trail_system(
                     ttl: Timer::new(Duration::from_secs(5), TimerMode::Once),
                 },
                 Autoscale,
+                ChildOf(*big_space),
             ));
-            trail.set_parent(*big_space);
         }
     }
 }

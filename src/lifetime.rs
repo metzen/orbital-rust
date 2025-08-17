@@ -21,7 +21,7 @@ pub fn reaper(
         // Psychedelic!
         // material.color = material.color.rotate_hue(10.0);
         if ephemeral.ttl.finished() {
-            commands.entity(entity).remove_parent().despawn();
+            commands.entity(entity).remove::<ChildOf>().despawn();
         }
     }
 }

@@ -11,11 +11,6 @@ pub struct SineAudio {
     pub frequency: f32,
 }
 
-#[derive(Component, Default)]
-pub struct AudioEmitter {
-    // stopped: bool,
-}
-
 // This decoder is responsible for playing the audio,
 // and so stores data about the audio being played.
 pub struct SineDecoder {

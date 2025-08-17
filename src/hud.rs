@@ -177,23 +177,23 @@ fn update_altitude(
     vessel_rigidbody_query: Query<(&Transform, &RigidBody), With<HudSubject>>,
     primary_transform_query: Query<(&Transform, &GridCell)>,
 ) {
-    if let Some((vessel_transform, vessel_rigidbody)) = vessel_rigidbody_query.iter().next() {
-        if vessel_rigidbody.primary.is_some() {
-            let Ok((primary_transform, primary_grid_cell)) =
-                primary_transform_query.get(vessel_rigidbody.primary.unwrap())
-            else {
-                return;
-            };
-            // info!("primary: {:?}", primary_transform.translation);
-            // info!("vessel: {:?}", vessel_transform.translation);
-            // TODO: This needs to account for BigSpace grid_cell difference.
-            // let cell_diff = grid_cell - primary_grid_cell;
-            // let cell_distance = IVec3::new(cell_diff.x, cell_diff.y, cell_diff.z).distance(IVec3::ZERO);
-            let distance = primary_transform
-                .translation
-                .distance(vessel_transform.translation);
-            query.single_mut().unwrap().0 = format!("{:.2}", distance);
-        }
+    if let Some((vessel_transform, vessel_rigidbody)) = vessel_rigidbody_query.iter().next()
+        && vessel_rigidbody.primary.is_some()
+    {
+        let Ok((primary_transform, _primary_grid_cell)) =
+            primary_transform_query.get(vessel_rigidbody.primary.unwrap())
+        else {
+            return;
+        };
+        // info!("primary: {:?}", primary_transform.translation);
+        // info!("vessel: {:?}", vessel_transform.translation);
+        // TODO: This needs to account for BigSpace grid_cell difference.
+        // let cell_diff = grid_cell - primary_grid_cell;
+        // let cell_distance = IVec3::new(cell_diff.x, cell_diff.y, cell_diff.z).distance(IVec3::ZERO);
+        let distance = primary_transform
+            .translation
+            .distance(vessel_transform.translation);
+        query.single_mut().unwrap().0 = format!("{:.2}", distance);
     }
 }
 
@@ -221,7 +221,7 @@ fn update_hud_subject(
     subject_vessel_query: Query<&Name, With<HudSubject>>,
     mut hud_subject_text: Single<&mut Text, With<HubSubjectText>>,
 ) {
-    match subject_vessel_query.get_single() {
+    match subject_vessel_query.single() {
         Ok(name) => {
             hud_subject_text.0 = format!("Subject: {}", name);
         }
@@ -259,7 +259,7 @@ fn update_hud_subject(
         let new_subject_index = (current_subject_index + modifier).rem_euclid(i);
         let new_subject = entities[new_subject_index as usize];
         commands.entity(new_subject).insert(HudSubject);
-        if let Ok((entity, mut vessel, hud_subject)) = vessels_query.get_mut(new_subject) {
+        if let Ok((entity, mut vessel, _hud_subject)) = vessels_query.get_mut(new_subject) {
             vessel.controlled = true;
             camera_autofollow.target = Some(entity);
         }
