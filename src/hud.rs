@@ -61,6 +61,13 @@ fn setup_hud(mut commands: Commands) {
         font_smoothing: bevy::text::FontSmoothing::AntiAliased,
         ..default()
     };
+    commands.spawn((
+        Node::default(),
+        Text::default(),
+        HubSubjectText,
+        RenderLayers::layer(HIGH_RES_LAYER),
+        text_font.clone(),
+    ));
     commands
         .spawn(Node {
             // fill the entire window
