@@ -4,7 +4,7 @@ use crate::{
     timewarp::TimeWarp,
     vessel::Vessel,
 };
-use bevy::{prelude::*, render::view::RenderLayers};
+use bevy::{ecs::query::QuerySingleError, prelude::*, render::view::RenderLayers};
 use big_space::grid::cell::GridCell;
 use leafwing_input_manager::{
     plugin::InputManagerPlugin,
@@ -51,6 +51,9 @@ struct AltitudeText;
 
 #[derive(Component)]
 pub struct HudSubject;
+
+#[derive(Component)]
+pub struct HubSubjectText;
 
 fn setup_hud(mut commands: Commands) {
     let text_font = TextFont {
@@ -208,23 +211,50 @@ fn update_hud_subject(
     action_state: Res<ActionState<HudAction>>,
     mut vessels_query: Query<(Entity, &mut Vessel, Option<&HudSubject>), With<Vessel>>,
     mut camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
+    subject_vessel_query: Query<&Name, With<HudSubject>>,
+    mut hud_subject_text: Single<&mut Text, With<HubSubjectText>>,
 ) {
-    if action_state.just_pressed(&HudAction::NextVessel) {
-        for (entity, mut vessel, hud_subject) in vessels_query.iter_mut() {
+    match subject_vessel_query.get_single() {
+        Ok(name) => {
+            hud_subject_text.0 = format!("Subject: {}", name);
+        }
+        Err(QuerySingleError::NoEntities(_)) => {
+            info!("no subject?");
+        }
+        Err(QuerySingleError::MultipleEntities(_)) => {
+            info!("multi subject");
+        }
+    }
+    if action_state.just_pressed(&HudAction::NextVessel)
+        || action_state.just_pressed(&HudAction::PreviousVessel)
+    {
+        let mut current_subject_index: i32 = -1;
+        let mut i = 0;
+        let mut entities = Vec::new();
+        for (entity, mut vessel, hud_subject) in vessels_query.iter_mut().sort::<Entity>() {
+            entities.push(entity);
             info!("hud subj vessel");
             if hud_subject.is_some() {
                 info!("vessel is subject");
+                current_subject_index = i;
                 commands.entity(entity).remove::<HudSubject>();
                 vessel.controlled = false;
+            }
+            i += 1;
+        }
+        let modifier = if action_state.just_pressed(&HudAction::NextVessel) {
+            1
+        } else if action_state.just_pressed(&HudAction::PreviousVessel) {
+            -1
             } else {
-                info!("vessel is not subject");
-                commands.entity(entity).insert(HudSubject);
+            0
+        };
+        let new_subject_index = (current_subject_index + modifier).rem_euclid(i);
+        let new_subject = entities[new_subject_index as usize];
+        commands.entity(new_subject).insert(HudSubject);
+        if let Ok((entity, mut vessel, hud_subject)) = vessels_query.get_mut(new_subject) {
                 vessel.controlled = true;
                 camera_autofollow.target = Some(entity);
             }
-        }
-    }
-    if action_state.just_pressed(&HudAction::PreviousVessel) {
-        // TODO: Implement this.
     }
 }

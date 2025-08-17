@@ -138,9 +138,11 @@ fn setup_vessel(
                 ..default()
             },
             Autoscale,
+            HudSubject,
             Focusable,
             Vessel {
                 engine_translation: -Vec3::Y * (8.0 + 10.0),
+                controlled: true,
                 ..default()
             },
             AudioPlayer(assets.add(SineAudio { frequency: 120.0 })),
@@ -173,7 +175,6 @@ fn setup_vessel(
             },
             Autoscale,
             Focusable,
-            HudSubject,
             Vessel {
                 engine_translation: -Vec3::Y * 15.0,
                 ..default()
@@ -238,7 +239,6 @@ fn setup_vessel(
             },
             Autoscale,
             Focusable,
-            HudSubject,
             Vessel {
                 engine_translation: -Vec3::Y * 30.0,
                 ..default()

@@ -138,7 +138,7 @@ pub fn setup_camera(
             HighPrecisionScale(1.0),
             GridCell::default(),
             Autofollow {
-                target: vessel_query.iter().next(),
+                target: vessel_query.iter().sort::<Entity>().next(),
             },
             Bloom::OLD_SCHOOL,
             SpatialListener::new(100.0),
