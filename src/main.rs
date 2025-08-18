@@ -111,6 +111,6 @@ fn main() {
 
 fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: EventWriter<AppExit>) {
     if keyboard_input.pressed(KeyCode::KeyQ) {
-        exit.send(AppExit::Success);
+        exit.write(AppExit::Success);
     }
 }
