@@ -10,7 +10,7 @@ big_space = { version = "0.10", features = ["bevy_render"] }
 clap = { version = "4.5.37", features = ["derive"] }
 leafwing-input-manager = "0.17"
 log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
-rand = "0.8.5"
+rand = "0.9.2"
 
 [build-dependencies]
 embed-resource = "1.6.3"
