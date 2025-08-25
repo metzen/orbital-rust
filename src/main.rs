@@ -18,7 +18,7 @@ mod trails;
 mod vessel;
 
 use audio::SineAudio;
-use bevy_framepace::FramepacePlugin;
+use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use big_space::plugin::BigSpaceDefaultPlugins;
 use camera::{
     camera_control, change_focus, fit_canvas, scale_entities, setup_camera,
@@ -56,6 +56,9 @@ const AUDIO_SCALE: f32 = 1.0 / 100.0;
 struct Args {
     #[arg(long, default_value_t = 64.0)]
     fixed_update_frequency: f64,
+
+    #[arg(long)]
+    framerate_limit: Option<f64>,
 }
 
 fn main() {
@@ -92,6 +95,12 @@ fn main() {
             HudPlugin,
             // LogDiagnosticsPlugin::default(),
         ))
+        .insert_resource(FramepaceSettings {
+            limiter: match args.framerate_limit {
+                None => Limiter::Auto,
+                Some(framerate) => Limiter::from_framerate(framerate),
+            },
+        })
         .add_audio_source::<SineAudio>()
         .insert_resource(Time::<Fixed>::from_hz(args.fixed_update_frequency))
         .add_systems(PreStartup, setup_scene)
