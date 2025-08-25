@@ -77,6 +77,11 @@ impl Planet {
         radius: 24.746e6,
         color: Color::Srgba(DARK_BLUE),
     };
+    pub const PROXIMA_CENTAURI: Self = Self {
+        mass: 2.428e29,
+        radius: 107.277e6,
+        color: Color::srgb(3.0, 3.0, 3.0),
+    };
 }
 
 /// Spawn the simulation entities.
@@ -350,6 +355,18 @@ pub fn setup_scene(
             Trailable,
             Autoscale::default(),
             Focusable,
+        ));
+        root.spawn_spatial((
+            Name::new("Proxima Centauri"),
+            Transform::from_xyz(4.017499e16, 0.0, 0.0),
+            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::PROXIMA_CENTAURI.radius)))),
+            MeshMaterial2d(materials.add(ColorMaterial::from(Planet::PROXIMA_CENTAURI.color))),
+            RigidBody {
+                mass: Planet::PROXIMA_CENTAURI.mass,
+                velocity: Vec3::ZERO,
+                ..default()
+            },
+            Autoscale::default(),
         ));
     });
 }
