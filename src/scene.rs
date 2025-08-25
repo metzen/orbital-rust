@@ -207,7 +207,7 @@ pub fn setup_scene(
         });
         root.spawn_spatial((
             Name::new("Moon"),
-            Transform::from_xyz(147.10e9 + 385e6, 0.0, 0.0),
+            Transform::from_xyz(147.10e9 + 385e6, 0.0, -1.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MOON.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::MOON.color))),
             RigidBody {
@@ -243,7 +243,7 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Phobos"),
-            Transform::from_xyz(206.7e9 + 9_376e3, 0.0, 0.0),
+            Transform::from_xyz(206.7e9 + 9_376e3, 0.0, -1.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::PHOBOS.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::PHOBOS.color))),
             RigidBody {
@@ -261,7 +261,7 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Deimos"),
-            Transform::from_xyz(206.7e9 + 23_455e3, 0.0, 0.0),
+            Transform::from_xyz(206.7e9 + 23_455e3, 0.0, -1.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::DEIMOS.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::DEIMOS.color))),
             RigidBody {
