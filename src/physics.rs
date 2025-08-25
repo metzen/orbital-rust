@@ -121,6 +121,7 @@ pub fn dynamics(mut query: Query<&mut RigidBody>, time: Res<Time>, time_warp: Re
         // TODO: inverse mass
         rigidbody.acceleration = new_acceleration;
         rigidbody.velocity += 0.5 * (old_acceleration + new_acceleration) * delta_time;
+        rigidbody.velocity = rigidbody.velocity.clamp_length(0.0, SPEED_OF_LIGHT);
         rigidbody.force = Vec3::ZERO;
     }
 }
