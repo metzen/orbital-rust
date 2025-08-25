@@ -46,6 +46,7 @@ pub struct PreviousTransform(Transform);
 pub struct CelestialBody {
     pub atmosphere_height: f32,
     pub atmosphere_color: Color,
+    pub radius: f32,
 }
 
 #[derive(Component)]

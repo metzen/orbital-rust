@@ -1,11 +1,14 @@
 use crate::{
     camera::{Autofollow, HIGH_RES_LAYER, InGameCamera},
-    physics::RigidBody,
+    physics::{CelestialBody, RigidBody},
     timewarp::TimeWarp,
     vessel::Vessel,
 };
 use bevy::{ecs::query::QuerySingleError, prelude::*, render::view::RenderLayers};
-use big_space::grid::cell::GridCell;
+use big_space::{
+    floating_origins::BigSpace,
+    grid::{Grid, cell::GridCell},
+};
 use leafwing_input_manager::{
     Actionlike,
     plugin::InputManagerPlugin,
@@ -173,27 +176,23 @@ fn update_acceleration(
 }
 
 fn update_altitude(
-    mut query: Query<&mut Text, With<AltitudeText>>,
-    vessel_rigidbody_query: Query<(&Transform, &RigidBody), With<HudSubject>>,
-    primary_transform_query: Query<(&Transform, &GridCell)>,
+    mut text: Single<&mut Text, With<AltitudeText>>,
+    grid: Single<&Grid, With<BigSpace>>,
+    subject_query: Query<(&Transform, &GridCell, &RigidBody), With<HudSubject>>,
+    primary_body_query: Query<(&Transform, &GridCell, &CelestialBody)>,
 ) {
-    if let Some((vessel_transform, vessel_rigidbody)) = vessel_rigidbody_query.iter().next()
-        && vessel_rigidbody.primary.is_some()
+    if let Ok((subject_transform, subject_grid_cell, subject_rigidbody)) = subject_query.single()
+        && let Some(primary_body) = subject_rigidbody.primary
+        && let Ok((primary_transform, primary_grid_cell, celestial_body)) =
+            primary_body_query.get(primary_body)
     {
-        let Ok((primary_transform, _primary_grid_cell)) =
-            primary_transform_query.get(vessel_rigidbody.primary.unwrap())
-        else {
-            return;
-        };
-        // info!("primary: {:?}", primary_transform.translation);
-        // info!("vessel: {:?}", vessel_transform.translation);
-        // TODO: This needs to account for BigSpace grid_cell difference.
-        // let cell_diff = grid_cell - primary_grid_cell;
-        // let cell_distance = IVec3::new(cell_diff.x, cell_diff.y, cell_diff.z).distance(IVec3::ZERO);
-        let distance = primary_transform
-            .translation
-            .distance(vessel_transform.translation);
-        query.single_mut().unwrap().0 = format!("{:.2}", distance);
+        let primary_position = grid.grid_position_double(primary_grid_cell, primary_transform);
+        let subject_position = grid.grid_position_double(subject_grid_cell, subject_transform);
+        let distance = primary_position.distance(subject_position);
+        let altitude = distance - celestial_body.radius as f64;
+        text.0 = format!("{:.2}", altitude);
+    } else {
+        text.0 = String::new();
     }
 }
 
