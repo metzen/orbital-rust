@@ -96,7 +96,7 @@ pub fn setup_scene(
                 velocity: Vec3::ZERO,
                 ..default()
             },
-            Autoscale,
+            Autoscale { minimum_size: 2.0 },
             Focusable,
         ));
         root.spawn_spatial((
@@ -114,7 +114,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ));
         root.spawn_spatial((
@@ -132,7 +132,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ));
         root.spawn_spatial((
@@ -157,7 +157,7 @@ pub fn setup_scene(
                 atmosphere_color: Color::srgba(0.0, 0.0, 0.0, 0.0),
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ))
         // TODO: Extract this to a helper function?
@@ -215,7 +215,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ));
         root.spawn_spatial((
@@ -233,7 +233,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ));
         root.spawn_spatial((
@@ -251,7 +251,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ));
         root.spawn_spatial((
@@ -269,7 +269,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ));
         root.spawn_spatial((
@@ -287,7 +287,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ));
         root.spawn_spatial((
@@ -305,7 +305,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ))
         .with_child((
@@ -330,7 +330,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ));
         root.spawn_spatial((
@@ -348,7 +348,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale,
+            Autoscale::default(),
             Focusable,
         ));
     });

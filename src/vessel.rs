@@ -138,7 +138,7 @@ fn setup_vessel(
             mass: 10.0,
             ..default()
         },
-        Autoscale,
+        Autoscale::default(),
         HudSubject,
         Focusable,
         Vessel {
@@ -174,7 +174,7 @@ fn setup_vessel(
                 mass: 100.0,
                 ..default()
             },
-            Autoscale,
+            Autoscale::default(),
             Focusable,
             Vessel {
                 engine_translation: -Vec3::Y * 15.0,
@@ -238,7 +238,7 @@ fn setup_vessel(
                 mass: 100.0,
                 ..default()
             },
-            Autoscale,
+            Autoscale::default(),
             Focusable,
             Vessel {
                 engine_translation: -Vec3::Y * 30.0,
@@ -414,7 +414,7 @@ fn vessel_systems(
                     ..default()
                 },
                 NoGravity,
-                Autoscale,
+                    Autoscale::default(),
                 Ephemeral {
                     ttl: Timer::new(Duration::from_secs(5), TimerMode::Once),
                 },

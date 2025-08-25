@@ -78,7 +78,7 @@ fn trail_system(
                 Ephemeral {
                     ttl: Timer::new(Duration::from_secs(5), TimerMode::Once),
                 },
-                Autoscale,
+                Autoscale::default(),
                 ChildOf(*big_space),
             ));
         }

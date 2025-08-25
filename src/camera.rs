@@ -37,11 +37,18 @@ pub struct InGameCamera;
 #[derive(Component)]
 pub struct OuterCamera;
 
-/// Entities with this component will scale up to prevent becoming smaller
-/// than the size of one rendered pixel as the scaling of the viewport is
-/// changed.
-#[derive(Component, Default)]
-pub struct Autoscale;
+/// Entities with this component will scale up to acheive a minimum rendered size
+/// as specified when the scaling of the viewport is changed.
+#[derive(Component)]
+pub struct Autoscale {
+    pub minimum_size: f32,
+}
+
+impl Default for Autoscale {
+    fn default() -> Self {
+        Self { minimum_size: 1.0 }
+    }
+}
 
 /// Low-resolution texture that contains the pixel-perfect world.
 /// Canvas itself is rendered to the high-resolution world.
@@ -277,16 +284,16 @@ pub fn camera_control(
     }
 }
 
-/// Scale entities up if they end up becoming smaller than one pixel in the current projection scale.
+/// Scale entities up if they end up becoming smaller than the minimum size in the current projection scale.
 pub fn scale_entities(
-    mut query: Query<(&mut Transform, &Mesh2d), With<Autoscale>>,
+    mut query: Query<(&mut Transform, &Mesh2d, &Autoscale)>,
     projection: Single<&Projection, With<InGameCamera>>,
     meshes: ResMut<Assets<Mesh>>,
 ) {
     let Projection::Orthographic(orthographic_projection) = *projection else {
         return;
     };
-    for (mut transform, mesh) in query.iter_mut() {
+    for (mut transform, mesh, autoscale) in query.iter_mut() {
         // TODO: This needs some fixing.
         let Some(m) = meshes.get(&mesh.0) else {
             todo!()
@@ -296,8 +303,9 @@ pub fn scale_entities(
         };
 
         let size = f32::min(aabb.half_extents.x, aabb.half_extents.y);
-        if size / orthographic_projection.scale < 1.0 {
-            transform.scale = Vec3::splat(orthographic_projection.scale / size);
+        if size / orthographic_projection.scale < autoscale.minimum_size {
+            transform.scale =
+                Vec3::splat(orthographic_projection.scale / size) * autoscale.minimum_size;
         } else {
             transform.scale = Vec3::ONE;
         }
