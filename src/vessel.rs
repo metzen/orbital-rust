@@ -37,6 +37,10 @@ impl Plugin for VesselPlugin {
         app.add_systems(FixedPreUpdate, vessel_systems.before(dynamics));
         app.add_plugins(InputManagerPlugin::<VesselAction>::default());
         app.init_resource::<ActionState<VesselAction>>();
+        app.insert_resource(EngineParticleSpawnTimer(Timer::new(
+            Duration::from_millis(50),
+            TimerMode::Repeating,
+        )));
         app.insert_resource(VesselAction::default_input_map());
     }
 }
@@ -103,6 +107,9 @@ pub struct Vessel {
 
 #[derive(Component, Default)]
 pub struct EngineParticle;
+
+#[derive(Resource, Default)]
+struct EngineParticleSpawnTimer(Timer);
 
 fn setup_vessel(
     mut commands: Commands,
@@ -356,7 +363,9 @@ fn vessel_systems(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     big_space: Single<Entity, With<BigSpace>>,
+    mut engine_particle_spawn_timer: ResMut<EngineParticleSpawnTimer>,
 ) {
+    engine_particle_spawn_timer.0.tick(time.delta());
     for (mut transform, mut rigidbody, vessel, grid_cell) in query.iter_mut() {
         if vessel.rotate != 0.0 {
             transform.rotate_z(vessel.rotate * time.delta_secs());
@@ -381,6 +390,7 @@ fn vessel_systems(
             rigidbody.force += engine_force;
             // TODO: Refactor to a better particle system.
             // TODO: Do this with an api that clones from entity.
+            if engine_particle_spawn_timer.0.just_finished() {
             commands.spawn((
                 Mesh2d(meshes.add(Mesh::from(Cuboid::new(2.5, 2.5, 1.0)))),
                 Transform::from_translation(
@@ -422,6 +432,7 @@ fn vessel_systems(
                 Drag,
                 ChildOf(*big_space),
             ));
+            }
         }
     }
 }
