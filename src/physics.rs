@@ -1,7 +1,7 @@
-use bevy::{ecs::query::QueryData, prelude::*, render::mesh::MeshAabb};
+use bevy::{ecs::query::QueryData, math::DVec3, prelude::*, render::mesh::MeshAabb};
 use big_space::{
     floating_origins::BigSpace,
-    grid::{cell::GridCell, Grid},
+    grid::{Grid, cell::GridCell},
 };
 
 use crate::timewarp::*;
@@ -57,27 +57,31 @@ pub struct NoGravity;
 #[derive(Component)]
 pub struct Drag;
 
-fn gravitation_force(m1: f64, m2: f64, distance: Vec3) -> Vec3 {
-    let unit = distance.normalize();
-    unit * (G * m1 * m2 / distance.length_squared() as f64) as f32
+fn gravitation_force(m1: f64, m2: f64, distance: DVec3) -> Vec3 {
+    let unit = distance.normalize() * DVec3::new(1.0, 1.0, 0.0);
+    (unit * (G * m1 * m2 / distance.length_squared())).as_vec3()
 }
 
 #[derive(QueryData)]
 #[query_data(mutable)]
 struct GravityQuery {
     entity: Entity,
-    global_transform: &'static GlobalTransform,
+    grid_cell: &'static GridCell,
+    transform: &'static Transform,
     rigidbody: &'static mut RigidBody,
 }
 
-fn gravity(mut query: Query<GravityQuery, Without<NoGravity>>) {
+fn gravity(
+    mut query: Query<GravityQuery, Without<NoGravity>>,
+    grid: Single<&Grid, With<BigSpace>>,
+) {
     let mut iter = query.iter_combinations_mut();
     while let Some([mut a, mut b]) = iter.fetch_next() {
         let force = gravitation_force(
             a.rigidbody.mass.into(),
             b.rigidbody.mass.into(),
-            // TODO: Maybe use high precision positions here?
-            a.global_transform.translation() - b.global_transform.translation(),
+            grid.grid_position_double(a.grid_cell, a.transform)
+                - grid.grid_position_double(b.grid_cell, b.transform),
         );
         let force_magnitude = force.length();
         a.rigidbody.force -= force;
