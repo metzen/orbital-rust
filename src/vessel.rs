@@ -17,7 +17,7 @@ use crate::{
     camera::{Autoscale, Focusable},
     hud::HudSubject,
     lifetime::Ephemeral,
-    physics::{Drag, NoGravity, RigidBody, dynamics},
+    physics::{Drag, NoGravity, RigidBody, SPEED_OF_LIGHT, dynamics},
     scene::Planet,
 };
 
@@ -32,6 +32,7 @@ impl Plugin for VesselPlugin {
                 vessel_control,
                 vessel_engine_audio,
                 animate_engine_particles,
+                photon_gun,
             ),
         );
         app.add_systems(FixedPreUpdate, vessel_systems.before(dynamics));
@@ -72,6 +73,7 @@ enum VesselAction {
     ThrottleOpen,
     ThrottleClose,
     TogglePrecisionControls,
+    FirePhoton,
 }
 
 impl VesselAction {
@@ -91,6 +93,7 @@ impl VesselAction {
             .with(Self::ThrottleClose, KeyCode::KeyX)
             .with(Self::ThrottleClose, GamepadButton::LeftTrigger)
             .with(Self::TogglePrecisionControls, KeyCode::CapsLock)
+            .with(Self::FirePhoton, KeyCode::Space)
     }
 }
 
@@ -450,6 +453,37 @@ fn animate_engine_particles(
             material
                 .color
                 .mix_assign(Color::srgba(1.0, 1.0, 1.0, material.color.alpha()), 0.3);
+        }
+    }
+}
+
+fn photon_gun(
+    query: Query<(&Vessel, &GridCell, &Transform)>,
+    mut commands: Commands,
+    action_state: Res<ActionState<VesselAction>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    big_space: Single<Entity, With<BigSpace>>,
+) {
+    if action_state.just_pressed(&VesselAction::FirePhoton) {
+        for (vessel, grid_cell, transform) in query {
+            if vessel.controlled {
+                commands.spawn((
+                    Name::new("photon"),
+                    *transform,
+                    *grid_cell,
+                    Mesh2d(meshes.add(Mesh::from(Circle::new(10.0)))),
+                    MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(3.0, 3.0, 3.0)))),
+                    RigidBody {
+                        mass: 1.0,  // TODO: Why doesn't 0.0 work here?
+                        velocity: transform.rotation * Vec3::new(0.0, SPEED_OF_LIGHT, 0.0),
+                        ..default()
+                    },
+                    NoGravity,
+                    Autoscale::default(),
+                    ChildOf(*big_space),
+                ));
+            }
         }
     }
 }

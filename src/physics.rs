@@ -9,6 +9,8 @@ use crate::timewarp::*;
 /// Gravitational constant.
 const G: f64 = 6.67430e-11; // (N * m**2) / kg**2
 
+pub const SPEED_OF_LIGHT: f32 = 299_792_458.0;  // m/s
+
 pub struct PhysicsPlugin;
 
 impl Plugin for PhysicsPlugin {
