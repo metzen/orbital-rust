@@ -88,7 +88,7 @@ pub fn setup_scene(
     commands.spawn_big_space_default(|root| {
         root.spawn_spatial((
             Name::new("Sun"),
-            Transform::from_xyz(0.0, 0.0, 1.0),
+            Transform::from_xyz(0.0, 0.0, 10.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::SUN.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::SUN.color))),
             RigidBody {
