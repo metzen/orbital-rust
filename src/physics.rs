@@ -87,10 +87,12 @@ fn gravity(
         a.rigidbody.force -= force;
         if force_magnitude > a.rigidbody.primary_force_magnitude {
             a.rigidbody.primary = Some(b.entity);
+a.rigidbody.primary_force_magnitude = force_magnitude;
         }
         b.rigidbody.force += force;
         if force_magnitude > b.rigidbody.primary_force_magnitude {
             b.rigidbody.primary = Some(a.entity);
+b.rigidbody.primary_force_magnitude = force_magnitude;
         }
     }
 }
