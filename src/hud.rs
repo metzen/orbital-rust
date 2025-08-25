@@ -108,13 +108,13 @@ fn setup_hud(mut commands: Commands) {
                 text_font.clone(),
             ));
             root.spawn((
+                VelocityText,
                 Text::new("VEL: "),
                 RenderLayers::layer(HIGH_RES_LAYER),
                 text_font.clone(),
-            ));
-            root.spawn((
-                Text::default(),
-                VelocityText,
+            ))
+            .with_child((
+                TextSpan::default(),
                 RenderLayers::layer(HIGH_RES_LAYER),
                 text_font.clone(),
             ));
@@ -158,12 +158,19 @@ fn update_throttle(
 }
 
 fn update_velocity(
-    mut query: Query<&mut Text, With<VelocityText>>,
-    vessel_rigidbody_query: Query<&RigidBody, With<HudSubject>>,
+    text: Single<Entity, With<VelocityText>>,
+    subject_rigidbody: Query<&RigidBody, With<HudSubject>>,
+    primary_body_query: Query<&RigidBody>,
+    mut writer: TextUiWriter,
 ) {
-    if let Some(rigidbody) = vessel_rigidbody_query.iter().next() {
-        query.single_mut().unwrap().0 = format!("{:.2}", rigidbody.velocity);
-    }
+    *writer.text(*text, 1) = if let Ok(rigidbody) = subject_rigidbody.single()
+        && let Some(primary_body_entity) = rigidbody.primary
+        && let Ok(primary_body) = primary_body_query.get(primary_body_entity)
+    {
+        format!("{:.2}", rigidbody.velocity - primary_body.velocity)
+    } else {
+        String::new()
+    };
 }
 
 fn update_acceleration(
