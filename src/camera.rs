@@ -29,9 +29,28 @@ pub const RES_HEIGHT: u32 = 10 * 20;
 // High-res rendering layer.
 pub const HIGH_RES_LAYER: Layer = 1;
 
+#[derive(Default, PartialEq, Copy, Clone)]
+enum CameraViewMode {
+    // The camera is aligned with the body (planet, moon, or sun) you are in orbit of, keeping it "below" you in the view.
+    Free,
+    // The camera rotates with the craft's attitude.
+    Locked,
+    // The camera follows the surface-based prograde direction.
+    Chase,
+    // The camera is aligned fixed cardinal orientation in space (like a map), rather than the planet.
+    #[default]
+    Orbital,
+}
+
+impl CameraViewMode {
+    const VALUES: [Self; 4] = [Self::Free, Self::Locked, Self::Chase, Self::Orbital];
+}
+
 /// Camera that renders the pixel-perfect world to the [`Canvas`].
-#[derive(Component)]
-pub struct InGameCamera;
+#[derive(Component, Default)]
+pub struct InGameCamera {
+    view_mode: CameraViewMode,
+}
 
 /// Camera that renders the [`Canvas`] (and other graphics on [`HIGH_RES_LAYER`]) to the screen.
 #[derive(Component)]
@@ -65,6 +84,7 @@ pub enum CameraAction {
     Pan,
     ZoomIn,
     ZoomOut,
+    NextViewMode,
 }
 
 pub struct CameraPlugin;
@@ -88,6 +108,7 @@ impl CameraAction {
             .with(Self::ZoomOut, KeyCode::Minus)
             // .with(Self::ZoomOut, MouseScrollDirection::DOWN)
             .with(Self::ZoomOut, GamepadButton::LeftThumb)
+            .with(Self::NextViewMode, KeyCode::KeyV)
     }
 }
 
@@ -137,7 +158,7 @@ pub fn setup_camera(
         Camera2d,
         Msaa::Off,
         Projection::from(OrthographicProjection::default_2d()),
-        InGameCamera,
+        InGameCamera::default(),
         FloatingOrigin,
         HighPrecisionScale(1.0),
         GridCell::default(),
@@ -187,10 +208,12 @@ pub fn fit_canvas(
 }
 
 pub fn update_camera_position_for_autofollow(
-    mut camera: Query<(&mut Transform, &mut GridCell, &Autofollow), With<InGameCamera>>,
+    mut camera: Query<(&mut Transform, &mut GridCell, &Autofollow, &InGameCamera)>,
     player: Query<(&Transform, &GridCell), Without<InGameCamera>>,
 ) {
-    let Ok((mut camera_transform, mut camera_grid_cell, autofollow)) = camera.single_mut() else {
+    let Ok((mut camera_transform, mut camera_grid_cell, autofollow, in_game_camera)) =
+        camera.single_mut()
+    else {
         return;
     };
     let Some(target_entity) = autofollow.target else {
@@ -201,6 +224,14 @@ pub fn update_camera_position_for_autofollow(
         return;
     };
     camera_transform.translation = target_transform.translation;
+    camera_transform.rotation = match in_game_camera.view_mode {
+        CameraViewMode::Orbital => Quat::default(),
+        CameraViewMode::Free => Quat::default(), // TODO
+        CameraViewMode::Locked => camera_transform
+            .rotation
+            .lerp(target_transform.rotation, 0.1),
+        CameraViewMode::Chase => Quat::default(), // TODO
+    };
     *camera_grid_cell = *target_grid_cell;
 
     // let Vec3 { x, y, .. } = player.translation;
@@ -227,6 +258,7 @@ pub struct CameraQueryData {
     projection: &'static mut Projection,
     grid_cell: &'static mut GridCell,
     scale: &'static mut HighPrecisionScale,
+    in_game_camera: &'static mut InGameCamera,
 }
 
 pub fn camera_control(
@@ -280,6 +312,15 @@ pub fn camera_control(
         if action_state.pressed(&CameraAction::ZoomOut) {
             orthographic_projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
             camera.scale.0 *= 1.0 + scale_factor * time.delta_secs_f64();
+        }
+
+        if action_state.just_pressed(&CameraAction::NextViewMode) {
+            let index = CameraViewMode::VALUES
+                .iter()
+                .position(|m| m == &camera.in_game_camera.view_mode)
+                .unwrap();
+            camera.in_game_camera.view_mode =
+                CameraViewMode::VALUES[(index + 1) % CameraViewMode::VALUES.len()]
         }
     }
 }
