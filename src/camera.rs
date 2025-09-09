@@ -232,7 +232,7 @@ pub struct CameraQueryData {
 pub fn camera_control(
     action_state: Res<ActionState<CameraAction>>,
     mut query: Query<CameraQueryData, With<InGameCamera>>,
-    time: Res<Time>,
+    time: Res<Time<Real>>,
     // frames: ReferenceFrames<i32>,
 ) {
     for mut camera in query.iter_mut() {
