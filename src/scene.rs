@@ -145,7 +145,7 @@ pub fn setup_scene(
             Transform::from_xyz(147.10e9, 0.0, 0.0),
             Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
                 Planet::EARTH.radius,
-                2000,
+                4000,
             )))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::EARTH.color))),
             RigidBody {
