@@ -345,8 +345,11 @@ pub fn scale_entities(
 
         let size = f32::min(aabb.half_extents.x, aabb.half_extents.y);
         if size / orthographic_projection.scale < autoscale.minimum_size {
-            transform.scale =
-                Vec3::splat(orthographic_projection.scale / size) * autoscale.minimum_size;
+            transform.scale = Vec3::new(
+                orthographic_projection.scale / aabb.half_extents.x,
+                orthographic_projection.scale / aabb.half_extents.y,
+                1.0,
+            ) * autoscale.minimum_size;
         } else {
             transform.scale = Vec3::ONE;
         }
