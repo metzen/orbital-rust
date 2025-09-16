@@ -94,6 +94,7 @@ impl Plugin for CameraPlugin {
         app.add_plugins(InputManagerPlugin::<CameraAction>::default());
         app.init_resource::<ActionState<CameraAction>>();
         app.insert_resource(CameraAction::default_input_map());
+        app.register_type::<Autoscale>();
     }
 }
 
