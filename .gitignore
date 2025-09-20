@@ -22,3 +22,6 @@ target/
 
 .git-credentials
 .vscode
+
+# Nix build results
+result
