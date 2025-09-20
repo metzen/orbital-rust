@@ -58,7 +58,7 @@ pub struct OuterCamera;
 
 /// Entities with this component will scale up to acheive a minimum rendered size
 /// as specified when the scaling of the viewport is changed.
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct Autoscale {
     pub minimum_size: f32,
 }
