@@ -5,7 +5,7 @@ use leafwing_input_manager::{
     Actionlike,
 };
 
-const TIME_WARPS: [f32; 15] = [
+pub const TIME_WARPS: [f32; 15] = [
     1.0, 2.0, 3.0, 4.0, 10.0, 50.0, 100.0, 500.0, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
 ];
 
