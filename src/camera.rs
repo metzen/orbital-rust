@@ -21,10 +21,10 @@ use leafwing_input_manager::prelude::*;
 use crate::vessel::Vessel;
 
 /// In-game resolution width.
-pub const RES_WIDTH: u32 = 16 * 20;
+const RES_WIDTH: u32 = 16 * 20;
 
 /// In-game resolution height.
-pub const RES_HEIGHT: u32 = 10 * 20;
+const RES_HEIGHT: u32 = 10 * 20;
 
 // High-res rendering layer.
 pub const HIGH_RES_LAYER: Layer = 1;
@@ -54,7 +54,7 @@ pub struct InGameCamera {
 
 /// Camera that renders the [`Canvas`] (and other graphics on [`HIGH_RES_LAYER`]) to the screen.
 #[derive(Component)]
-pub struct OuterCamera;
+struct OuterCamera;
 
 /// Entities with this component will scale up to acheive a minimum rendered size
 /// as specified when the scaling of the viewport is changed.
@@ -79,7 +79,7 @@ struct Canvas;
 pub struct Focusable;
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
-pub enum CameraAction {
+enum CameraAction {
     #[actionlike(DualAxis)]
     Pan,
     ZoomIn,
@@ -95,6 +95,16 @@ impl Plugin for CameraPlugin {
         app.init_resource::<ActionState<CameraAction>>();
         app.insert_resource(CameraAction::default_input_map());
         app.register_type::<Autoscale>();
+        app.add_systems(PostStartup, setup_camera);
+        app.add_systems(Update, (fit_canvas, change_focus));
+        app.add_systems(
+            PostUpdate,
+            (
+                update_camera_position_for_autofollow.before(TransformSystem::TransformPropagate),
+                camera_control.before(TransformSystem::TransformPropagate),
+                scale_entities.before(TransformSystem::TransformPropagate),
+            ),
+        );
     }
 }
 
@@ -113,7 +123,7 @@ impl CameraAction {
     }
 }
 
-pub fn setup_camera(
+fn setup_camera(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
     big_space: Single<Entity, With<BigSpace>>,
@@ -192,7 +202,7 @@ pub fn setup_camera(
 }
 
 /// Scales camera projection to fit the window (integer multiples only).
-pub fn fit_canvas(
+fn fit_canvas(
     mut resize_events: EventReader<WindowResized>,
     mut projection: Single<&mut Projection, With<OuterCamera>>,
 ) {
@@ -207,7 +217,7 @@ pub fn fit_canvas(
     }
 }
 
-pub fn update_camera_position_for_autofollow(
+fn update_camera_position_for_autofollow(
     mut camera: Query<(&mut Transform, &mut GridCell, &Autofollow, &InGameCamera)>,
     player: Query<(&Transform, &GridCell), Without<InGameCamera>>,
 ) {
@@ -252,7 +262,7 @@ pub struct HighPrecisionScale(pub f64);
 
 #[derive(QueryData)]
 #[query_data(mutable)]
-pub struct CameraQueryData {
+struct CameraQueryData {
     entity: Entity,
     transform: &'static mut Transform,
     projection: &'static mut Projection,
@@ -261,7 +271,7 @@ pub struct CameraQueryData {
     in_game_camera: &'static mut InGameCamera,
 }
 
-pub fn camera_control(
+fn camera_control(
     action_state: Res<ActionState<CameraAction>>,
     mut query: Query<CameraQueryData, With<InGameCamera>>,
     time: Res<Time<Real>>,
@@ -326,7 +336,7 @@ pub fn camera_control(
 }
 
 /// Scale entities up if they end up becoming smaller than the minimum size in the current projection scale.
-pub fn scale_entities(
+fn scale_entities(
     mut query: Query<(&mut Transform, &Mesh2d, &Autoscale)>,
     projection: Single<&Projection, With<InGameCamera>>,
     meshes: ResMut<Assets<Mesh>>,
@@ -361,7 +371,7 @@ pub struct Autofollow {
     pub target: Option<Entity>,
 }
 
-pub fn change_focus(
+fn change_focus(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut autofollow_query: Query<&mut Autofollow, With<InGameCamera>>,
     focus_targets_query: Query<(Entity, &Name), With<Focusable>>,

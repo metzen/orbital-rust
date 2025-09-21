@@ -1,10 +1,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use bevy::window::WindowResolution;
 use bevy::{
     audio::{AddAudioSource, AudioPlugin, SpatialScale},
     prelude::*,
 };
-use bevy::{transform::TransformSystem, window::WindowResolution};
 
 mod audio;
 mod camera;
@@ -21,10 +21,7 @@ use audio::SineAudio;
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use big_space::plugin::BigSpaceDefaultPlugins;
-use camera::{
-    camera_control, change_focus, fit_canvas, scale_entities, setup_camera,
-    update_camera_position_for_autofollow, CameraPlugin,
-};
+use camera::CameraPlugin;
 use clap::Parser;
 use diagnostics::DiagnosticsPlugin;
 use hud::HudPlugin;
@@ -108,17 +105,8 @@ fn main() {
         .add_audio_source::<SineAudio>()
         .insert_resource(Time::<Fixed>::from_hz(args.fixed_update_frequency))
         .add_systems(PreStartup, setup_scene)
-        .add_systems(PostStartup, setup_camera)
-        .add_systems(Update, (fit_canvas, app_control, change_focus))
-        .add_systems(
-            PostUpdate,
-            (
-                update_camera_position_for_autofollow.before(TransformSystem::TransformPropagate),
-                camera_control.before(TransformSystem::TransformPropagate),
-                scale_entities.before(TransformSystem::TransformPropagate),
-                reaper,
-            ),
-        )
+        .add_systems(Update, app_control)
+        .add_systems(PostUpdate, reaper)
         .run();
 }
 
