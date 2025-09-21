@@ -4,8 +4,6 @@ use big_space::{
     grid::{Grid, cell::GridCell},
 };
 
-use crate::timewarp::*;
-
 /// Gravitational constant.
 const G: f64 = 6.67430e-11; // (N * m**2) / kg**2
 
@@ -113,9 +111,9 @@ fn drag(mut query: Query<&mut RigidBody, With<Drag>>) {
     }
 }
 
-pub fn dynamics(mut query: Query<&mut RigidBody>, time: Res<Time>, time_warp: Res<TimeWarp>) {
+pub fn dynamics(mut query: Query<&mut RigidBody>, time: Res<Time>) {
     for mut rigidbody in query.iter_mut() {
-        let delta_time = time.delta_secs() * time_warp.value;
+        let delta_time = time.delta_secs();
         let old_acceleration = rigidbody.acceleration;
         let new_acceleration = rigidbody.force / rigidbody.mass;
         // TODO: inverse mass
@@ -126,13 +124,9 @@ pub fn dynamics(mut query: Query<&mut RigidBody>, time: Res<Time>, time_warp: Re
     }
 }
 
-fn kinematics(
-    mut query: Query<(&mut Transform, &mut RigidBody)>,
-    time: Res<Time>,
-    time_warp: Res<TimeWarp>,
-) {
+fn kinematics(mut query: Query<(&mut Transform, &mut RigidBody)>, time: Res<Time>) {
     for (mut transform, rigidbody) in query.iter_mut() {
-        let dt = time.delta_secs() * time_warp.value;
+        let dt = time.delta_secs();
         // let velocity = rigidbody.velocity;
         // let acceleration = rigidbody.acceleration;
         // TODO: High precision f64 velocity and accel?

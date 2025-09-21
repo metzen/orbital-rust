@@ -1,8 +1,10 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use leafwing_input_manager::{
+    Actionlike,
     plugin::InputManagerPlugin,
     prelude::{ActionState, InputMap},
-    Actionlike,
 };
 
 pub const TIME_WARPS: [f32; 15] = [
@@ -13,11 +15,12 @@ pub struct TimeWarpPlugin;
 
 impl Plugin for TimeWarpPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(TimeWarp { value: 1.0 });
-        app.add_systems(Update, timewarp_control);
         app.add_plugins(InputManagerPlugin::<TimeWarpAction>::default());
         app.init_resource::<ActionState<TimeWarpAction>>();
         app.insert_resource(TimeWarpAction::default_input_map());
+        app.insert_resource(TimeWarp { value: 1.0 });
+        app.add_systems(Startup, setup_timewarp);
+        app.add_systems(Update, timewarp_control);
     }
 }
 // #[reflect(Resource, Default)]
@@ -42,22 +45,33 @@ impl TimeWarpAction {
     }
 }
 
+fn setup_timewarp(mut virtual_time: ResMut<Time<Virtual>>) {
+    virtual_time.set_max_delta(Duration::MAX);
+}
+
 fn timewarp_control(
     action_state: Res<ActionState<TimeWarpAction>>,
     mut timewarp: ResMut<TimeWarp>,
+    mut virtual_time: ResMut<Time<Virtual>>,
+    mut fixed_time: ResMut<Time<Fixed>>,
 ) {
-    if action_state.just_pressed(&TimeWarpAction::IncreaseTimewarp) {
-        let relative_speed = (*timewarp).value;
-        let idx = TIME_WARPS.iter().position(|&i| i == relative_speed);
-        if idx.unwrap() < TIME_WARPS.len() - 1 {
-            timewarp.value = TIME_WARPS[(idx.unwrap() + 1).min(TIME_WARPS.len())];
-        }
-    }
-    if action_state.just_pressed(&TimeWarpAction::DecreaseTimewarp) {
+    let timewarp_shift = if action_state.just_pressed(&TimeWarpAction::IncreaseTimewarp) {
+        1
+    } else if action_state.just_pressed(&TimeWarpAction::DecreaseTimewarp) {
+        -1
+    } else {
+        0
+    };
+
+    if timewarp_shift != 0 {
         let relative_speed = timewarp.value;
-        let idx = TIME_WARPS.iter().position(|&i| i == relative_speed);
-        if idx.unwrap() > 0 {
-            timewarp.value = TIME_WARPS[(idx.unwrap() - 1).max(0)];
-        }
+        let idx = TIME_WARPS
+            .iter()
+            .position(|&i| i == relative_speed)
+            .unwrap();
+        timewarp.value =
+            TIME_WARPS[(idx as i8 + timewarp_shift).clamp(0, TIME_WARPS.len() as i8) as usize];
+        virtual_time.set_relative_speed(timewarp.value);
+        fixed_time.set_timestep_seconds(virtual_time.relative_speed_f64() / 64.0);
     }
 }
