@@ -19,6 +19,7 @@ mod vessel;
 
 use audio::SineAudio;
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
+use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use big_space::plugin::BigSpaceDefaultPlugins;
 use camera::{
     camera_control, change_focus, fit_canvas, scale_entities, setup_camera,
@@ -74,7 +75,8 @@ fn main() {
                     primary_window: Some(Window {
                         title: String::from("Orbital"),
                         present_mode: bevy::window::PresentMode::AutoNoVsync,
-                        resolution: WindowResolution::new(1024.0, 768.0),
+                        resolution: WindowResolution::new(1024.0, 768.0)
+                            .with_scale_factor_override(1.0),
                         ..default()
                     }),
                     ..default()
@@ -93,6 +95,8 @@ fn main() {
             VesselPlugin,
             TrailsPlugin,
             HudPlugin,
+            EguiPlugin::default(),
+            WorldInspectorPlugin::new(),
             // LogDiagnosticsPlugin::default(),
         ))
         .insert_resource(FramepaceSettings {

@@ -147,7 +147,25 @@ pub fn setup_camera(
 
     let image_handle = images.add(canvas);
 
-    // this camera renders whatever is on `PIXEL_PERFECT_LAYERS` to the canvas
+    // The "outer" camera, which renders whatever is on `HIGH_RES_LAYER` to the screen.
+    //
+    // By default, Egui will render to the first Camera created by an application, so this
+    // one should be spawned first.
+    commands.spawn((
+        Camera2d,
+        OuterCamera,
+        Projection::from(OrthographicProjection::default_2d()),
+        RenderLayers::layer(HIGH_RES_LAYER),
+    ));
+    // A sprite in the high-res layer which is effectively a canvas/billboard to which the
+    // in-game camera renders.
+    commands.spawn((
+        Sprite::from_image(image_handle.clone()),
+        Canvas,
+        RenderLayers::layer(HIGH_RES_LAYER),
+    ));
+
+    // This camera renders whatever is on `PIXEL_PERFECT_LAYERS` to the canvas.
     commands.spawn((
         Camera {
             // render before the "main pass" camera
@@ -170,25 +188,6 @@ pub fn setup_camera(
         SpatialListener::new(100.0),
         // Put the in game camera inside the BigSpace.
         ChildOf(*big_space),
-    ));
-
-    commands.spawn((
-        Sprite::from_image(image_handle),
-        Canvas,
-        RenderLayers::layer(HIGH_RES_LAYER),
-    ));
-
-    // the "outer" camera renders whatever is on `HIGH_RES_LAYER` to the screen.
-    // here, the canvas and one of the sample sprites will be rendered by this camera
-    // commands.spawn((Camera2dBundle::default(), OuterCamera, RenderLayers::layer(HIGH_RES_LAYER)));
-    commands.spawn((
-        Camera2d,
-        OuterCamera,
-        Projection::from(OrthographicProjection {
-            scale: 0.3,
-            ..OrthographicProjection::default_2d()
-        }),
-        RenderLayers::layer(HIGH_RES_LAYER),
     ));
 }
 
