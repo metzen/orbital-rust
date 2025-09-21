@@ -2,6 +2,11 @@ use std::{f32::consts::PI, time::Duration};
 
 use bevy::{
     color::palettes::css::{RED, TEAL},
+    ecs::{
+        entity_disabling::Disabled,
+        query::QueryData,
+        system::lifetimeless::{Read, Write},
+    },
     math::DVec3,
     prelude::*,
 };
@@ -16,7 +21,7 @@ use crate::{
     audio::SineAudio,
     camera::{Autoscale, Focusable},
     hud::HudSubject,
-    lifetime::Ephemeral,
+    lifetime::{Clock, Ephemeral, ExpirationAction},
     physics::{Drag, NoGravity, RigidBody, SPEED_OF_LIGHT, dynamics},
     scene::Planet,
 };
@@ -358,17 +363,33 @@ fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
     }
 }
 
-// Applies effects of active vessel controls.
+#[derive(QueryData)]
+#[query_data(mutable)]
+struct ParticleQueryData {
+    entity: Entity,
+    cell: Write<GridCell>,
+    transform: Write<Transform>,
+    rigidbody: Write<RigidBody>,
+    ephemeral: Write<Ephemeral>,
+    color_material_handle: Read<MeshMaterial2d<ColorMaterial>>,
+}
+
+/// Applies effects of active vessel controls.
 fn vessel_systems(
     mut commands: Commands,
-    mut query: Query<(&mut Transform, &mut RigidBody, &Vessel, &GridCell)>,
+    mut query: Query<(&mut Transform, &mut RigidBody, &Vessel, &GridCell), Without<EngineParticle>>,
     time: Res<Time>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     big_space: Single<Entity, With<BigSpace>>,
     mut engine_particle_spawn_timer: ResMut<EngineParticleSpawnTimer>,
+    mut disabled_engine_particle_query: Query<
+        ParticleQueryData,
+        (With<EngineParticle>, With<Disabled>),
+    >,
 ) {
     engine_particle_spawn_timer.0.tick(time.delta());
+    let mut disabled_engine_particles = disabled_engine_particle_query.iter_mut();
     for (mut transform, mut rigidbody, vessel, grid_cell) in query.iter_mut() {
         if vessel.rotate != 0.0 {
             transform.rotate_z(vessel.rotate * time.delta_secs());
@@ -394,47 +415,70 @@ fn vessel_systems(
             // TODO: Refactor to a better particle system.
             // TODO: Do this with an api that clones from entity.
             if engine_particle_spawn_timer.0.just_finished() {
-            commands.spawn((
-                Mesh2d(meshes.add(Mesh::from(Cuboid::new(2.5, 2.5, 1.0)))),
-                Transform::from_translation(
-                    transform.translation
+                let translation = transform.translation
+                            // One z-layer below vessel.
+                            -Vec3::Z
+                            // Emit from rear of vessel.
+                            + transform.rotation * vessel.engine_translation;
+                let velocity = rigidbody.velocity
+                    + ((transform.rotation
+                        * Vec3 {
+                            x: rng().random_range(-0.2..0.2),
+                            y: -1.0,
+                            z: 0.0,
+                        })
+                        * (force_magnitude
+                            / (rigidbody.mass
+                                        * 0.004 // engine mass ejection rate as fraction of total vessel mass 
+                                        * engine_particle_spawn_timer.0.duration().as_secs_f32()))
+                        * time.delta_secs());
+                if let Some(mut particle) = disabled_engine_particles.next() {
+                    commands.entity(particle.entity).remove::<Disabled>();
+                    *particle.cell = *grid_cell;
+                    particle.transform.translation = translation;
+                    particle.ephemeral.ttl.reset();
+                    particle.rigidbody.velocity = velocity;
+                    materials
+                        .get_mut(particle.color_material_handle)
+                        .unwrap()
+                        .color = Color::srgba(10.0, 6.0, 1.0, 1.0);
+                } else {
+                    commands.spawn((
+                        Name::new("engine particle"),
+                        Mesh2d(meshes.add(Mesh::from(Cuboid::from_length(8.0)))),
+                        Transform::from_translation(
+                            transform.translation
                             // One z-layer below vessel.
                             -Vec3::Z
                             // Emit from rear of vessel.
                             + transform.rotation * vessel.engine_translation,
-                ),
-                // transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                // material: materials.add(ColorMaterial::from(Color::srgb(0.96, 0.79, 0.11))),
-                MeshMaterial2d(materials.add(ColorMaterial {
-                    color: Color::srgba(10.0, 6.0, 1.0, 1.0),
-                    alpha_mode: bevy::sprite::AlphaMode2d::Blend,
-                    texture: None,
-                    ..default()
-                })),
-                *grid_cell,
-                // TODO: Fix this velocity
-                RigidBody {
-                    velocity: rigidbody.velocity
-                        + ((transform.rotation
-                            * Vec3 {
-                                x: rng().random_range(-0.2..0.2),
-                                y: -1.0,
-                                z: 0.0,
-                            })
-                            * (force_magnitude / (rigidbody.mass / 1000.0))
-                            * time.delta_secs()),
-                    mass: 1.0,
-                    ..default()
-                },
-                NoGravity,
-                    Autoscale::default(),
-                Ephemeral {
-                    ttl: Timer::new(Duration::from_secs(5), TimerMode::Once),
-                },
-                EngineParticle,
-                Drag,
-                ChildOf(*big_space),
-            ));
+                        ),
+                        MeshMaterial2d(materials.add(ColorMaterial {
+                            color: Color::srgba(10.0, 6.0, 1.0, 1.0),
+                            alpha_mode: bevy::sprite::AlphaMode2d::Blend,
+                            texture: None,
+                            ..default()
+                        })),
+                        *grid_cell,
+                        // TODO: Fix this velocity
+                        RigidBody {
+                            velocity,
+                            mass: 50.0,
+                            primary: rigidbody.primary,
+                            ..default()
+                        },
+                        NoGravity,
+                        Autoscale::default(),
+                        Ephemeral::new(
+                            Timer::new(Duration::from_secs(5), TimerMode::Once),
+                            ExpirationAction::Disable,
+                            Clock::Virtual,
+                        ),
+                        EngineParticle,
+                        Drag,
+                        ChildOf(*big_space),
+                    ));
+                }
             }
         }
     }

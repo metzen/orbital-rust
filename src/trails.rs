@@ -1,23 +1,36 @@
 use std::time::Duration;
 
-use bevy::{ecs::query::QueryData, prelude::*};
+use bevy::{
+    ecs::{
+        entity_disabling::Disabled,
+        query::QueryData,
+        system::lifetimeless::{Read, Write},
+    },
+    prelude::*,
+};
 use big_space::{floating_origins::BigSpace, grid::cell::GridCell};
 
-use crate::{camera::Autoscale, lifetime::Ephemeral};
+use crate::{
+    camera::Autoscale,
+    lifetime::{Clock, Ephemeral, ExpirationAction},
+};
 
 pub struct TrailsPlugin;
 
 impl Plugin for TrailsPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(TrailTimer(Timer::from_seconds(0.2, TimerMode::Repeating)));
+        app.insert_resource(TrailTimer(Timer::from_seconds(0.01, TimerMode::Repeating)));
         app.insert_resource(TrailsOptions { enabled: true });
         app.init_resource::<TrailAssets>();
-        app.add_systems(FixedUpdate, trail_system);
+        app.add_systems(Update, trail_system);
     }
 }
 
 #[derive(Component)]
 pub struct Trailable;
+
+#[derive(Component)]
+pub struct TrailMarker;
 
 #[derive(Resource)]
 struct TrailTimer(Timer);
@@ -50,6 +63,16 @@ struct TrailableQuery {
     material: &'static MeshMaterial2d<ColorMaterial>,
 }
 
+#[derive(QueryData)]
+#[query_data(mutable)]
+struct TrailMarkerQueryData {
+    entity: Entity,
+    grid_cell: Write<GridCell>,
+    transform: Write<Transform>,
+    ephemeral: Write<Ephemeral>,
+    color_material_handle: Read<MeshMaterial2d<ColorMaterial>>,
+}
+
 fn trail_system(
     options: Res<TrailsOptions>,
     mut commands: Commands,
@@ -59,28 +82,51 @@ fn trail_system(
     query: Query<TrailableQuery, With<Trailable>>,
     big_space: Single<Entity, With<BigSpace>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut disabled_trail_marker_query: Query<
+        TrailMarkerQueryData,
+        (With<TrailMarker>, With<Disabled>),
+    >,
 ) {
+    // TODO: Prevent the system from scheduling when disabled instead.
     if !options.enabled {
         return;
     }
+    let mut disabled_trail_markers = disabled_trail_marker_query.iter_mut();
     if timer.0.tick(time.delta()).just_finished() {
         for trailable in query.iter() {
             let color = materials.get(trailable.material).unwrap().color;
-            commands.spawn((
-                Transform::from_translation(trailable.transform.translation),
-                *trailable.grid_cell,
-                Mesh2d(assets.mesh.clone()),
-                MeshMaterial2d(materials.add(ColorMaterial {
-                    color,
-                    alpha_mode: bevy::sprite::AlphaMode2d::Blend,
-                    ..default()
-                })),
-                Ephemeral {
-                    ttl: Timer::new(Duration::from_secs(5), TimerMode::Once),
-                },
-                Autoscale::default(),
-                ChildOf(*big_space),
-            ));
+            if let Some(mut disabled_trail_marker) = disabled_trail_markers.next() {
+                commands
+                    .entity(disabled_trail_marker.entity)
+                    .remove::<Disabled>();
+                *disabled_trail_marker.grid_cell = *trailable.grid_cell;
+                disabled_trail_marker.transform.translation = trailable.transform.translation;
+                materials
+                    .get_mut(disabled_trail_marker.color_material_handle)
+                    .unwrap()
+                    .color = color;
+                disabled_trail_marker.ephemeral.ttl.reset();
+            } else {
+                commands.spawn((
+                    Name::new("trail marker"),
+                    TrailMarker,
+                    Transform::from_translation(trailable.transform.translation),
+                    *trailable.grid_cell,
+                    Mesh2d(assets.mesh.clone()),
+                    MeshMaterial2d(materials.add(ColorMaterial {
+                        color,
+                        alpha_mode: bevy::sprite::AlphaMode2d::Blend,
+                        ..default()
+                    })),
+                    Ephemeral::new(
+                        Timer::new(Duration::from_secs(2), TimerMode::Once),
+                        ExpirationAction::Disable,
+                        Clock::Real,
+                    ),
+                    Autoscale::default(),
+                    ChildOf(*big_space),
+                ));
+            }
         }
     }
 }
