@@ -519,7 +519,7 @@ fn photon_gun(
                     Mesh2d(meshes.add(Mesh::from(Circle::new(10.0)))),
                     MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(3.0, 3.0, 3.0)))),
                     RigidBody {
-                        mass: 1.0,  // TODO: Why doesn't 0.0 work here?
+                        mass: 1.0, // TODO: Why doesn't 0.0 work here?
                         velocity: transform.rotation * Vec3::new(0.0, SPEED_OF_LIGHT, 0.0),
                         ..default()
                     },
