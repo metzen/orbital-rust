@@ -27,9 +27,7 @@ impl Plugin for PhysicsPlugin {
             (
                 // In Verlet, use old velocity and acceleration to calc new position,
                 // then use new position to calculate new acceleration and velocity.
-                (kinematics, gravity, dynamics).chain(),
-                drag,
-                collision,
+                (kinematics, collision, gravity, drag, dynamics).chain(),
             ),
         );
     }
