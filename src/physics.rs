@@ -1,4 +1,12 @@
-use bevy::{ecs::query::QueryData, math::DVec3, prelude::*, render::mesh::MeshAabb};
+use bevy::{
+    ecs::{
+        query::QueryData,
+        system::lifetimeless::{Read, Write},
+    },
+    math::DVec3,
+    prelude::*,
+    render::primitives::Aabb,
+};
 use big_space::{
     floating_origins::BigSpace,
     grid::{Grid, cell::GridCell},
@@ -171,52 +179,31 @@ fn transform_sync(
 #[query_data(mutable)]
 struct CollisionQueryData {
     entity: Entity,
-    name: &'static Name,
-    transform: &'static mut Transform,
-    rigidbody: &'static mut RigidBody,
-    grid_cell: &'static mut GridCell,
-    mesh: &'static Mesh2d,
+    name: Read<Name>,
+    transform: Write<Transform>,
+    grid_cell: Write<GridCell>,
+    rigidbody: Write<RigidBody>,
+    aabb: Read<Aabb>,
 }
 
-// TODO: Replace NoGravity here.
-fn collision(
-    mut query: Query<CollisionQueryData, Without<NoGravity>>,
-    grid_query: Query<&Grid, With<BigSpace>>,
-    meshes: ResMut<Assets<Mesh>>,
-) {
-    // # TODO: Remove the 0.9 multiplier hack and fix the rendering instead.
-    // # TODO: Move shape from renderable to collision.
-    let grid = grid_query.single().unwrap();
+fn collision(mut query: Query<CollisionQueryData>, grid: Single<&Grid, With<BigSpace>>) {
     let mut iter = query.iter_combinations_mut();
     while let Some([a, b]) = iter.fetch_next() {
-        // info!("Checking for collision between {} and {}", a.name, b.name);
-        // let Some(primary) = rigidbody.primary else {return};
-        // let primary_transform = world.get_mut::<Transform>(primary).unwrap();
-        // let primary_rigidbody = world.get_mut::<RigidBody>(primary).unwrap();
-        let (primary, mut secondary) = if a.rigidbody.mass > b.rigidbody.mass {
+        let (mut primary, mut secondary) = if a.rigidbody.mass > b.rigidbody.mass {
             (a, b)
         } else {
             (b, a)
         };
 
-        // let relative_position = (reference_frame.grid_to_float(secondary.grid_cell)
-        //     + reference_frame.grid_position_double(secondary.grid_cell, &secondary.transform))
-        //     - (reference_frame.grid_to_float(primary.grid_cell)
-        //         + reference_frame.grid_position_double(primary.grid_cell, &primary.transform));
         let primary_position = grid.grid_position_double(&primary.grid_cell, &primary.transform);
         let secondary_position =
             grid.grid_position_double(&secondary.grid_cell, &secondary.transform);
-        let relative_position = secondary_position - primary_position;
+        let relative_position = (secondary_position - primary_position) * DVec3::new(1.0, 1.0, 0.0);
+        let relative_position_normalized = relative_position.normalize();
 
-        let Some(primary_mesh) = meshes.get(&primary.mesh.0) else {
-            continue;
-        };
-        let Some(secondary_mesh) = meshes.get(&secondary.mesh.0) else {
-            continue;
-        };
-        let collision_distance = (primary_mesh.compute_aabb().unwrap().half_extents.y
-            + secondary_mesh.compute_aabb().unwrap().half_extents.y)
-            as f64;
+        // TODO: Handle non square/circle shapes.
+        let collision_distance =
+            (primary.aabb.half_extents.y + secondary.aabb.half_extents.y) as f64;
         let diff = relative_position.length_squared() - collision_distance * collision_distance;
         if diff < 0.0 {
             debug!(
@@ -226,30 +213,29 @@ fn collision(
                 relative_position.length(),
                 collision_distance
             );
-            // Landed -- prevent moving below surface.
-            // secondary.transform.translation = primary.transform.translation
-            //     + (relative_position.normalize() * collision_distance).as_vec3();
+            let relative_velocity = primary.rigidbody.velocity - secondary.rigidbody.velocity;
+            // TODO: Replace 0.2 with restituion from colliding entities.
+            let collision_speed =
+                relative_velocity.dot(relative_position_normalized.as_vec3()) * 0.2;
+            if collision_speed < 0.0 {
+                // Already moving away from each other, so just ignore for now.
+                continue;
+            }
+            let overlap = collision_distance - relative_position.length();
 
-            let (new_grid_cell, new_translation) = grid.translation_to_grid(
-                primary_position + relative_position.normalize() * collision_distance,
-            );
+            let (new_grid_cell, new_translation) = grid
+                .translation_to_grid(secondary_position + relative_position_normalized * overlap);
 
-            // let (new_grid_cell, new_translation) = reference_frame.translation_to_grid(
-            //     primary_position + DVec3::Y * (Planet::EARTH.radius + 30.0) as f64,
-            // );
             *secondary.grid_cell = new_grid_cell;
-            secondary.transform.translation = new_translation;
-            secondary.transform.translation.z = secondary_position.z.round() as f32;
-        }
-        if diff <= collision_distance * 0.05 {
-            // # Simulate the effect of a normal force.
-            // # rigidbody.velocity.update_from(rigidbody.primary[Rigidbody].velocity)
-            secondary.rigidbody.velocity.y = primary.rigidbody.velocity.y;
-            // secondary.rigidbody.acceleration += Vec3 {
-            //     x: 0.0,
-            //     y: 9.81,
-            //     z: 0.0,
-            // }
+            secondary.transform.translation.x = new_translation.x;
+            secondary.transform.translation.y = new_translation.y;
+
+            let impulse =
+                2.0 * collision_speed / (primary.rigidbody.mass + secondary.rigidbody.mass);
+            primary.rigidbody.velocity -=
+                impulse * secondary.rigidbody.mass * relative_position_normalized.as_vec3();
+            secondary.rigidbody.velocity +=
+                impulse * primary.rigidbody.mass * relative_position_normalized.as_vec3();
         }
     }
 }
