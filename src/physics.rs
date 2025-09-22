@@ -27,12 +27,11 @@ impl Plugin for PhysicsPlugin {
             (
                 // In Verlet, use old velocity and acceleration to calc new position,
                 // then use new position to calculate new acceleration and velocity.
-                (previous_transform_sync, kinematics, gravity, dynamics).chain(),
+                (kinematics, gravity, dynamics).chain(),
                 drag,
                 collision,
             ),
         );
-        app.add_systems(Update, transform_sync);
     }
 }
 
@@ -145,33 +144,6 @@ fn kinematics(mut query: Query<(&mut Transform, &mut RigidBody)>, time: Res<Time
         // TODO: High precision f64 velocity and accel?
         // rigidbody.transform.translation += dt * (velocity + 0.5 * acceleration * dt);
         transform.translation += dt * (rigidbody.velocity + 0.5 * rigidbody.acceleration * dt);
-    }
-}
-
-fn previous_transform_sync(mut query: Query<(&mut PreviousTransform, &RigidBody)>) {
-    for (mut prev, rigidbody) in &mut query {
-        prev.0 = rigidbody.transform;
-    }
-}
-
-fn setup_previous_transforms(mut commands: Commands, mut query: Query<(Entity, &RigidBody)>) {
-    for (entity, rigidbody) in &mut query {
-        commands
-            .entity(entity)
-            .insert(PreviousTransform(rigidbody.transform));
-    }
-}
-
-/// Syncs RigidBody Transform to main Transform component.
-fn transform_sync(
-    mut query: Query<(&mut Transform, &PreviousTransform, &RigidBody)>,
-    time: Res<Time<Fixed>>,
-) {
-    for (mut transform, previous_transform, rigidbody) in &mut query {
-        transform.translation = previous_transform
-            .0
-            .translation
-            .lerp(rigidbody.transform.translation, time.overstep_fraction());
     }
 }
 
