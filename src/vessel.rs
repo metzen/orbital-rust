@@ -135,12 +135,12 @@ fn setup_vessel(
         z: 4.0,
     });
     commands.spawn((
-        Name::new("Pickle"),
+        Name::new("Falcon 9"),
         Transform::from_translation(translation + Vec3::X * 150.0),
         grid_cell,
         Mesh2d(meshes.add(Mesh::from(Capsule2d {
-            radius: 8.0,
-            half_length: 10.0,
+            radius: 1.85,
+            half_length: 35.0,
         }))),
         MeshMaterial2d(materials.add(ColorMaterial::from_color(TEAL))),
         // Transform::from_xyz(147.10e9 + 500.0, Planet::EARTH.radius, 2.0),
@@ -150,7 +150,7 @@ fn setup_vessel(
                 y: 30.29e3,
                 z: 0.0,
             },
-            mass: 10.0,
+            mass: 549_000.0,
             ..default()
         },
         PhysicsMaterial { restituion: 0.5 },
@@ -158,7 +158,7 @@ fn setup_vessel(
         HudSubject,
         Focusable,
         Vessel {
-            engine_translation: -Vec3::Y * (8.0 + 10.0),
+            engine_translation: -Vec3::Y * (1.85 + 35.0),
             controlled: true,
             ..default()
         },
@@ -446,7 +446,7 @@ fn vessel_systems(
                 } else {
                     commands.spawn((
                         Name::new("engine particle"),
-                        Mesh2d(meshes.add(Mesh::from(Cuboid::from_length(8.0)))),
+                        Mesh2d(meshes.add(Mesh::from(Cuboid::from_length(3.7)))),
                         Transform::from_translation(
                             transform.translation
                             // One z-layer below vessel.
