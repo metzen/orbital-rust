@@ -22,7 +22,7 @@ use crate::{
     camera::{Autoscale, Focusable},
     hud::HudSubject,
     lifetime::{Clock, Ephemeral, ExpirationAction},
-    physics::{Drag, NoGravity, RigidBody, SPEED_OF_LIGHT, dynamics},
+    physics::{Drag, NoGravity, PhysicsMaterial, RigidBody, SPEED_OF_LIGHT, dynamics},
     scene::Planet,
 };
 
@@ -153,6 +153,7 @@ fn setup_vessel(
             mass: 10.0,
             ..default()
         },
+        PhysicsMaterial { restituion: 0.5 },
         Autoscale::default(),
         HudSubject,
         Focusable,
@@ -467,6 +468,7 @@ fn vessel_systems(
                             primary: rigidbody.primary,
                             ..default()
                         },
+                        PhysicsMaterial { restituion: 0.1 },
                         NoGravity,
                         Autoscale::default(),
                         Ephemeral::new(

@@ -39,8 +39,13 @@ pub struct RigidBody {
     pub primary_force_magnitude: f32,
 }
 
-#[derive(Component)]
-pub struct PreviousTransform(Transform);
+
+#[derive(Component, Default, Reflect)]
+pub struct PhysicsMaterial {
+    pub restituion: f32,
+    // TODO: restitution combine modes (avg, mul, min, max)
+    // TODO: pub friction: f32,
+}
 
 #[derive(Component, Default)]
 pub struct CelestialBody {

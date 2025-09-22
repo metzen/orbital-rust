@@ -1,6 +1,6 @@
 use crate::{
     camera::{Autoscale, Focusable},
-    physics::{CelestialBody, RigidBody},
+    physics::{CelestialBody, PhysicsMaterial, RigidBody},
     trails::Trailable,
 };
 use bevy::{
@@ -147,6 +147,7 @@ pub fn setup_scene(
                 Planet::EARTH.radius,
                 4000,
             )))),
+            PhysicsMaterial { restituion: 0.0 },
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::EARTH.color))),
             RigidBody {
                 velocity: Vec3 {
