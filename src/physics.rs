@@ -104,19 +104,42 @@ fn gravity(
     }
 }
 
-fn drag(mut query: Query<&mut RigidBody, With<Drag>>) {
+fn drag(
+    mut query: Query<&mut RigidBody, With<Drag>>,
+    rigidbody_query: Query<&RigidBody, Without<Drag>>,
+    time: Res<Time>,
+) {
     for mut rigidbody in query.iter_mut() {
         // let primary_transform = world.get_mut::<Transform>(primary).unwrap();
         // let Some(primary) = rigidbody.primary else { todo!(); };
         // let primary_rigidbody = world.get::<RigidBody>(primary).unwrap();
         // rigidbody.velocity = rigidbody.velocity.lerp(primary_rigidbody.velocity, 0.05);
         // TODO: This is just currently hard coded for the vessel engine particles.
+        // D = Cd * A * .5 * r * V^2
         let vel = Vec3 {
             x: 0.0,
             y: 30.29e3,
             z: 0.0,
         };
-        rigidbody.velocity = rigidbody.velocity.lerp(vel, 0.01);
+        let drag_coefficient = 0.5;
+        let area = 1.0;
+        let density_of_air_at_sea_lvl = 1.225; // kg/m³
+        let velocity = if let Some(primary) = rigidbody.primary
+            && let Ok(primary_body) = rigidbody_query.get(primary)
+        {
+            rigidbody.velocity - primary_body.velocity
+        } else {
+            rigidbody.velocity
+        };
+
+        let b = drag_coefficient * area * 0.5 * density_of_air_at_sea_lvl;
+
+        let v_mag_at_t = 1.0 / (1.0 / velocity.length() + b * time.delta_secs() / rigidbody.mass);
+        let delta_v = v_mag_at_t - velocity.length();
+
+        let drag_force_magnitude = rigidbody.mass * delta_v / time.delta_secs();
+        let drag_force = drag_force_magnitude * velocity.normalize_or_zero() * 1.0;
+        rigidbody.force += drag_force;
     }
 }
 
