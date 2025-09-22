@@ -33,7 +33,7 @@ impl Plugin for PhysicsPlugin {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
 pub struct RigidBody {
     pub transform: Transform,
     pub mass: f32,
