@@ -22,7 +22,7 @@ use crate::{
     camera::{Autoscale, Focusable},
     hud::HudSubject,
     lifetime::{Clock, Ephemeral, ExpirationAction},
-    physics::{Drag, NoGravity, PhysicsMaterial, RigidBody, SPEED_OF_LIGHT, dynamics},
+    physics::{Drag, NoGravity, PhysicsMaterial, RigidBody, SPEED_OF_LIGHT},
     scene::Planet,
 };
 
@@ -40,7 +40,8 @@ impl Plugin for VesselPlugin {
                 photon_gun,
             ),
         );
-        app.add_systems(FixedPreUpdate, vessel_systems.before(dynamics));
+        // Must run after final changes have been applied to vessel translation in FixedUpdate.
+        app.add_systems(FixedPostUpdate, vessel_systems);
         app.add_plugins(InputManagerPlugin::<VesselAction>::default());
         app.init_resource::<ActionState<VesselAction>>();
         app.insert_resource(EngineParticleSpawnTimer(Timer::new(
