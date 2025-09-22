@@ -35,7 +35,6 @@ impl Plugin for PhysicsPlugin {
 
 #[derive(Component, Default, Reflect)]
 pub struct RigidBody {
-    pub transform: Transform,
     pub mass: f32,
     pub velocity: Vec3,
     pub force: Vec3,
