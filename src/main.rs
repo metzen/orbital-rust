@@ -18,6 +18,7 @@ mod trails;
 mod vessel;
 
 use audio::SineAudio;
+use bevy::winit::WinitWindows;
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use big_space::plugin::BigSpaceDefaultPlugins;
@@ -31,6 +32,7 @@ use scene::setup_scene;
 use timewarp::TimeWarpPlugin;
 use trails::TrailsPlugin;
 use vessel::VesselPlugin;
+use winit::window::Icon;
 
 // // The initial scene file will be loaded below and not change when the scene is saved
 // const SCENE_FILE_PATH: &str = "scenes/solar_system.scn.ron";
@@ -57,6 +59,17 @@ struct Args {
 
     #[arg(long)]
     framerate_limit: Option<f64>,
+}
+
+fn set_window_icon(windows: NonSend<WinitWindows>) {
+    let image = image::open("icon.ico")
+        .expect("Failed to open icon path")
+        .into_rgba8();
+    let (width, height) = image.dimensions();
+    let icon = Icon::from_rgba(image.into_raw(), width, height).unwrap();
+    for window in windows.windows.values() {
+        window.set_window_icon(Some(icon.clone()));
+    }
 }
 
 fn main() {
@@ -104,7 +117,7 @@ fn main() {
         })
         .add_audio_source::<SineAudio>()
         .insert_resource(Time::<Fixed>::from_hz(args.fixed_update_frequency))
-        .add_systems(PreStartup, setup_scene)
+        .add_systems(PreStartup, (set_window_icon, setup_scene))
         .add_systems(Update, app_control)
         .add_systems(PostUpdate, reaper)
         .run();
