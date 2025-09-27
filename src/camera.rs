@@ -1,6 +1,7 @@
 use bevy::{
     core_pipeline::bloom::Bloom,
     ecs::query::QueryData,
+    math::DVec2,
     prelude::*,
     render::{
         camera::RenderTarget,
@@ -14,11 +15,11 @@ use bevy::{
 };
 use big_space::{
     floating_origins::{BigSpace, FloatingOrigin},
-    grid::cell::GridCell,
+    grid::{Grid, cell::GridCell},
 };
 use leafwing_input_manager::prelude::*;
 
-use crate::vessel::Vessel;
+use crate::{physics::RigidBody, vessel::Vessel};
 
 /// In-game resolution width.
 const RES_WIDTH: u32 = 16 * 20;
@@ -221,7 +222,8 @@ fn fit_canvas(
 
 fn update_camera_position_for_autofollow(
     mut camera: Query<(&mut Transform, &mut GridCell, &Autofollow, &InGameCamera)>,
-    player: Query<(&Transform, &GridCell), Without<InGameCamera>>,
+    player: Query<(&Transform, &GridCell, &RigidBody), Without<InGameCamera>>,
+    grid: Single<&Grid, With<BigSpace>>,
 ) {
     let Ok((mut camera_transform, mut camera_grid_cell, autofollow, in_game_camera)) =
         camera.single_mut()
@@ -232,13 +234,26 @@ fn update_camera_position_for_autofollow(
         return;
     };
     let target = player.get(target_entity);
-    let Ok((target_transform, target_grid_cell)) = target else {
+    let Ok((target_transform, target_grid_cell, rigidbody)) = target else {
         return;
     };
     camera_transform.translation = target_transform.translation;
     camera_transform.rotation = match in_game_camera.view_mode {
         CameraViewMode::Orbital => Quat::default(),
-        CameraViewMode::Free => Quat::default(), // TODO
+        CameraViewMode::Free => {
+            if let Some(primary) = rigidbody.primary
+                && let Ok((primary_transform, primary_gridcell, _primary_rigidbody)) =
+                    player.get(primary)
+            {
+                let target_position = grid.grid_position_double(target_grid_cell, target_transform);
+                let primary_position =
+                    grid.grid_position_double(primary_gridcell, primary_transform);
+                let direction = target_position - primary_position;
+                Quat::from_rotation_z(-direction.xy().normalize().angle_to(DVec2::Y) as f32)
+            } else {
+                Quat::default()
+            }
+        }
         CameraViewMode::Locked => camera_transform
             .rotation
             .lerp(target_transform.rotation, 0.1),
