@@ -30,7 +30,7 @@ const RES_HEIGHT: u32 = 10 * 20;
 // High-res rendering layer.
 pub const HIGH_RES_LAYER: Layer = 1;
 
-#[derive(Default, PartialEq, Copy, Clone)]
+#[derive(Default, PartialEq, Copy, Clone, Debug)]
 enum CameraViewMode {
     // The camera is aligned with the body (planet, moon, or sun) you are in orbit of, keeping it "below" you in the view.
     Free,
@@ -347,7 +347,8 @@ fn camera_control(
                 .position(|m| m == &camera.in_game_camera.view_mode)
                 .unwrap();
             camera.in_game_camera.view_mode =
-                CameraViewMode::VALUES[(index + 1) % CameraViewMode::VALUES.len()]
+                CameraViewMode::VALUES[(index + 1) % CameraViewMode::VALUES.len()];
+            info!("Camera mode: {:?}", camera.in_game_camera.view_mode);
         }
     }
 }
