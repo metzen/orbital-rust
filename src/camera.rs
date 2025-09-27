@@ -41,6 +41,8 @@ enum CameraViewMode {
     // The camera is aligned fixed cardinal orientation in space (like a map), rather than the planet.
     #[default]
     Orbital,
+    // The camera switches between free and orbital when vessel is in a stable or hyperbolic orbit.
+    Auto,
 }
 
 impl CameraViewMode {
@@ -258,6 +260,7 @@ fn update_camera_position_for_autofollow(
             .rotation
             .lerp(target_transform.rotation, 0.1),
         CameraViewMode::Chase => Quat::default(), // TODO
+        CameraViewMode::Auto => Quat::default(),  // TODO
     };
     *camera_grid_cell = *target_grid_cell;
 
