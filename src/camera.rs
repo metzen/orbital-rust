@@ -233,6 +233,7 @@ fn update_camera_position_for_autofollow(
         return;
     };
     let Some(target_entity) = autofollow.target else {
+        camera_transform.rotation = Quat::default();
         return;
     };
     let target = player.get(target_entity);
