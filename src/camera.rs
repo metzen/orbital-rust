@@ -17,6 +17,7 @@ use big_space::{
     floating_origins::{BigSpace, FloatingOrigin},
     grid::{Grid, cell::GridCell},
 };
+use either::Either;
 use leafwing_input_manager::prelude::*;
 
 use crate::{physics::RigidBody, vessel::Vessel};
@@ -88,6 +89,10 @@ enum CameraAction {
     ZoomIn,
     ZoomOut,
     NextViewMode,
+    FocusNext,
+    FocusPrev,
+    FocusControlledVessel,
+    FocusNone,
 }
 
 impl CameraAction {
@@ -104,6 +109,13 @@ impl CameraAction {
             // .with(Self::ZoomOut, MouseScrollDirection::DOWN)
             .with(Self::ZoomOut, GamepadButton::LeftThumb)
             .with(Self::NextViewMode, KeyCode::KeyV)
+            .with(Self::FocusNext, KeyCode::Tab)
+            .with(
+                Self::FocusPrev,
+                ButtonlikeChord::new([KeyCode::ShiftLeft, KeyCode::Tab]),
+            )
+            .with(Self::FocusControlledVessel, KeyCode::Backquote)
+            .with(Self::FocusNone, KeyCode::F12)
     }
 }
 
@@ -394,28 +406,45 @@ pub struct Autofollow {
 }
 
 fn change_focus(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut autofollow_query: Query<&mut Autofollow, With<InGameCamera>>,
+    action_state: Res<ActionState<CameraAction>>,
+    mut autofollow: Single<&mut Autofollow, With<InGameCamera>>,
     focus_targets_query: Query<(Entity, &Name), With<Focusable>>,
+    vessels: Query<(Entity, &Vessel), With<Vessel>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Escape) {
-        autofollow_query.single_mut().unwrap().target = None;
+    if action_state.just_pressed(&CameraAction::FocusNone) {
+        autofollow.target = None;
     }
-    if keyboard_input.just_pressed(KeyCode::Tab) {
-        info!("Focus change");
-        let mut autofollow = autofollow_query.single_mut().unwrap();
-        let mut found = false;
-        for (target, name) in focus_targets_query.iter() {
-            info!("checking {}", name);
+    if action_state.just_pressed(&CameraAction::FocusControlledVessel) {
+        for (vessel_id, vessel) in vessels {
+            if vessel.controlled {
+                autofollow.target = Some(vessel_id);
+                break;
+            }
+        }
+    }
+    if action_state.just_pressed(&CameraAction::FocusNext)
+        || action_state.just_pressed(&CameraAction::FocusPrev)
+    {
+        let iter = if action_state.just_pressed(&CameraAction::FocusNext) {
+            Either::Left(focus_targets_query.iter().sort::<Entity>())
+        } else {
+            Either::Right(focus_targets_query.iter().sort::<Entity>().rev())
+        };
+        let mut peekable = iter.peekable();
+        let Some(&(first_target, first_name)) = peekable.peek() else {
+            return;
+        };
+        while let Some((target, name)) = peekable.next() {
             if autofollow.target.is_some() {
-                if found {
-                    autofollow.target = Some(target);
-                    info!("focusing {}", name);
-                    break;
-                }
                 if autofollow.target.unwrap() == target {
-                    found = true;
-                    continue;
+                    if let Some((next_target, next_name)) = peekable.next() {
+                        autofollow.target = Some(next_target);
+                        info!("focusing {}", next_name);
+                    } else {
+                        autofollow.target = Some(first_target);
+                        info!("focusing {}", first_name);
+                    }
+                    break;
                 }
             } else {
                 autofollow.target = Some(target);
