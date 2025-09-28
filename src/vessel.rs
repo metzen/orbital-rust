@@ -435,7 +435,10 @@ fn vessel_systems(
                                         * engine_particle_spawn_timer.0.duration().as_secs_f32()))
                         * time.delta_secs());
                 if let Some(mut particle) = disabled_engine_particles.next() {
-                    commands.entity(particle.entity).remove::<Disabled>();
+                    commands
+                        .entity(particle.entity)
+                        .remove::<Disabled>()
+                        .insert(ChildOf(*big_space));
                     *particle.cell = *grid_cell;
                     particle.transform.translation = translation;
                     particle.ephemeral.ttl.reset();

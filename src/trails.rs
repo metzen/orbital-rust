@@ -98,7 +98,8 @@ fn trail_system(
             if let Some(mut disabled_trail_marker) = disabled_trail_markers.next() {
                 commands
                     .entity(disabled_trail_marker.entity)
-                    .remove::<Disabled>();
+                    .remove::<Disabled>()
+                    .insert(ChildOf(*big_space));
                 *disabled_trail_marker.grid_cell = *trailable.grid_cell;
                 disabled_trail_marker.transform.translation = trailable.transform.translation;
                 materials

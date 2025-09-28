@@ -55,6 +55,7 @@ pub fn reaper(
                     commands.entity(entity).despawn();
                 }
                 ExpirationAction::Disable => {
+                    commands.entity(entity).remove::<ChildOf>();
                     commands.entity(entity).insert(Disabled);
                 }
             };
