@@ -90,6 +90,23 @@ enum CameraAction {
     NextViewMode,
 }
 
+impl CameraAction {
+    fn default_input_map() -> InputMap<Self> {
+        InputMap::default()
+            .with_dual_axis(Self::Pan, GamepadStick::RIGHT.with_deadzone_symmetric(0.2))
+            .with_dual_axis(Self::Pan, VirtualDPad::arrow_keys())
+            .with(Self::ZoomIn, KeyCode::Equal)
+            .with(Self::ZoomIn, KeyCode::NumpadAdd)
+            // .with(Self::ZoomIn, MouseScrollDirection::UP)
+            .with(Self::ZoomIn, GamepadButton::RightThumb)
+            .with(Self::ZoomOut, KeyCode::Minus)
+            .with(Self::ZoomOut, KeyCode::NumpadSubtract)
+            // .with(Self::ZoomOut, MouseScrollDirection::DOWN)
+            .with(Self::ZoomOut, GamepadButton::LeftThumb)
+            .with(Self::NextViewMode, KeyCode::KeyV)
+    }
+}
+
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
@@ -108,23 +125,6 @@ impl Plugin for CameraPlugin {
                 scale_entities.before(TransformSystem::TransformPropagate),
             ),
         );
-    }
-}
-
-impl CameraAction {
-    fn default_input_map() -> InputMap<Self> {
-        InputMap::default()
-            .with_dual_axis(Self::Pan, GamepadStick::RIGHT.with_deadzone_symmetric(0.2))
-            .with_dual_axis(Self::Pan, VirtualDPad::arrow_keys())
-            .with(Self::ZoomIn, KeyCode::Equal)
-            .with(Self::ZoomIn, KeyCode::NumpadAdd)
-            // .with(Self::ZoomIn, MouseScrollDirection::UP)
-            .with(Self::ZoomIn, GamepadButton::RightThumb)
-            .with(Self::ZoomOut, KeyCode::Minus)
-            .with(Self::ZoomOut, KeyCode::NumpadSubtract)
-            // .with(Self::ZoomOut, MouseScrollDirection::DOWN)
-            .with(Self::ZoomOut, GamepadButton::LeftThumb)
-            .with(Self::NextViewMode, KeyCode::KeyV)
     }
 }
 
