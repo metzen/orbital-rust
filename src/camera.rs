@@ -1,5 +1,9 @@
 use bevy::{
-    camera::{RenderTarget, primitives::MeshAabb, visibility::{Layer, RenderLayers}},
+    camera::{
+        RenderTarget,
+        primitives::Aabb,
+        visibility::{Layer, RenderLayers},
+    },
     ecs::query::QueryData,
     math::DVec2,
     post_process::bloom::Bloom,
@@ -368,31 +372,16 @@ fn camera_control(
 
 /// Scale entities up if they end up becoming smaller than the minimum size in the current projection scale.
 fn scale_entities(
-    mut query: Query<(&mut Transform, &Mesh2d, &Autoscale)>,
+    mut query: Query<(&mut Transform, &Aabb, &Autoscale)>,
     projection: Single<&Projection, With<InGameCamera>>,
-    meshes: ResMut<Assets<Mesh>>,
 ) {
-    let Projection::Orthographic(orthographic_projection) = *projection else {
-        return;
-    };
-    for (mut transform, mesh, autoscale) in query.iter_mut() {
-        // TODO: This needs some fixing.
-        let Some(m) = meshes.get(&mesh.0) else {
-            todo!()
-        };
-        let Some(aabb) = m.compute_aabb() else {
-            todo!()
-        };
-
-        let size = f32::min(aabb.half_extents.x, aabb.half_extents.y);
-        if size / orthographic_projection.scale < autoscale.minimum_size {
+    if let Projection::Orthographic(orthographic_projection) = *projection {
+        for (mut transform, aabb, autoscale) in query.iter_mut() {
             transform.scale = Vec3::new(
-                orthographic_projection.scale / aabb.half_extents.x,
-                orthographic_projection.scale / aabb.half_extents.y,
+                (orthographic_projection.scale / aabb.half_extents.x).max(1.0),
+                (orthographic_projection.scale / aabb.half_extents.y).max(1.0),
                 1.0,
             ) * autoscale.minimum_size;
-        } else {
-            transform.scale = Vec3::ONE;
         }
     }
 }
