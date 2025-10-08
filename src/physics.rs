@@ -1,15 +1,15 @@
 use bevy::{
+    camera::primitives::Aabb,
     ecs::{
         query::QueryData,
         system::lifetimeless::{Read, Write},
     },
     math::DVec3,
     prelude::*,
-    render::primitives::Aabb,
 };
 use big_space::{
     floating_origins::BigSpace,
-    grid::{Grid, cell::GridCell},
+    grid::{Grid, cell::CellCoord},
 };
 
 /// Gravitational constant.
@@ -43,7 +43,6 @@ pub struct RigidBody {
     pub primary_force_magnitude: f32,
 }
 
-
 #[derive(Component, Default, Reflect)]
 pub struct PhysicsMaterial {
     pub restituion: f32,
@@ -73,7 +72,7 @@ fn gravitation_force(m1: f64, m2: f64, distance: DVec3) -> Vec3 {
 #[query_data(mutable)]
 struct GravityQuery {
     entity: Entity,
-    grid_cell: &'static GridCell,
+    grid_cell: &'static CellCoord,
     transform: &'static Transform,
     rigidbody: &'static mut RigidBody,
 }
@@ -173,7 +172,7 @@ struct CollisionQueryData {
     entity: Entity,
     name: Read<Name>,
     transform: Write<Transform>,
-    grid_cell: Write<GridCell>,
+    grid_cell: Write<CellCoord>,
     rigidbody: Write<RigidBody>,
     aabb: Read<Aabb>,
 }

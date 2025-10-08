@@ -1,21 +1,18 @@
 use bevy::{
-    core_pipeline::bloom::Bloom,
+    camera::{RenderTarget, primitives::MeshAabb, visibility::{Layer, RenderLayers}},
     ecs::query::QueryData,
     math::DVec2,
+    post_process::bloom::Bloom,
     prelude::*,
-    render::{
-        camera::RenderTarget,
-        mesh::MeshAabb,
-        render_resource::{
-            Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-        },
-        view::{Layer, RenderLayers},
+    render::render_resource::{
+        Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
     },
     window::WindowResized,
 };
 use big_space::{
     floating_origins::{BigSpace, FloatingOrigin},
-    grid::{Grid, cell::GridCell},
+    grid::Grid,
+    grid::cell::CellCoord,
 };
 use either::Either;
 use leafwing_input_manager::prelude::*;
@@ -132,9 +129,9 @@ impl Plugin for CameraPlugin {
         app.add_systems(
             PostUpdate,
             (
-                update_camera_position_for_autofollow.before(TransformSystem::TransformPropagate),
-                camera_control.before(TransformSystem::TransformPropagate),
-                scale_entities.before(TransformSystem::TransformPropagate),
+                update_camera_position_for_autofollow.before(TransformSystems::Propagate),
+                camera_control.before(TransformSystems::Propagate),
+                scale_entities.before(TransformSystems::Propagate),
             ),
         );
     }
@@ -198,7 +195,7 @@ fn setup_camera(
             // render before the "main pass" camera
             order: -1,
             target: RenderTarget::from(image_handle.clone()),
-            hdr: true,
+            // hdr: true,
             ..default()
         },
         Camera2d,
@@ -207,7 +204,7 @@ fn setup_camera(
         InGameCamera::default(),
         FloatingOrigin,
         HighPrecisionScale(1.0),
-        GridCell::default(),
+        CellCoord::default(),
         Autofollow {
             target: vessel_query.iter().sort::<Entity>().next(),
         },
@@ -235,8 +232,8 @@ fn fit_canvas(
 }
 
 fn update_camera_position_for_autofollow(
-    mut camera: Query<(&mut Transform, &mut GridCell, &Autofollow, &InGameCamera)>,
-    player: Query<(&Transform, &GridCell, &RigidBody), Without<InGameCamera>>,
+    mut camera: Query<(&mut Transform, &mut CellCoord, &Autofollow, &InGameCamera)>,
+    player: Query<(&Transform, &CellCoord, &RigidBody), Without<InGameCamera>>,
     grid: Single<&Grid, With<BigSpace>>,
 ) {
     let Ok((mut camera_transform, mut camera_grid_cell, autofollow, in_game_camera)) =
@@ -299,7 +296,7 @@ struct CameraQueryData {
     entity: Entity,
     transform: &'static mut Transform,
     projection: &'static mut Projection,
-    grid_cell: &'static mut GridCell,
+    grid_cell: &'static mut CellCoord,
     scale: &'static mut HighPrecisionScale,
     in_game_camera: &'static mut InGameCamera,
 }

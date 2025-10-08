@@ -1,7 +1,7 @@
 use bevy::{
+    camera::visibility::RenderLayers,
     diagnostic::{DiagnosticsStore, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin},
     prelude::*,
-    render::view::RenderLayers,
 };
 
 use crate::camera::HIGH_RES_LAYER;
@@ -18,7 +18,7 @@ impl Plugin for DiagnosticsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             FrameTimeDiagnosticsPlugin::default(),
-            EntityCountDiagnosticsPlugin,
+            EntityCountDiagnosticsPlugin::default(),
         ))
         .add_systems(Startup, setup)
         .add_systems(Update, (update_fps, update_entity_count));

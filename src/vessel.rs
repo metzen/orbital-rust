@@ -9,10 +9,11 @@ use bevy::{
     },
     math::DVec3,
     prelude::*,
+    sprite_render::AlphaMode2d,
 };
 use big_space::{
     floating_origins::BigSpace,
-    grid::{Grid, cell::GridCell},
+    grid::{Grid, cell::CellCoord},
 };
 use leafwing_input_manager::prelude::*;
 use rand::{Rng, rng};
@@ -369,7 +370,7 @@ fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
 #[query_data(mutable)]
 struct ParticleQueryData {
     entity: Entity,
-    cell: Write<GridCell>,
+    cell: Write<CellCoord>,
     transform: Write<Transform>,
     rigidbody: Write<RigidBody>,
     ephemeral: Write<Ephemeral>,
@@ -379,7 +380,10 @@ struct ParticleQueryData {
 /// Applies effects of active vessel controls.
 fn vessel_systems(
     mut commands: Commands,
-    mut query: Query<(&mut Transform, &mut RigidBody, &Vessel, &GridCell), Without<EngineParticle>>,
+    mut query: Query<
+        (&mut Transform, &mut RigidBody, &Vessel, &CellCoord),
+        Without<EngineParticle>,
+    >,
     time: Res<Time>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -460,7 +464,7 @@ fn vessel_systems(
                         ),
                         MeshMaterial2d(materials.add(ColorMaterial {
                             color: Color::srgba(10.0, 6.0, 1.0, 1.0),
-                            alpha_mode: bevy::sprite::AlphaMode2d::Blend,
+                            alpha_mode: AlphaMode2d::Blend,
                             texture: None,
                             ..default()
                         })),
@@ -508,7 +512,7 @@ fn animate_engine_particles(
 }
 
 fn photon_gun(
-    query: Query<(&Vessel, &GridCell, &Transform)>,
+    query: Query<(&Vessel, &CellCoord, &Transform)>,
     mut commands: Commands,
     action_state: Res<ActionState<VesselAction>>,
     mut meshes: ResMut<Assets<Mesh>>,

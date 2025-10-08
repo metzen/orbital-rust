@@ -61,13 +61,14 @@ struct Args {
     framerate_limit: Option<f64>,
 }
 
-fn set_window_icon(windows: NonSend<WinitWindows>) {
+fn set_window_icon(windows: Option<NonSend<WinitWindows>>) {
     let image = image::open("icon.ico")
         .expect("Failed to open icon path")
         .into_rgba8();
     let (width, height) = image.dimensions();
     let icon = Icon::from_rgba(image.into_raw(), width, height).unwrap();
-    for window in windows.windows.values() {
+    let Some(winit) = windows else { return };
+    for window in winit.windows.values() {
         window.set_window_icon(Some(icon.clone()));
     }
 }
@@ -85,7 +86,7 @@ fn main() {
                     primary_window: Some(Window {
                         title: String::from("Orbital"),
                         present_mode: bevy::window::PresentMode::AutoNoVsync,
-                        resolution: WindowResolution::new(1152.0, 720.0)
+                        resolution: WindowResolution::new(1152, 720)
                             .with_scale_factor_override(1.0),
                         ..default()
                     }),
@@ -123,7 +124,7 @@ fn main() {
         .run();
 }
 
-fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: EventWriter<AppExit>) {
+fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: MessageWriter<AppExit>) {
     if keyboard_input.pressed(KeyCode::KeyQ) {
         exit.write(AppExit::Success);
     }

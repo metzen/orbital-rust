@@ -5,15 +5,15 @@ use crate::{
     vessel::Vessel,
 };
 use bevy::{
+    camera::{primitives::Aabb, visibility::RenderLayers},
     color::palettes::css::{BLACK, MAGENTA, YELLOW},
     ecs::query::QuerySingleError,
     math::ops::log10,
     prelude::*,
-    render::{primitives::Aabb, view::RenderLayers},
 };
 use big_space::{
     floating_origins::BigSpace,
-    grid::{Grid, cell::GridCell},
+    grid::{Grid, cell::CellCoord},
 };
 use leafwing_input_manager::{
     Actionlike,
@@ -207,7 +207,7 @@ fn setup_time_widget(commands: &mut Commands, text_font: &TextFont) {
         .with_children(|node| {
             node.spawn((
                 Text::default(),
-                TextLayout::new_with_justify(JustifyText::Center),
+                TextLayout::new_with_justify(Justify::Center),
             ))
             .with_children(|text| {
                 text.spawn((
@@ -253,14 +253,14 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
         .with_children(|node| {
             node.spawn((
                 Text::new("SURFACE"),
-                TextLayout::new_with_justify(JustifyText::Right),
+                TextLayout::new_with_justify(Justify::Right),
                 TextColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
                 BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
                 text_font.clone(),
             ));
             node.spawn((
                 Text::default(),
-                TextLayout::new_with_justify(JustifyText::Right),
+                TextLayout::new_with_justify(Justify::Right),
                 text_font.clone(),
             ))
             .with_children(|parent| {
@@ -272,7 +272,7 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
             });
             node.spawn((
                 Text::new("m/s"),
-                TextLayout::new_with_justify(JustifyText::Right),
+                TextLayout::new_with_justify(Justify::Right),
                 TextColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
                 BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
                 text_font.clone(),
@@ -560,8 +560,8 @@ fn symlog_plot(value: f32, max_value: f32, linear_threshold: f32, linear_scale: 
 }
 
 fn update_vertical_speed(
-    subject: Single<(&RigidBody, &GridCell, &Transform), With<HudSubject>>,
-    rigidbody_query: Query<(&RigidBody, &GridCell, &Transform), Without<HudSubject>>,
+    subject: Single<(&RigidBody, &CellCoord, &Transform), With<HudSubject>>,
+    rigidbody_query: Query<(&RigidBody, &CellCoord, &Transform), Without<HudSubject>>,
     mut vertical_speed_ui: Single<(&mut Node, &mut Text), With<VerticalSpeedText>>,
     grid: Single<&Grid, With<BigSpace>>,
 ) {
@@ -654,8 +654,8 @@ fn update_acceleration(
 fn update_altitude(
     mut text: Single<&mut TextSpan, With<AltitudeText>>,
     grid: Single<&Grid, With<BigSpace>>,
-    subject_query: Query<(&Transform, &GridCell, &RigidBody, &Aabb), With<HudSubject>>,
-    primary_body_query: Query<(&Transform, &GridCell, &CelestialBody)>,
+    subject_query: Query<(&Transform, &CellCoord, &RigidBody, &Aabb), With<HudSubject>>,
+    primary_body_query: Query<(&Transform, &CellCoord, &CelestialBody)>,
 ) {
     if let Ok((subject_transform, subject_grid_cell, subject_rigidbody, subject_aabb)) =
         subject_query.single()

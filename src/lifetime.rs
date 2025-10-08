@@ -49,7 +49,7 @@ pub fn reaper(
         material.color.set_alpha(ephemeral.ttl.fraction_remaining());
         // Psychedelic!
         // material.color = material.color.rotate_hue(10.0);
-        if ephemeral.ttl.finished() {
+        if ephemeral.ttl.is_finished() {
             match ephemeral.expiration_action {
                 ExpirationAction::Despawn => {
                     commands.entity(entity).despawn();

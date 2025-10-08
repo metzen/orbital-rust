@@ -7,8 +7,9 @@ use bevy::{
         system::lifetimeless::{Read, Write},
     },
     prelude::*,
+    sprite_render::AlphaMode2d,
 };
-use big_space::{floating_origins::BigSpace, grid::cell::GridCell};
+use big_space::{floating_origins::BigSpace, grid::cell::CellCoord};
 
 use crate::{
     camera::Autoscale,
@@ -59,7 +60,7 @@ impl FromWorld for TrailAssets {
 #[query_data(mutable)]
 struct TrailableQuery {
     transform: &'static Transform,
-    grid_cell: &'static GridCell,
+    grid_cell: &'static CellCoord,
     material: &'static MeshMaterial2d<ColorMaterial>,
 }
 
@@ -67,7 +68,7 @@ struct TrailableQuery {
 #[query_data(mutable)]
 struct TrailMarkerQueryData {
     entity: Entity,
-    grid_cell: Write<GridCell>,
+    grid_cell: Write<CellCoord>,
     transform: Write<Transform>,
     ephemeral: Write<Ephemeral>,
     color_material_handle: Read<MeshMaterial2d<ColorMaterial>>,
@@ -116,7 +117,7 @@ fn trail_system(
                     Mesh2d(assets.mesh.clone()),
                     MeshMaterial2d(materials.add(ColorMaterial {
                         color,
-                        alpha_mode: bevy::sprite::AlphaMode2d::Blend,
+                        alpha_mode: AlphaMode2d::Blend,
                         ..default()
                     })),
                     Ephemeral::new(

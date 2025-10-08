@@ -6,7 +6,7 @@ use crate::{
 use bevy::{
     color::palettes::css::{DARK_BLUE, GRAY, LIGHT_BLUE, MAGENTA, RED},
     prelude::*,
-    render::mesh::CircleMeshBuilder,
+    mesh::CircleMeshBuilder,
 };
 use big_space::commands::BigSpaceCommands;
 
