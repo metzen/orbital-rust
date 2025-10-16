@@ -211,7 +211,10 @@ pub fn setup_scene(
         root.spawn_spatial((
             Name::new("Moon"),
             Transform::from_xyz(147.10e9 + 385e6, 0.0, -1.0),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MOON.radius)))),
+            Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
+                Planet::MOON.radius,
+                2000,
+            )))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::MOON.color))),
             RigidBody {
                 mass: Planet::MOON.mass,
