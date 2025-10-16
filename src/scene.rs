@@ -101,7 +101,7 @@ pub fn setup_scene(
                 velocity: Vec3::ZERO,
                 ..default()
             },
-            Autoscale { minimum_size: 2.0 },
+            Autoscale::new(3.0),
             Focusable,
         ));
         root.spawn_spatial((
@@ -119,7 +119,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(2.0),
             Focusable,
         ));
         root.spawn_spatial((
@@ -137,7 +137,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(2.0),
             Focusable,
         ));
         root.spawn_spatial((
@@ -165,7 +165,7 @@ pub fn setup_scene(
                 radius: Planet::EARTH.radius,
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(2.0),
             Focusable,
         ))
         // TODO: Extract this to a helper function?
@@ -226,7 +226,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(1.0),
             Focusable,
         ));
         root.spawn_spatial((
@@ -244,7 +244,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(2.0),
             Focusable,
         ));
         root.spawn_spatial((
@@ -262,7 +262,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(1.0),
             Focusable,
         ));
         root.spawn_spatial((
@@ -280,7 +280,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(1.0),
             Focusable,
         ));
         root.spawn_spatial((
@@ -298,7 +298,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(2.0),
             Focusable,
         ));
         root.spawn_spatial((
@@ -316,7 +316,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(2.0),
             Focusable,
         ))
         .with_child((
@@ -341,7 +341,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(2.0),
             Focusable,
         ));
         root.spawn_spatial((
@@ -359,7 +359,7 @@ pub fn setup_scene(
                 ..default()
             },
             Trailable,
-            Autoscale::default(),
+            Autoscale::new(2.0),
             Focusable,
         ));
         root.spawn_spatial((
@@ -372,7 +372,7 @@ pub fn setup_scene(
                 velocity: Vec3::ZERO,
                 ..default()
             },
-            Autoscale::default(),
+            Autoscale::new(3.0),
         ));
     });
 }

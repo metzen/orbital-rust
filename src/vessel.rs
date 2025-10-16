@@ -156,7 +156,7 @@ fn setup_vessel(
             ..default()
         },
         PhysicsMaterial { restituion: 0.5 },
-        Autoscale::default(),
+        Autoscale::new(2.0),
         HudSubject,
         Focusable,
         Vessel {
@@ -192,7 +192,7 @@ fn setup_vessel(
                 mass: 100.0,
                 ..default()
             },
-            Autoscale::default(),
+            Autoscale::new(2.0),
             Focusable,
             Vessel {
                 engine_translation: -Vec3::Y * 15.0,
@@ -256,7 +256,7 @@ fn setup_vessel(
                 mass: 100.0,
                 ..default()
             },
-            Autoscale::default(),
+            Autoscale::new(2.0),
             Focusable,
             Vessel {
                 engine_translation: -Vec3::Y * 30.0,
