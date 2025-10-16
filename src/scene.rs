@@ -8,7 +8,7 @@ use bevy::{
     prelude::*,
     mesh::CircleMeshBuilder,
 };
-use big_space::commands::BigSpaceCommands;
+use big_space::{commands::BigSpaceCommands, prelude::BigSpace};
 
 pub struct Planet {
     pub mass: f32,
@@ -375,4 +375,13 @@ pub fn setup_scene(
             Autoscale::default(),
         ));
     });
+}
+
+pub fn add_name_to_big_space(
+    mut commands: Commands,
+    big_space_entity: Single<Entity, With<BigSpace>>,
+) {
+    commands
+        .entity(*big_space_entity)
+        .insert(Name::new("BigSpace"));
 }

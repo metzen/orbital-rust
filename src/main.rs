@@ -34,6 +34,8 @@ use trails::TrailsPlugin;
 use vessel::VesselPlugin;
 use winit::window::Icon;
 
+use crate::scene::add_name_to_big_space;
+
 // // The initial scene file will be loaded below and not change when the scene is saved
 // const SCENE_FILE_PATH: &str = "scenes/solar_system.scn.ron";
 
@@ -118,7 +120,7 @@ fn main() {
         })
         .add_audio_source::<SineAudio>()
         .insert_resource(Time::<Fixed>::from_hz(args.fixed_update_frequency))
-        .add_systems(PreStartup, (set_window_icon, setup_scene))
+        .add_systems(PreStartup, (set_window_icon, setup_scene, add_name_to_big_space).chain())
         .add_systems(Update, app_control)
         .add_systems(PostUpdate, reaper)
         .run();
