@@ -160,6 +160,7 @@ pub fn setup_scene(
             },
             CelestialBody {
                 atmosphere_height: 100_000.0,
+                atmosphere_density_at_sea_level: 1.225, // kg/m³
                 atmosphere_color: Color::srgba(0.0, 0.0, 0.0, 0.0),
                 radius: Planet::EARTH.radius,
             },

@@ -53,8 +53,21 @@ pub struct PhysicsMaterial {
 #[derive(Component, Default)]
 pub struct CelestialBody {
     pub atmosphere_height: f32,
+    pub atmosphere_density_at_sea_level: f32,
     pub atmosphere_color: Color,
     pub radius: f32,
+}
+
+impl CelestialBody {
+    /// Calculate the atmospheric density for this CelestialBody at a given altitude.
+    fn density_at_altitude(&self, altitude: f32) -> f32 {
+        self.atmosphere_density_at_sea_level
+            * (altitude / self.atmosphere_height)
+                .min(1.0)
+                .log(100.0)
+                .min(0.0)
+                .abs()
+    }
 }
 
 #[derive(Component)]
@@ -103,35 +116,43 @@ fn gravity(
     }
 }
 
+#[derive(QueryData)]
+struct DragPrimaryQueryData {
+    rigidbody: Read<RigidBody>,
+    celestial_body: Read<CelestialBody>,
+    aabb: Read<Aabb>,
+    transform: Read<Transform>,
+    cell: Read<CellCoord>,
+}
+
 fn drag(
-    mut query: Query<&mut RigidBody, With<Drag>>,
-    rigidbody_query: Query<&RigidBody, Without<Drag>>,
+    mut query: Query<(&mut RigidBody, &Transform, &CellCoord), With<Drag>>,
+    primary_query: Query<DragPrimaryQueryData, Without<Drag>>,
+    grid: Single<&Grid, With<BigSpace>>,
     time: Res<Time>,
 ) {
-    for mut rigidbody in query.iter_mut() {
-        // let primary_transform = world.get_mut::<Transform>(primary).unwrap();
-        // let Some(primary) = rigidbody.primary else { todo!(); };
-        // let primary_rigidbody = world.get::<RigidBody>(primary).unwrap();
-        // rigidbody.velocity = rigidbody.velocity.lerp(primary_rigidbody.velocity, 0.05);
-        // TODO: This is just currently hard coded for the vessel engine particles.
+    for (mut rigidbody, transform, cell) in query.iter_mut() {
         // D = Cd * A * .5 * r * V^2
-        let vel = Vec3 {
-            x: 0.0,
-            y: 30.29e3,
-            z: 0.0,
-        };
+        // TODO: This is just currently hard coded for the vessel engine particles.
         let drag_coefficient = 0.5;
         let area = 1.0;
-        let density_of_air_at_sea_lvl = 1.225; // kg/m³
-        let velocity = if let Some(primary) = rigidbody.primary
-            && let Ok(primary_body) = rigidbody_query.get(primary)
+        let velocity: Vec3;
+        let density: f32;
+        if let Some(primary_id) = rigidbody.primary
+            && let Ok(primary) = primary_query.get(primary_id)
         {
-            rigidbody.velocity - primary_body.velocity
+            velocity = rigidbody.velocity - primary.rigidbody.velocity;
+            let distance = (grid.grid_position_double(cell, transform)
+                - grid.grid_position_double(primary.cell, primary.transform))
+            .length();
+            let altitude = distance as f32 - primary.aabb.half_extents.x;
+            density = primary.celestial_body.density_at_altitude(altitude);
         } else {
-            rigidbody.velocity
+            velocity = rigidbody.velocity;
+            density = 0.0;
         };
 
-        let b = drag_coefficient * area * 0.5 * density_of_air_at_sea_lvl;
+        let b = drag_coefficient * area * 0.5 * density;
 
         let v_mag_at_t = 1.0 / (1.0 / velocity.length() + b * time.delta_secs() / rigidbody.mass);
         let delta_v = v_mag_at_t - velocity.length();
