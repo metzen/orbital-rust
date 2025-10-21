@@ -385,10 +385,16 @@ fn scale_entities(
     if let Projection::Orthographic(orthographic_projection) = *projection {
         for (mut transform, aabb, autoscale) in query.iter_mut() {
             transform.scale = Vec3::new(
-                (orthographic_projection.scale / aabb.half_extents.x).max(1.0),
-                (orthographic_projection.scale / aabb.half_extents.y).max(1.0),
+                f32::max(
+                    orthographic_projection.scale / aabb.half_extents.x * autoscale.minimum_size,
+                    1.0,
+                ),
+                f32::max(
+                    orthographic_projection.scale / aabb.half_extents.y * autoscale.minimum_size,
+                    1.0,
+                ),
                 1.0,
-            ) * autoscale.minimum_size;
+            );
         }
     }
 }
