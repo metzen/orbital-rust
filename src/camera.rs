@@ -425,30 +425,32 @@ fn change_focus(
         || action_state.just_pressed(&CameraAction::FocusPrev)
     {
         let iter = if action_state.just_pressed(&CameraAction::FocusNext) {
-            Either::Left(focus_targets_query.iter().sort::<Entity>())
+            Either::Left(focus_targets_query.iter().sort::<Entity>().rev())
         } else {
-            Either::Right(focus_targets_query.iter().sort::<Entity>().rev())
+            Either::Right(focus_targets_query.iter().sort::<Entity>())
         };
         let mut peekable = iter.peekable();
         let Some(&(first_target, first_name)) = peekable.peek() else {
             return;
         };
-        while let Some((target, name)) = peekable.next() {
-            if autofollow.target.is_some() {
-                if autofollow.target.unwrap() == target {
-                    if let Some((next_target, next_name)) = peekable.next() {
-                        autofollow.target = Some(next_target);
-                        info!("focusing {}", next_name);
-                    } else {
-                        autofollow.target = Some(first_target);
-                        info!("focusing {}", first_name);
+        match autofollow.target {
+            Some(current_target) => {
+                while let Some((target, _name)) = peekable.next() {
+                    if current_target == target {
+                        if let Some((next_target, next_name)) = peekable.next() {
+                            autofollow.target = Some(next_target);
+                            info!("focusing {}", next_name);
+                        } else {
+                            autofollow.target = Some(first_target);
+                            info!("focusing {}", first_name);
+                        }
+                        break;
                     }
-                    break;
                 }
-            } else {
-                autofollow.target = Some(target);
-                info!("focusing {}", name);
-                break;
+            }
+            None => {
+                autofollow.target = Some(first_target);
+                info!("focusing {}", first_name);
             }
         }
     }
