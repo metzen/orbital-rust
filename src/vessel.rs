@@ -495,18 +495,24 @@ fn vessel_systems(
 }
 
 fn animate_engine_particles(
-    mut query: Query<(&mut Transform, &MeshMaterial2d<ColorMaterial>), With<EngineParticle>>,
+    mut query: Query<
+        (&mut Transform, &MeshMaterial2d<ColorMaterial>, &Ephemeral),
+        With<EngineParticle>,
+    >,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    for (mut transform, color_material_handle) in query.iter_mut() {
+    for (mut transform, color_material_handle, ephemeral) in query.iter_mut() {
         transform.scale *= 1.005;
         let material = color_materials.get_mut(color_material_handle).unwrap();
         if material.color.luminance() > 1.0 {
             material.color.mix_assign(material.color.darker(0.5), 0.1);
         } else {
+            let alpha = (ephemeral.ttl.fraction_remaining() * 10.0).round() / 10.0;
             material
                 .color
-                .mix_assign(Color::srgba(1.0, 1.0, 1.0, material.color.alpha()), 0.3);
+                .mix_assign(Color::srgba(1.0, 1.0, 1.0, alpha), 1.0);
+            // Psychedelic!
+            // material.color = material.color.rotate_hue(10.0);
         }
     }
 }
