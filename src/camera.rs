@@ -71,7 +71,7 @@ pub struct Autoscale {
 impl Autoscale {
     /// Create an Autoscale component with the given minimum scaling size.
     pub fn new(minimum_size: f32) -> Self {
-        Self { minimum_size}
+        Self { minimum_size }
     }
 }
 
