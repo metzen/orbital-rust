@@ -3,6 +3,7 @@
 use bevy::window::WindowResolution;
 use bevy::{
     audio::{AddAudioSource, AudioPlugin, SpatialScale},
+    input::InputSystems,
     prelude::*,
 };
 
@@ -19,13 +20,18 @@ mod vessel;
 
 use audio::SineAudio;
 use bevy::winit::WinitWindows;
+use bevy_egui::{EguiPlugin, input::EguiWantsInput};
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
-use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use big_space::plugin::BigSpaceDefaultPlugins;
 use camera::CameraPlugin;
 use clap::Parser;
 use diagnostics::DiagnosticsPlugin;
 use hud::HudPlugin;
+use leafwing_input_manager::{
+    plugin::InputManagerSystem,
+    user_input::{MouseMove, MouseScroll, updating::EnabledInput},
+};
 use lifetime::reaper;
 use physics::PhysicsPlugin;
 use scene::setup_scene;
@@ -121,6 +127,12 @@ fn main() {
         .add_audio_source::<SineAudio>()
         .insert_resource(Time::<Fixed>::from_hz(args.fixed_update_frequency))
         .add_systems(PreStartup, (set_window_icon, setup_scene, add_name_to_big_space).chain())
+        .add_systems(
+            PreUpdate,
+            disable_leafwing_input_when_egui_wants_input
+                .after(InputSystems)
+                .before(InputManagerSystem::Unify),
+        )
         .add_systems(Update, app_control)
         .add_systems(PostUpdate, reaper)
         .run();
@@ -130,4 +142,17 @@ fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: MessageWrite
     if keyboard_input.pressed(KeyCode::KeyQ) {
         exit.write(AppExit::Success);
     }
+}
+
+fn disable_leafwing_input_when_egui_wants_input(
+    egui_wants_input: Res<EguiWantsInput>,
+    mut key_code: ResMut<EnabledInput<KeyCode>>,
+    mut mouse_button: ResMut<EnabledInput<MouseButton>>,
+    mut mouse_move: ResMut<EnabledInput<MouseMove>>,
+    mut mouse_scroll: ResMut<EnabledInput<MouseScroll>>,
+) {
+    key_code.is_enabled = !egui_wants_input.wants_any_keyboard_input();
+    mouse_button.is_enabled = !egui_wants_input.wants_any_pointer_input();
+    mouse_move.is_enabled = !egui_wants_input.wants_any_pointer_input();
+    mouse_scroll.is_enabled = !egui_wants_input.wants_any_pointer_input();
 }

@@ -4377,6 +4377,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_egui",
  "bevy_framepace",
  "big_space",
  "clap",
