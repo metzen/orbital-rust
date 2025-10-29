@@ -7,6 +7,10 @@ use leafwing_input_manager::{
     prelude::{ActionState, InputMap},
 };
 
+use crate::{
+    vessel::Vessel,
+};
+
 pub const TIME_WARPS: [f32; 15] = [
     1.0, 2.0, 3.0, 4.0, 10.0, 50.0, 100.0, 500.0, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
 ];
@@ -66,6 +70,7 @@ fn timewarp_control(
     mut timewarp: ResMut<TimeWarp>,
     mut virtual_time: ResMut<Time<Virtual>>,
     mut fixed_time: ResMut<Time<Fixed>>,
+    vessels: Query<&Vessel>,
 ) {
     if action_state.just_pressed(&TimeWarpAction::ToggleTimewarpPause) {
         match virtual_time.is_paused() {
@@ -80,9 +85,14 @@ fn timewarp_control(
             .iter()
             .position(|&i| i == relative_speed)
             .unwrap();
-        timewarp.value =
-            TIME_WARPS[(idx as i8 + timewarp_shift).clamp(0, TIME_WARPS.len() as i8) as usize];
-        virtual_time.set_relative_speed(timewarp.value);
-        fixed_time.set_timestep_seconds(virtual_time.relative_speed_f64() / 64.0);
+        let new_timewarp =
+            TIME_WARPS[(idx as i8 + timewarp_shift).clamp(0, TIME_WARPS.len() as i8 - 1) as usize];
+        if new_timewarp > 4.0 && vessels.iter().any(|v| v.throttle > 0.0) {
+            info!("Timewarp limited to 4x while performing burn");
+        } else {
+            timewarp.value = new_timewarp;
+            virtual_time.set_relative_speed(timewarp.value);
+            fixed_time.set_timestep_seconds(virtual_time.relative_speed_f64() / 64.0);
+        }
     }
 }
