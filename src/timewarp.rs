@@ -51,6 +51,16 @@ fn setup_timewarp(mut virtual_time: ResMut<Time<Virtual>>) {
     virtual_time.set_max_delta(Duration::MAX);
 }
 
+fn timewarp_shift_from_action_state(action_state: &Res<ActionState<TimeWarpAction>>) -> i8 {
+    if action_state.just_pressed(&TimeWarpAction::IncreaseTimewarp) {
+        1
+    } else if action_state.just_pressed(&TimeWarpAction::DecreaseTimewarp) {
+        -1
+    } else {
+        0
+    }
+}
+
 fn timewarp_control(
     action_state: Res<ActionState<TimeWarpAction>>,
     mut timewarp: ResMut<TimeWarp>,
@@ -63,13 +73,7 @@ fn timewarp_control(
             false => virtual_time.pause(),
         }
     }
-    let timewarp_shift = if action_state.just_pressed(&TimeWarpAction::IncreaseTimewarp) {
-        1
-    } else if action_state.just_pressed(&TimeWarpAction::DecreaseTimewarp) {
-        -1
-    } else {
-        0
-    };
+    let timewarp_shift = timewarp_shift_from_action_state(&action_state);
     if timewarp_shift != 0 {
         let relative_speed = timewarp.value;
         let idx = TIME_WARPS
