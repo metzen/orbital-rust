@@ -33,6 +33,7 @@ pub struct TimeWarp {
 enum TimeWarpAction {
     DecreaseTimewarp,
     IncreaseTimewarp,
+    ToggleTimewarpPause,
 }
 
 impl TimeWarpAction {
@@ -42,6 +43,7 @@ impl TimeWarpAction {
             .with(Self::DecreaseTimewarp, GamepadButton::West)
             .with(Self::IncreaseTimewarp, KeyCode::Period)
             .with(Self::IncreaseTimewarp, GamepadButton::East)
+            .with(Self::ToggleTimewarpPause, KeyCode::Slash)
     }
 }
 
@@ -55,6 +57,12 @@ fn timewarp_control(
     mut virtual_time: ResMut<Time<Virtual>>,
     mut fixed_time: ResMut<Time<Fixed>>,
 ) {
+    if action_state.just_pressed(&TimeWarpAction::ToggleTimewarpPause) {
+        match virtual_time.is_paused() {
+            true => virtual_time.unpause(),
+            false => virtual_time.pause(),
+        }
+    }
     let timewarp_shift = if action_state.just_pressed(&TimeWarpAction::IncreaseTimewarp) {
         1
     } else if action_state.just_pressed(&TimeWarpAction::DecreaseTimewarp) {
@@ -62,7 +70,6 @@ fn timewarp_control(
     } else {
         0
     };
-
     if timewarp_shift != 0 {
         let relative_speed = timewarp.value;
         let idx = TIME_WARPS
