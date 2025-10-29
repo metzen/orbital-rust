@@ -109,6 +109,7 @@ fn main() {
             CameraPlugin,
             FramepacePlugin,
             DiagnosticsPlugin,
+            MeshPickingPlugin,
             TimeWarpPlugin,
             PhysicsPlugin,
             VesselPlugin,

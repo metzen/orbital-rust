@@ -1,18 +1,24 @@
 use bevy::{
+    asset::uuid::Uuid,
     camera::{
-        RenderTarget,
+        ImageRenderTarget, RenderTarget,
         primitives::Aabb,
         visibility::{Layer, RenderLayers},
     },
-    ecs::query::QueryData,
+    ecs::{message::MessageCursor, query::QueryData},
     math::DVec2,
+    picking::{
+        PickingSystems,
+        pointer::{Location, PointerId, PointerInput, PointerInteraction},
+    },
     post_process::bloom::Bloom,
     prelude::*,
     render::render_resource::{
         Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
     },
-    window::WindowResized,
+    window::{PrimaryWindow, WindowResized},
 };
+use bevy_egui::input::egui_wants_any_pointer_input;
 use big_space::{
     floating_origins::{BigSpace, FloatingOrigin},
     grid::Grid,
@@ -31,6 +37,9 @@ const RES_HEIGHT: u32 = 10 * 20;
 
 // High-res rendering layer.
 pub const HIGH_RES_LAYER: Layer = 1;
+
+const PIXEL_CAM_POINTER_ID: PointerId =
+    PointerId::Custom(Uuid::from_u128(0x230e8400e29b41d1a716446655446439));
 
 #[derive(Default, PartialEq, Copy, Clone, Debug)]
 enum CameraViewMode {
@@ -56,6 +65,9 @@ impl CameraViewMode {
 pub struct InGameCamera {
     view_mode: CameraViewMode,
 }
+
+#[derive(Component)]
+pub struct InGamePointer;
 
 /// Camera that renders the [`Canvas`] (and other graphics on [`HIGH_RES_LAYER`]) to the screen.
 #[derive(Component)]
@@ -135,8 +147,15 @@ impl Plugin for CameraPlugin {
         app.init_resource::<ActionState<CameraAction>>();
         app.insert_resource(CameraAction::default_input_map());
         app.register_type::<Autoscale>();
+        app.add_systems(Startup, setup_pointer);
         app.add_systems(PostStartup, setup_camera);
-        app.add_systems(Update, (fit_canvas, change_focus));
+        app.add_systems(
+            First,
+            relay_pointer_input_messages
+                .in_set(PickingSystems::PostInput)
+                .run_if(not(egui_wants_any_pointer_input)),
+        );
+        app.add_systems(Update, (fit_canvas, change_focus, change_focus_on_click));
         app.add_systems(
             PostUpdate,
             (
@@ -451,6 +470,69 @@ fn change_focus(
             None => {
                 autofollow.target = Some(first_target);
                 info!("focusing {}", first_name);
+            }
+        }
+    }
+}
+
+fn setup_pointer(mut commands: Commands) {
+    commands.spawn((PIXEL_CAM_POINTER_ID, InGamePointer));
+}
+
+/// Relay PointerInput messages from window-based mouse inputs into the pixel-perfect canvas.
+fn relay_pointer_input_messages(
+    mut message_reader: Local<MessageCursor<PointerInput>>,
+    mut messages: ResMut<Messages<PointerInput>>,
+    camera: Single<&Camera, With<InGameCamera>>,
+    window: Single<&Window, With<PrimaryWindow>>,
+) {
+    let messages_to_resend: Vec<PointerInput> = message_reader
+        .read(&messages)
+        .filter(|m| m.pointer_id == PointerId::Mouse)
+        .map(|input| {
+            PointerInput {
+                pointer_id: PIXEL_CAM_POINTER_ID,
+                location: Location {
+                    target: bevy::camera::NormalizedRenderTarget::Image(ImageRenderTarget {
+                        handle: camera.target.as_image().unwrap().clone(),
+                        scale_factor: bevy::math::FloatOrd(1.0),
+                    }),
+                    // TODO: This isn't quite correct; need to account for cases where the canvas
+                    // does not fill the whole window.
+                    position: Vec2::new(
+                        (input.location.position.x / window.width()) * RES_WIDTH as f32,
+                        (input.location.position.y / window.height()) * RES_HEIGHT as f32,
+                    ),
+                },
+                action: input.action,
+            }
+        })
+        .collect();
+    for message in messages_to_resend {
+        messages.write(message);
+    }
+}
+
+/// Focus an entity when clicked.
+fn change_focus_on_click(
+    mut reader: MessageReader<PointerInput>,
+    interactions: Query<(&PointerInteraction), With<InGamePointer>>,
+    mut autofollow: Single<&mut Autofollow, With<InGameCamera>>,
+    focusable_query: Query<Has<Focusable>>,
+) {
+    for input in reader
+        .read()
+        .filter(|m| m.pointer_id == PIXEL_CAM_POINTER_ID)
+    {
+        if input.button_just_pressed(PointerButton::Primary) {
+            for interaction in interactions.iter() {
+                // TODO: Bubble up to next nearest hit when nearest is not focusable.
+                if let Some((entity, _hit)) = interaction.get_nearest_hit()
+                    && let Ok(focusable) = focusable_query.get(*entity)
+                    && focusable
+                {
+                    autofollow.target = Some(*entity);
+                }
             }
         }
     }
