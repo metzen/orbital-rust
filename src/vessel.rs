@@ -23,7 +23,7 @@ use crate::{
     camera::{Autoscale, Focusable},
     hud::HudSubject,
     lifetime::{Clock, Ephemeral, ExpirationAction},
-    physics::{Drag, NoGravity, PhysicsMaterial, RigidBody, SPEED_OF_LIGHT},
+    physics::{Collider, Drag, NoGravity, PhysicsMaterial, RigidBody, SPEED_OF_LIGHT},
     scene::Planet,
     timewarp::TimeWarp,
 };
@@ -175,6 +175,7 @@ fn setup_vessel(
             speed: 0.1,
             ..default()
         },
+        Collider,
         ChildOf(big_space),
     ));
     commands
@@ -185,6 +186,7 @@ fn setup_vessel(
                 Vec2::new(-13.0, -15.0),
                 Vec2::new(13.0, -15.0),
             )))),
+            Collider,
             Transform::from_translation(translation + Vec3::X * 75.0),
             grid_cell,
             MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgba(1.0, 0.8, 0.54, 1.0)))),
@@ -251,6 +253,7 @@ fn setup_vessel(
             }))),
             Transform::from_translation(translation),
             grid_cell,
+            Collider,
             MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16)))),
             RigidBody {
                 velocity: Vec3 {
@@ -499,6 +502,7 @@ fn vessel_systems(
                         ),
                         EngineParticle,
                         Drag,
+                        Collider,
                         ChildOf(*big_space),
                     ));
                 }

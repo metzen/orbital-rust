@@ -33,6 +33,9 @@ impl Plugin for PhysicsPlugin {
     }
 }
 
+#[derive(Component)]
+pub struct Collider;
+
 #[derive(Component, Default, Reflect)]
 pub struct RigidBody {
     pub mass: f32,
@@ -198,7 +201,10 @@ struct CollisionQueryData {
     aabb: Read<Aabb>,
 }
 
-fn collision(mut query: Query<CollisionQueryData>, grid: Single<&Grid, With<BigSpace>>) {
+fn collision(
+    mut query: Query<CollisionQueryData, With<Collider>>,
+    grid: Single<&Grid, With<BigSpace>>,
+) {
     let mut iter = query.iter_combinations_mut();
     while let Some([a, b]) = iter.fetch_next() {
         let (mut primary, mut secondary) = if a.rigidbody.mass > b.rigidbody.mass {
