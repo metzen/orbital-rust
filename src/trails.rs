@@ -21,7 +21,7 @@ pub struct TrailsPlugin;
 impl Plugin for TrailsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(TrailTimer(Timer::from_seconds(0.01, TimerMode::Repeating)));
-        app.insert_resource(TrailsOptions { enabled: true });
+        app.insert_resource(TrailsOptions { enabled: false });
         app.init_resource::<TrailAssets>();
         app.add_systems(Update, trail_system);
     }
