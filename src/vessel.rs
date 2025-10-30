@@ -102,6 +102,10 @@ impl VesselAction {
             .with(Self::ThrottleClose, GamepadButton::LeftTrigger)
             .with(Self::TogglePrecisionControls, KeyCode::CapsLock)
             .with(Self::FirePhoton, KeyCode::Space)
+            .with(Self::SasModePrograde, KeyCode::KeyP)
+            .with(Self::SasModeRetrograde, KeyCode::KeyR)
+            .with(Self::SasModeRadial, KeyCode::KeyO)
+            .with(Self::SasModeAntiRadial, KeyCode::KeyI)
     }
 }
 
