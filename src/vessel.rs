@@ -25,6 +25,7 @@ use crate::{
     lifetime::{Clock, Ephemeral, ExpirationAction},
     physics::{Drag, NoGravity, PhysicsMaterial, RigidBody, SPEED_OF_LIGHT},
     scene::Planet,
+    timewarp::TimeWarp,
 };
 
 pub struct VesselPlugin;
@@ -292,7 +293,11 @@ fn setup_vessel(
         });
 }
 
-fn vessel_control(mut query: Query<&mut Vessel>, action_state: Res<ActionState<VesselAction>>) {
+fn vessel_control(
+    mut query: Query<&mut Vessel>,
+    action_state: Res<ActionState<VesselAction>>,
+    timewarp: Res<TimeWarp>,
+) {
     for mut vessel in query.iter_mut() {
         if !vessel.controlled {
             continue;
@@ -305,28 +310,32 @@ fn vessel_control(mut query: Query<&mut Vessel>, action_state: Res<ActionState<V
             }
         }
 
+        let mut throttle = vessel.throttle;
         if action_state.pressed(&VesselAction::ThrottleOpen) {
-            vessel.throttle = 1.0
+            throttle = 1.0;
         }
-
         if action_state.pressed(&VesselAction::ThrottleClose) {
-            vessel.throttle = 0.0
+            throttle = 0.0;
         }
-
         if action_state.pressed(&VesselAction::ThrottleIncrease) {
             let change = match vessel.control_mode {
                 ControlMode::Normal => 0.01,
                 ControlMode::Fine => 0.0005,
             };
             let input = action_state.clamped_button_value(&VesselAction::ThrottleIncrease);
-            vessel.throttle = (vessel.throttle + change * input).clamp(0.0, 1.0);
+            throttle = (vessel.throttle + change * input).clamp(0.0, 1.0);
         }
         if action_state.pressed(&VesselAction::ThrottleDecrease) {
             let change = match vessel.control_mode {
                 ControlMode::Normal => -0.01,
                 ControlMode::Fine => -0.0005,
             };
-            vessel.throttle = (vessel.throttle + change).clamp(0.0, 1.0);
+            throttle = (vessel.throttle + change).clamp(0.0, 1.0);
+        }
+        if timewarp.value > 4.0 && vessel.throttle != throttle {
+            info!("Throttle is locked while Time Warp is over 4x")
+        } else {
+            vessel.throttle = throttle;
         }
 
         // TODO: Do this as angular torque instead of setting rotation directly.
