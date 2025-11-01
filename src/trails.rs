@@ -39,7 +39,8 @@ pub struct TrailMarker;
 #[derive(Resource)]
 struct TrailTimer(Timer);
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 struct TrailsOptions {
     enabled: bool,
 }
