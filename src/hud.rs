@@ -364,7 +364,7 @@ fn setup_orbital_info_widget(commands: &mut Commands, text_font: &TextFont) {
                 ));
                 text.spawn((TextSpan::new(" in "), text_font.clone()));
                 text.spawn((
-                    TextSpan::new("T+"),
+                    TextSpan::new("T-"),
                     text_font.clone(),
                     TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
                 ));
