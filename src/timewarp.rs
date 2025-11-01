@@ -13,9 +13,6 @@ pub const TIME_WARPS: [f32; 15] = [
     1.0, 2.0, 3.0, 4.0, 10.0, 50.0, 100.0, 500.0, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
 ];
 
-#[derive(Event)]
-struct TimeWarpChangeEvent;
-
 pub struct TimeWarpPlugin;
 
 impl Plugin for TimeWarpPlugin {
@@ -43,6 +40,12 @@ impl Default for TimeWarp {
             index: 0,
         }
     }
+}
+
+#[derive(Event)]
+struct TimeWarpChangeEvent {
+    // The index of the new time warp.
+    index: isize,
 }
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
@@ -102,19 +105,18 @@ fn timewarp_control(
             timewarp.index = new_index;
             virtual_time.set_relative_speed(timewarp.value);
             fixed_time.set_timestep_seconds(virtual_time.relative_speed_f64() / 64.0);
-            commands.trigger(TimeWarpChangeEvent);
+            commands.trigger(TimeWarpChangeEvent { index: new_index });
         }
     }
 }
 
 fn play_sound_on_timewarp_change(
-    _timewarp_change: On<TimeWarpChangeEvent>,
+    event: On<TimeWarpChangeEvent>,
     mut commands: Commands,
     mut assets: ResMut<Assets<SineAudio>>,
-    timewarp: Res<TimeWarp>,
 ) {
     commands.spawn((
-        AudioPlayer(assets.add(SineAudio::new(550.0 + timewarp.index as f32 * 100.0))),
+        AudioPlayer(assets.add(SineAudio::new(550.0 + event.index as f32 * 100.0))),
         PlaybackSettings::DESPAWN.with_duration(Duration::from_millis(30)),
     ));
 }
