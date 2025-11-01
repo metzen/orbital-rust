@@ -170,11 +170,7 @@ fn setup_vessel(
             ..default()
         },
         AudioPlayer(assets.add(SineAudio::new(120.0))),
-        PlaybackSettings {
-            spatial: true,
-            speed: 0.1,
-            ..default()
-        },
+        PlaybackSettings::ONCE.with_spatial(true).with_speed(0.0),
         Collider,
         ChildOf(big_space),
     ));
@@ -206,11 +202,7 @@ fn setup_vessel(
                 ..default()
             },
             AudioPlayer(assets.add(SineAudio::new(150.0))),
-            PlaybackSettings {
-                spatial: true,
-                speed: 0.1,
-                ..default()
-            },
+            PlaybackSettings::ONCE.with_spatial(true).with_speed(0.0),
             ChildOf(big_space),
         ))
         .with_children(|vessel| {
@@ -271,11 +263,7 @@ fn setup_vessel(
                 ..default()
             },
             AudioPlayer(assets.add(SineAudio::new(150.0))),
-            PlaybackSettings {
-                spatial: true,
-                speed: 0.1,
-                ..default()
-            },
+            PlaybackSettings::ONCE.with_spatial(true).with_speed(0.0),
             ChildOf(big_space),
         ))
         .with_children(|vessel| {
