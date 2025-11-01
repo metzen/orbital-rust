@@ -21,8 +21,8 @@ impl Plugin for TimeWarpPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<TimeWarpAction>::default());
         app.init_resource::<ActionState<TimeWarpAction>>();
+        app.init_resource::<TimeWarp>();
         app.insert_resource(TimeWarpAction::default_input_map());
-        app.insert_resource(TimeWarp { value: 1.0 });
         app.add_systems(Startup, setup_timewarp);
         app.add_systems(Update, timewarp_control);
     }
@@ -31,6 +31,16 @@ impl Plugin for TimeWarpPlugin {
 #[derive(Resource, Debug, Copy, Clone, Reflect)]
 pub struct TimeWarp {
     pub value: f32,
+    pub index: isize,
+}
+
+impl Default for TimeWarp {
+    fn default() -> Self {
+        Self {
+            value: 1.0,
+            index: 0,
+        }
+    }
 }
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
@@ -55,7 +65,7 @@ fn setup_timewarp(mut virtual_time: ResMut<Time<Virtual>>) {
     virtual_time.set_max_delta(Duration::MAX);
 }
 
-fn timewarp_shift_from_action_state(action_state: &Res<ActionState<TimeWarpAction>>) -> i8 {
+fn timewarp_shift_from_action_state(action_state: &Res<ActionState<TimeWarpAction>>) -> isize {
     if action_state.just_pressed(&TimeWarpAction::IncreaseTimewarp) {
         1
     } else if action_state.just_pressed(&TimeWarpAction::DecreaseTimewarp) {
@@ -80,17 +90,13 @@ fn timewarp_control(
     }
     let timewarp_shift = timewarp_shift_from_action_state(&action_state);
     if timewarp_shift != 0 {
-        let relative_speed = timewarp.value;
-        let idx = TIME_WARPS
-            .iter()
-            .position(|&i| i == relative_speed)
-            .unwrap();
-        let new_timewarp =
-            TIME_WARPS[(idx as i8 + timewarp_shift).clamp(0, TIME_WARPS.len() as i8 - 1) as usize];
+        let new_index = (timewarp.index + timewarp_shift).clamp(0, TIME_WARPS.len() as isize - 1);
+        let new_timewarp = TIME_WARPS[new_index as usize];
         if new_timewarp > 4.0 && vessels.iter().any(|v| v.throttle > 0.0) {
             info!("Timewarp limited to 4x while performing burn");
         } else {
             timewarp.value = new_timewarp;
+            timewarp.index = new_index;
             virtual_time.set_relative_speed(timewarp.value);
             fixed_time.set_timestep_seconds(virtual_time.relative_speed_f64() / 64.0);
         }
