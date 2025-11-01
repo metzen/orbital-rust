@@ -126,6 +126,26 @@ pub struct EngineParticle;
 #[derive(Resource, Default)]
 struct EngineParticleSpawnTimer(Timer);
 
+pub trait VesselCommands {
+    /// Spawn a [`Vessel`].
+    fn spawn_vessel(&mut self, bundle: impl Bundle) -> EntityCommands<'_>;
+}
+
+impl VesselCommands for Commands<'_, '_> {
+    fn spawn_vessel(&mut self, bundle: impl Bundle) -> EntityCommands<'_> {
+        let mut commands = self.spawn(bundle);
+        commands.insert((
+            Autoscale::new(2.0),
+            Collider,
+            Drag,
+            Focusable,
+            Pickable::default(),
+            PlaybackSettings::ONCE.with_spatial(true).with_speed(0.0),
+        ));
+        commands
+    }
+}
+
 fn setup_vessel(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -141,7 +161,7 @@ fn setup_vessel(
         y: Planet::EARTH.radius as f64 + 40.0,
         z: 4.0,
     });
-    commands.spawn((
+    commands.spawn_vessel((
         Name::new("Falcon 9"),
         Transform::from_translation(translation + Vec3::X * 150.0),
         grid_cell,
@@ -158,28 +178,23 @@ fn setup_vessel(
             ..default()
         },
         PhysicsMaterial { restituion: 0.5 },
-        Autoscale::new(2.0),
         HudSubject,
-        Focusable,
         Vessel {
             engine_translation: -Vec3::Y * (1.85 + 35.0),
             controlled: true,
             ..default()
         },
         AudioPlayer(assets.add(SineAudio::new(120.0))),
-        PlaybackSettings::ONCE.with_spatial(true).with_speed(0.0),
-        Collider,
         ChildOf(big_space),
     ));
     commands
-        .spawn((
+        .spawn_vessel((
             Name::new("Pizza"),
             Mesh2d(meshes.add(Mesh::from(Triangle2d::new(
                 Vec2::new(0.0, 20.0),
                 Vec2::new(-13.0, -15.0),
                 Vec2::new(13.0, -15.0),
             )))),
-            Collider,
             Transform::from_translation(translation + Vec3::X * 75.0),
             grid_cell,
             MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgba(1.0, 0.8, 0.54, 1.0)))),
@@ -192,14 +207,11 @@ fn setup_vessel(
                 mass: 100.0,
                 ..default()
             },
-            Autoscale::new(2.0),
-            Focusable,
             Vessel {
                 engine_translation: -Vec3::Y * 15.0,
                 ..default()
             },
             AudioPlayer(assets.add(SineAudio::new(150.0))),
-            PlaybackSettings::ONCE.with_spatial(true).with_speed(0.0),
             ChildOf(big_space),
         ))
         .with_children(|vessel| {
@@ -231,12 +243,11 @@ fn setup_vessel(
             ));
         });
     commands
-        .spawn((
+        .spawn_vessel((
             Name::new("Hotdog"),
             Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
             Transform::from_translation(translation),
             grid_cell,
-            Collider,
             MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16)))),
             RigidBody {
                 velocity: Vec3 {
@@ -247,14 +258,11 @@ fn setup_vessel(
                 mass: 100.0,
                 ..default()
             },
-            Autoscale::new(2.0),
-            Focusable,
             Vessel {
                 engine_translation: -Vec3::Y * 30.0,
                 ..default()
             },
             AudioPlayer(assets.add(SineAudio::new(150.0))),
-            PlaybackSettings::ONCE.with_spatial(true).with_speed(0.0),
             ChildOf(big_space),
         ))
         .with_children(|vessel| {
