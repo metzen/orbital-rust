@@ -1,10 +1,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use bevy::window::WindowResolution;
 use bevy::{
     audio::{AddAudioSource, AudioPlugin, SpatialScale},
     input::InputSystems,
     prelude::*,
+    window::WindowResolution,
 };
 
 mod audio;
@@ -127,7 +127,10 @@ fn main() {
         })
         .add_audio_source::<SineAudio>()
         .insert_resource(Time::<Fixed>::from_hz(args.fixed_update_frequency))
-        .add_systems(PreStartup, (set_window_icon, setup_scene, add_name_to_big_space).chain())
+        .add_systems(
+            PreStartup,
+            (set_window_icon, setup_scene, add_name_to_big_space).chain(),
+        )
         .add_systems(
             PreUpdate,
             disable_leafwing_input_when_egui_wants_input
