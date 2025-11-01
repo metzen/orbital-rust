@@ -444,6 +444,7 @@ fn vessel_systems(
                     particle.transform.translation = translation;
                     particle.ephemeral.ttl.reset();
                     particle.rigidbody.velocity = velocity;
+                    particle.rigidbody.primary = rigidbody.primary;
                     materials
                         .get_mut(particle.color_material_handle)
                         .unwrap()
