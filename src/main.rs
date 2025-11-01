@@ -69,6 +69,25 @@ struct Args {
     framerate_limit: Option<f64>,
 }
 
+fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: MessageWriter<AppExit>) {
+    if keyboard_input.pressed(KeyCode::KeyQ) {
+        exit.write(AppExit::Success);
+    }
+}
+
+fn disable_leafwing_input_when_egui_wants_input(
+    egui_wants_input: Res<EguiWantsInput>,
+    mut key_code: ResMut<EnabledInput<KeyCode>>,
+    mut mouse_button: ResMut<EnabledInput<MouseButton>>,
+    mut mouse_move: ResMut<EnabledInput<MouseMove>>,
+    mut mouse_scroll: ResMut<EnabledInput<MouseScroll>>,
+) {
+    key_code.is_enabled = !egui_wants_input.wants_any_keyboard_input();
+    mouse_button.is_enabled = !egui_wants_input.wants_any_pointer_input();
+    mouse_move.is_enabled = !egui_wants_input.wants_any_pointer_input();
+    mouse_scroll.is_enabled = !egui_wants_input.wants_any_pointer_input();
+}
+
 fn set_window_icon(windows: Option<NonSend<WinitWindows>>) {
     let image = image::open("icon.ico")
         .expect("Failed to open icon path")
@@ -140,23 +159,4 @@ fn main() {
         .add_systems(Update, app_control)
         .add_systems(PostUpdate, reaper)
         .run();
-}
-
-fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: MessageWriter<AppExit>) {
-    if keyboard_input.pressed(KeyCode::KeyQ) {
-        exit.write(AppExit::Success);
-    }
-}
-
-fn disable_leafwing_input_when_egui_wants_input(
-    egui_wants_input: Res<EguiWantsInput>,
-    mut key_code: ResMut<EnabledInput<KeyCode>>,
-    mut mouse_button: ResMut<EnabledInput<MouseButton>>,
-    mut mouse_move: ResMut<EnabledInput<MouseMove>>,
-    mut mouse_scroll: ResMut<EnabledInput<MouseScroll>>,
-) {
-    key_code.is_enabled = !egui_wants_input.wants_any_keyboard_input();
-    mouse_button.is_enabled = !egui_wants_input.wants_any_pointer_input();
-    mouse_move.is_enabled = !egui_wants_input.wants_any_pointer_input();
-    mouse_scroll.is_enabled = !egui_wants_input.wants_any_pointer_input();
 }
