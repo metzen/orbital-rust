@@ -23,7 +23,10 @@ impl Plugin for TrailsPlugin {
         app.insert_resource(TrailTimer(Timer::from_seconds(0.01, TimerMode::Repeating)));
         app.insert_resource(TrailsOptions { enabled: false });
         app.init_resource::<TrailAssets>();
-        app.add_systems(Update, trail_system);
+        app.add_systems(
+            Update,
+            trail_system.run_if(|opts: Res<TrailsOptions>| opts.enabled),
+        );
     }
 }
 
@@ -58,7 +61,7 @@ impl FromWorld for TrailAssets {
 
 #[derive(QueryData)]
 #[query_data(mutable)]
-struct TrailableQuery {
+struct TrailableQueryData {
     transform: &'static Transform,
     grid_cell: &'static CellCoord,
     material: &'static MeshMaterial2d<ColorMaterial>,
@@ -74,24 +77,20 @@ struct TrailMarkerQueryData {
     color_material_handle: Read<MeshMaterial2d<ColorMaterial>>,
 }
 
+type TrailableQuery<'world, 'state> = Query<'world, 'state, TrailableQueryData, With<Trailable>>;
+type DisabledTrailMarkerQuery<'world, 'state> =
+    Query<'world, 'state, TrailMarkerQueryData, (With<TrailMarker>, With<Disabled>)>;
+
 fn trail_system(
-    options: Res<TrailsOptions>,
     mut commands: Commands,
     time: Res<Time>,
     mut timer: ResMut<TrailTimer>,
     assets: Res<TrailAssets>,
-    query: Query<TrailableQuery, With<Trailable>>,
     big_space: Single<Entity, With<BigSpace>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut disabled_trail_marker_query: Query<
-        TrailMarkerQueryData,
-        (With<TrailMarker>, With<Disabled>),
-    >,
+    (query, mut disabled_trail_marker_query): (TrailableQuery, DisabledTrailMarkerQuery),
 ) {
     // TODO: Prevent the system from scheduling when disabled instead.
-    if !options.enabled {
-        return;
-    }
     let mut disabled_trail_markers = disabled_trail_marker_query.iter_mut();
     if timer.0.tick(time.delta()).just_finished() {
         for trailable in query.iter() {
