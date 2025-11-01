@@ -54,13 +54,14 @@ impl Plugin for VesselPlugin {
     }
 }
 
-#[derive(Default, PartialEq)]
+#[derive(Default, PartialEq, Reflect)]
 enum ControlMode {
     #[default]
     Normal,
     Fine,
 }
 
+#[derive(Reflect)]
 enum Direction {
     Prograde,
     Retrograde,
@@ -109,7 +110,7 @@ impl VesselAction {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
 pub struct Vessel {
     pub controlled: bool,
     pub throttle: f32, // [0, 1]
