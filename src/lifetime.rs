@@ -55,3 +55,11 @@ pub fn reaper(
         }
     }
 }
+
+pub struct LifetimePlugin;
+
+impl Plugin for LifetimePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(PostUpdate, reaper);
+    }
+}

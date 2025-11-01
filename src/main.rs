@@ -32,7 +32,6 @@ use leafwing_input_manager::{
     plugin::InputManagerSystem,
     user_input::{MouseMove, MouseScroll, updating::EnabledInput},
 };
-use lifetime::reaper;
 use physics::PhysicsPlugin;
 use scene::setup_scene;
 use timewarp::TimeWarpPlugin;
@@ -40,7 +39,7 @@ use trails::TrailsPlugin;
 use vessel::VesselPlugin;
 use winit::window::Icon;
 
-use crate::scene::add_name_to_big_space;
+use crate::{lifetime::LifetimePlugin, scene::add_name_to_big_space};
 
 // // The initial scene file will be loaded below and not change when the scene is saved
 // const SCENE_FILE_PATH: &str = "scenes/solar_system.scn.ron";
@@ -129,6 +128,7 @@ fn main() {
             FramepacePlugin,
             DiagnosticsPlugin,
             MeshPickingPlugin,
+            LifetimePlugin,
             TimeWarpPlugin,
             PhysicsPlugin,
             VesselPlugin,
@@ -157,6 +157,5 @@ fn main() {
                 .before(InputManagerSystem::Unify),
         )
         .add_systems(Update, app_control)
-        .add_systems(PostUpdate, reaper)
         .run();
 }
