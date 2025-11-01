@@ -18,7 +18,7 @@ use bevy::{
     },
     window::{PrimaryWindow, WindowResized},
 };
-use bevy_egui::input::egui_wants_any_pointer_input;
+use bevy_egui::{EguiStartupSet, input::egui_wants_any_pointer_input};
 use big_space::{
     floating_origins::{BigSpace, FloatingOrigin},
     grid::Grid,
@@ -147,6 +147,10 @@ impl Plugin for CameraPlugin {
         app.init_resource::<ActionState<CameraAction>>();
         app.insert_resource(CameraAction::default_input_map());
         app.register_type::<Autoscale>();
+        app.add_systems(
+            PreStartup,
+            setup_outer_camera.before(EguiStartupSet::InitContexts),
+        );
         app.add_systems(Startup, setup_pointer);
         app.add_systems(PostStartup, setup_camera);
         app.add_systems(
@@ -165,6 +169,19 @@ impl Plugin for CameraPlugin {
             ),
         );
     }
+}
+
+fn setup_outer_camera(mut commands: Commands) {
+    // The "outer" camera, which renders whatever is on `HIGH_RES_LAYER` to the screen.
+    //
+    // By default, Egui will render to the first Camera created by an application, so this
+    // one should be spawned first.
+    commands.spawn((
+        Camera2d,
+        OuterCamera,
+        Projection::from(OrthographicProjection::default_2d()),
+        RenderLayers::layer(HIGH_RES_LAYER),
+    ));
 }
 
 fn setup_camera(
@@ -201,16 +218,6 @@ fn setup_camera(
 
     let image_handle = images.add(canvas);
 
-    // The "outer" camera, which renders whatever is on `HIGH_RES_LAYER` to the screen.
-    //
-    // By default, Egui will render to the first Camera created by an application, so this
-    // one should be spawned first.
-    commands.spawn((
-        Camera2d,
-        OuterCamera,
-        Projection::from(OrthographicProjection::default_2d()),
-        RenderLayers::layer(HIGH_RES_LAYER),
-    ));
     // A sprite in the high-res layer which is effectively a canvas/billboard to which the
     // in-game camera renders.
     commands.spawn((
