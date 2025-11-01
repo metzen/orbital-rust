@@ -26,8 +26,9 @@ impl Plugin for TimeWarpPlugin {
         app.add_observer(play_sound_on_timewarp_change);
     }
 }
-// #[reflect(Resource, Default)]
+
 #[derive(Resource, Debug, Copy, Clone, Reflect)]
+#[reflect(Resource)]
 pub struct TimeWarp {
     pub value: f32,
     pub index: isize,
