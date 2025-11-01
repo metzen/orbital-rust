@@ -169,7 +169,7 @@ fn setup_vessel(
             controlled: true,
             ..default()
         },
-        AudioPlayer(assets.add(SineAudio { frequency: 120.0 })),
+        AudioPlayer(assets.add(SineAudio::new(120.0))),
         PlaybackSettings {
             spatial: true,
             speed: 0.1,
@@ -205,7 +205,7 @@ fn setup_vessel(
                 engine_translation: -Vec3::Y * 15.0,
                 ..default()
             },
-            AudioPlayer(assets.add(SineAudio { frequency: 150.0 })),
+            AudioPlayer(assets.add(SineAudio::new(150.0))),
             PlaybackSettings {
                 spatial: true,
                 speed: 0.1,
@@ -270,7 +270,7 @@ fn setup_vessel(
                 engine_translation: -Vec3::Y * 30.0,
                 ..default()
             },
-            AudioPlayer(assets.add(SineAudio { frequency: 150.0 })),
+            AudioPlayer(assets.add(SineAudio::new(150.0))),
             PlaybackSettings {
                 spatial: true,
                 speed: 0.1,

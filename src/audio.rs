@@ -8,7 +8,13 @@ use bevy::{audio::Source, prelude::*};
 // This allows the type to be registered as an asset.
 #[derive(Asset, TypePath)]
 pub struct SineAudio {
-    pub frequency: f32,
+    frequency: f32,
+}
+
+impl SineAudio {
+    pub fn new(frequency: f32) -> Self {
+        Self { frequency }
+    }
 }
 
 // This decoder is responsible for playing the audio,

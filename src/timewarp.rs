@@ -114,9 +114,7 @@ fn play_sound_on_timewarp_change(
     timewarp: Res<TimeWarp>,
 ) {
     commands.spawn((
-        AudioPlayer(assets.add(SineAudio {
-            frequency: 550.0 + timewarp.index as f32 * 100.0,
-        })),
+        AudioPlayer(assets.add(SineAudio::new(550.0 + timewarp.index as f32 * 100.0))),
         PlaybackSettings::DESPAWN.with_duration(Duration::from_millis(30)),
     ));
 }
