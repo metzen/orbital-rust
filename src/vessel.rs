@@ -377,11 +377,15 @@ struct ParticleQueryData {
 /// Applies effects of active vessel controls.
 fn vessel_systems(
     mut commands: Commands,
-    mut query: Query<
-        (&mut Transform, &mut RigidBody, &Vessel, &CellCoord),
-        Without<EngineParticle>,
-    >,
+    mut query: Query<(
+        &mut Transform,
+        &mut RigidBody,
+        &Vessel,
+        &CellCoord,
+        &GlobalTransform,
+    )>,
     time: Res<Time>,
+    primary_query: Query<(&GlobalTransform, &RigidBody), Without<Vessel>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     big_space: Single<Entity, With<BigSpace>>,
@@ -393,8 +397,35 @@ fn vessel_systems(
 ) {
     engine_particle_spawn_timer.0.tick(time.delta());
     let mut disabled_engine_particles = disabled_engine_particle_query.iter_mut();
-    for (mut transform, mut rigidbody, vessel, grid_cell) in query.iter_mut() {
-        if vessel.rotate != 0.0 {
+    for (mut transform, mut rigidbody, vessel, grid_cell, global_transform) in query.iter_mut() {
+        if let Some(direction_lock) = &vessel.direction_lock
+            && let Some(primary) = rigidbody.primary
+            && let Ok((primary_global_transform, primary_rigidbody)) = primary_query.get(primary)
+        {
+            let relative_position =
+                global_transform.translation() - primary_global_transform.translation();
+            let relative_velocity = rigidbody.velocity - primary_rigidbody.velocity;
+            let angle = Vec2::Y.angle_to(relative_velocity.xy());
+            let modifier = match direction_lock {
+                Direction::Prograde => 0.0,
+                Direction::Retrograde => PI,
+                Direction::Radial => {
+                    PI / 2.0
+                        * relative_velocity
+                            .xy()
+                            .angle_to(relative_position.xy())
+                            .signum()
+                }
+                Direction::AntiRadial => {
+                    -PI / 2.0
+                        * relative_velocity
+                            .xy()
+                            .angle_to(relative_position.xy())
+                            .signum()
+                }
+            };
+            transform.rotation = Quat::from_axis_angle(Vec3::Z, angle + modifier);
+        } else if vessel.rotate != 0.0 {
             transform.rotate_z(vessel.rotate * time.delta_secs());
         }
         if vessel.throttle > 0.0 {
