@@ -145,10 +145,7 @@ fn setup_vessel(
         Name::new("Falcon 9"),
         Transform::from_translation(translation + Vec3::X * 150.0),
         grid_cell,
-        Mesh2d(meshes.add(Mesh::from(Capsule2d {
-            radius: 1.85,
-            half_length: 35.0,
-        }))),
+        Mesh2d(meshes.add(Mesh::from(Capsule2d::new(1.85, 70.0)))),
         MeshMaterial2d(materials.add(ColorMaterial::from_color(TEAL))),
         // Transform::from_xyz(147.10e9 + 500.0, Planet::EARTH.radius, 2.0),
         RigidBody {
@@ -208,28 +205,25 @@ fn setup_vessel(
         .with_children(|vessel| {
             vessel.spawn((
                 Name::new("pepperoni"),
-                Mesh2d(meshes.add(Mesh::from(Circle { radius: 2.0 }))),
+                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 Transform::from_xyz(-2.0, -2.0, 1.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
             ));
             vessel.spawn((
                 Name::new("pepperoni"),
-                Mesh2d(meshes.add(Mesh::from(Circle { radius: 2.0 }))),
+                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 Transform::from_xyz(3.0, -8.0, 1.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
             ));
             vessel.spawn((
                 Name::new("pepperoni"),
-                Mesh2d(meshes.add(Mesh::from(Circle { radius: 2.0 }))),
+                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 Transform::from_xyz(1.0, 5.0, 1.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
             ));
             vessel.spawn((
                 Name::new("crust"),
-                Mesh2d(meshes.add(Mesh::from(Capsule2d {
-                    radius: 3.0,
-                    half_length: 10.0,
-                }))),
+                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(3.0, 20.0)))),
                 Transform::from_xyz(0.0, -15.0, 1.0).with_rotation(Quat::from_rotation_z(PI / 2.0)),
                 MeshMaterial2d(
                     materials.add(ColorMaterial::from(Color::srgba(0.96, 0.69, 0.24, 1.0))),
@@ -239,10 +233,7 @@ fn setup_vessel(
     commands
         .spawn((
             Name::new("Hotdog"),
-            Mesh2d(meshes.add(Mesh::from(Capsule2d {
-                radius: 10.0,
-                half_length: 20.0,
-            }))),
+            Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
             Transform::from_translation(translation),
             grid_cell,
             Collider,
@@ -269,19 +260,13 @@ fn setup_vessel(
         .with_children(|vessel| {
             vessel.spawn((
                 Name::new("Hot dog bun 1"),
-                Mesh2d(meshes.add(Mesh::from(Capsule2d {
-                    radius: 10.0,
-                    half_length: 20.0,
-                }))),
+                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
                 Transform::from_xyz(-10.0, 0.0, -1.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27)))),
             ));
             vessel.spawn((
                 Name::new("Hot dog bun 2"),
-                Mesh2d(meshes.add(Mesh::from(Capsule2d {
-                    radius: 10.0,
-                    half_length: 20.0,
-                }))),
+                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
                 Transform::from_xyz(10.0, 0.0, -1.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27)))),
             ));
