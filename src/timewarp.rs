@@ -7,13 +7,14 @@ use leafwing_input_manager::{
     prelude::{ActionState, InputMap},
 };
 
-use crate::{
-    vessel::Vessel,
-};
+use crate::{audio::SineAudio, vessel::Vessel};
 
 pub const TIME_WARPS: [f32; 15] = [
     1.0, 2.0, 3.0, 4.0, 10.0, 50.0, 100.0, 500.0, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
 ];
+
+#[derive(Event)]
+struct TimeWarpChangeEvent;
 
 pub struct TimeWarpPlugin;
 
@@ -25,6 +26,7 @@ impl Plugin for TimeWarpPlugin {
         app.insert_resource(TimeWarpAction::default_input_map());
         app.add_systems(Startup, setup_timewarp);
         app.add_systems(Update, timewarp_control);
+        app.add_observer(play_sound_on_timewarp_change);
     }
 }
 // #[reflect(Resource, Default)]
@@ -81,6 +83,7 @@ fn timewarp_control(
     mut virtual_time: ResMut<Time<Virtual>>,
     mut fixed_time: ResMut<Time<Fixed>>,
     vessels: Query<&Vessel>,
+    mut commands: Commands,
 ) {
     if action_state.just_pressed(&TimeWarpAction::ToggleTimewarpPause) {
         match virtual_time.is_paused() {
@@ -99,6 +102,21 @@ fn timewarp_control(
             timewarp.index = new_index;
             virtual_time.set_relative_speed(timewarp.value);
             fixed_time.set_timestep_seconds(virtual_time.relative_speed_f64() / 64.0);
+            commands.trigger(TimeWarpChangeEvent);
         }
     }
+}
+
+fn play_sound_on_timewarp_change(
+    _timewarp_change: On<TimeWarpChangeEvent>,
+    mut commands: Commands,
+    mut assets: ResMut<Assets<SineAudio>>,
+    timewarp: Res<TimeWarp>,
+) {
+    commands.spawn((
+        AudioPlayer(assets.add(SineAudio {
+            frequency: 550.0 + timewarp.index as f32 * 100.0,
+        })),
+        PlaybackSettings::DESPAWN.with_duration(Duration::from_millis(30)),
+    ));
 }
