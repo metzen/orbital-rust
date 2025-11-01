@@ -378,7 +378,7 @@ struct ParticleQueryData {
 /// Applies effects of active vessel controls.
 fn vessel_systems(
     mut commands: Commands,
-    mut query: Query<(
+    mut vessels: Query<(
         &mut Transform,
         &mut RigidBody,
         &Vessel,
@@ -387,10 +387,12 @@ fn vessel_systems(
     )>,
     time: Res<Time>,
     primary_query: Query<(&GlobalTransform, &RigidBody), Without<Vessel>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    (mut meshes, mut materials, mut engine_particle_spawn_timer): (
+        ResMut<Assets<Mesh>>,
+        ResMut<Assets<ColorMaterial>>,
+        ResMut<EngineParticleSpawnTimer>,
+    ),
     big_space: Single<Entity, With<BigSpace>>,
-    mut engine_particle_spawn_timer: ResMut<EngineParticleSpawnTimer>,
     mut disabled_engine_particle_query: Query<
         ParticleQueryData,
         (With<EngineParticle>, With<Disabled>),
@@ -398,7 +400,7 @@ fn vessel_systems(
 ) {
     engine_particle_spawn_timer.0.tick(time.delta());
     let mut disabled_engine_particles = disabled_engine_particle_query.iter_mut();
-    for (mut transform, mut rigidbody, vessel, grid_cell, global_transform) in query.iter_mut() {
+    for (mut transform, mut rigidbody, vessel, grid_cell, global_transform) in vessels.iter_mut() {
         if let Some(direction_lock) = &vessel.direction_lock
             && let Some(primary) = rigidbody.primary
             && let Ok((primary_global_transform, primary_rigidbody)) = primary_query.get(primary)
