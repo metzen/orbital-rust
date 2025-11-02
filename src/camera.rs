@@ -130,7 +130,7 @@ impl CameraAction {
                 ButtonlikeChord::new([KeyCode::ShiftLeft, KeyCode::Tab]),
             )
             .with(Self::FocusControlledVessel, KeyCode::Backquote)
-            .with(Self::FocusNone, KeyCode::F12)
+            .with(Self::FocusNone, KeyCode::F4)
     }
 }
 
