@@ -518,7 +518,7 @@ fn relay_pointer_input_messages(
 /// Focus an entity when clicked.
 fn change_focus_on_click(
     mut reader: MessageReader<PointerInput>,
-    interactions: Query<(&PointerInteraction), With<InGamePointer>>,
+    interactions: Query<&PointerInteraction, With<InGamePointer>>,
     mut autofollow: Single<&mut Autofollow, With<InGameCamera>>,
     focusable_query: Query<Has<Focusable>>,
 ) {
