@@ -2,6 +2,7 @@
 
 use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale};
 use bevy::input::InputSystems;
+use bevy::input::common_conditions::input_toggle_active;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 
@@ -134,7 +135,7 @@ fn main() {
             TrailsPlugin,
             HudPlugin,
             EguiPlugin::default(),
-            WorldInspectorPlugin::new(),
+            WorldInspectorPlugin::new().run_if(input_toggle_active(false, KeyCode::F12)),
             // LogDiagnosticsPlugin::default(),
         ))
         .insert_resource(FramepaceSettings {
