@@ -2,18 +2,20 @@ use bevy::ecs::entity_disabling::Disabled;
 use bevy::prelude::*;
 
 /// What should happen when an ephemeral entity expires.
+#[derive(Reflect)]
 pub enum ExpirationAction {
     Despawn,
     Disable,
 }
 
+#[derive(Reflect)]
 pub enum Clock {
     Real,
     Virtual,
 }
 
 /// An "ephemeral" entity.
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct Ephemeral {
     pub ttl: Timer,
     pub expiration_action: ExpirationAction,
