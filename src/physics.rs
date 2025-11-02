@@ -33,6 +33,7 @@ pub struct Collider;
 
 #[derive(Component, Default, Reflect)]
 pub struct RigidBody {
+    /// The mass of an entity (in kilograms).
     pub mass: f32,
     pub velocity: Vec3,
     pub force: Vec3,
