@@ -249,7 +249,7 @@ fn setup_camera(
 
 /// Scales camera projection to fit the window (integer multiples only).
 fn fit_canvas(
-    mut resize_events: EventReader<WindowResized>,
+    mut resize_events: MessageReader<WindowResized>,
     mut projection: Single<&mut Projection, With<OuterCamera>>,
 ) {
     for event in resize_events.read() {
