@@ -1,14 +1,12 @@
-use crate::{
-    camera::{Autoscale, Focusable},
-    physics::{CelestialBody, Collider, PhysicsMaterial, RigidBody},
-    trails::Trailable,
-};
-use bevy::{
-    color::palettes::css::{DARK_BLUE, GRAY, LIGHT_BLUE, MAGENTA, RED},
-    mesh::CircleMeshBuilder,
-    prelude::*,
-};
-use big_space::{commands::BigSpaceCommands, prelude::BigSpace};
+use bevy::color::palettes::css::{DARK_BLUE, GRAY, LIGHT_BLUE, MAGENTA, RED};
+use bevy::mesh::CircleMeshBuilder;
+use bevy::prelude::*;
+use big_space::commands::BigSpaceCommands;
+use big_space::prelude::BigSpace;
+
+use crate::camera::{Autoscale, Focusable};
+use crate::physics::{CelestialBody, Collider, PhysicsMaterial, RigidBody};
+use crate::trails::Trailable;
 
 pub struct Planet {
     pub mass: f32,

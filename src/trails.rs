@@ -1,20 +1,15 @@
 use std::time::Duration;
 
-use bevy::{
-    ecs::{
-        entity_disabling::Disabled,
-        query::QueryData,
-        system::lifetimeless::{Read, Write},
-    },
-    prelude::*,
-    sprite_render::AlphaMode2d,
-};
-use big_space::{floating_origins::BigSpace, grid::cell::CellCoord};
+use bevy::ecs::entity_disabling::Disabled;
+use bevy::ecs::query::QueryData;
+use bevy::ecs::system::lifetimeless::{Read, Write};
+use bevy::prelude::*;
+use bevy::sprite_render::AlphaMode2d;
+use big_space::floating_origins::BigSpace;
+use big_space::grid::cell::CellCoord;
 
-use crate::{
-    camera::Autoscale,
-    lifetime::{Clock, Ephemeral, ExpirationAction},
-};
+use crate::camera::Autoscale;
+use crate::lifetime::{Clock, Ephemeral, ExpirationAction};
 
 pub struct TrailsPlugin;
 

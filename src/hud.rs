@@ -1,25 +1,20 @@
-use crate::{
-    camera::{Autofollow, HIGH_RES_LAYER, InGameCamera},
-    physics::{CelestialBody, RigidBody},
-    timewarp::{TIME_WARPS, TimeWarp},
-    vessel::Vessel,
-};
-use bevy::{
-    camera::{primitives::Aabb, visibility::RenderLayers},
-    color::palettes::css::{BLACK, MAGENTA, YELLOW},
-    ecs::query::QuerySingleError,
-    math::ops::log10,
-    prelude::*,
-};
-use big_space::{
-    floating_origins::BigSpace,
-    grid::{Grid, cell::CellCoord},
-};
-use leafwing_input_manager::{
-    Actionlike,
-    plugin::InputManagerPlugin,
-    prelude::{ActionState, InputMap},
-};
+use bevy::camera::primitives::Aabb;
+use bevy::camera::visibility::RenderLayers;
+use bevy::color::palettes::css::{BLACK, MAGENTA, YELLOW};
+use bevy::ecs::query::QuerySingleError;
+use bevy::math::ops::log10;
+use bevy::prelude::*;
+use big_space::floating_origins::BigSpace;
+use big_space::grid::Grid;
+use big_space::grid::cell::CellCoord;
+use leafwing_input_manager::Actionlike;
+use leafwing_input_manager::plugin::InputManagerPlugin;
+use leafwing_input_manager::prelude::{ActionState, InputMap};
+
+use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera};
+use crate::physics::{CelestialBody, RigidBody};
+use crate::timewarp::{TIME_WARPS, TimeWarp};
+use crate::vessel::Vessel;
 
 pub struct HudPlugin;
 

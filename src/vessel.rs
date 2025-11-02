@@ -1,32 +1,26 @@
-use std::{f32::consts::PI, time::Duration};
+use std::f32::consts::PI;
+use std::time::Duration;
 
-use bevy::{
-    color::palettes::css::{RED, TEAL},
-    ecs::{
-        entity_disabling::Disabled,
-        query::QueryData,
-        system::lifetimeless::{Read, Write},
-    },
-    math::DVec3,
-    prelude::*,
-    sprite_render::AlphaMode2d,
-};
-use big_space::{
-    floating_origins::BigSpace,
-    grid::{Grid, cell::CellCoord},
-};
+use bevy::color::palettes::css::{RED, TEAL};
+use bevy::ecs::entity_disabling::Disabled;
+use bevy::ecs::query::QueryData;
+use bevy::ecs::system::lifetimeless::{Read, Write};
+use bevy::math::DVec3;
+use bevy::prelude::*;
+use bevy::sprite_render::AlphaMode2d;
+use big_space::floating_origins::BigSpace;
+use big_space::grid::Grid;
+use big_space::grid::cell::CellCoord;
 use leafwing_input_manager::prelude::*;
 use rand::{Rng, rng};
 
-use crate::{
-    audio::SineAudio,
-    camera::{Autoscale, Focusable},
-    hud::HudSubject,
-    lifetime::{Clock, Ephemeral, ExpirationAction},
-    physics::{Collider, Drag, NoGravity, PhysicsMaterial, RigidBody, SPEED_OF_LIGHT},
-    scene::Planet,
-    timewarp::TimeWarp,
-};
+use crate::audio::SineAudio;
+use crate::camera::{Autoscale, Focusable};
+use crate::hud::HudSubject;
+use crate::lifetime::{Clock, Ephemeral, ExpirationAction};
+use crate::physics::{Collider, Drag, NoGravity, PhysicsMaterial, RigidBody, SPEED_OF_LIGHT};
+use crate::scene::Planet;
+use crate::timewarp::TimeWarp;
 
 pub struct VesselPlugin;
 

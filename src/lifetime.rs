@@ -1,4 +1,5 @@
-use bevy::{ecs::entity_disabling::Disabled, prelude::*};
+use bevy::ecs::entity_disabling::Disabled;
+use bevy::prelude::*;
 
 /// What should happen when an ephemeral entity expires.
 pub enum ExpirationAction {

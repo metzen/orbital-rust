@@ -1,6 +1,7 @@
 use std::time::Duration;
 
-use bevy::{audio::Source, prelude::*};
+use bevy::audio::Source;
+use bevy::prelude::*;
 
 // This struct usually contains the data for the audio being played.
 // This is where data read from an audio file would be stored, for example.

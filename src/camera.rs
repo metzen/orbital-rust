@@ -1,33 +1,28 @@
-use bevy::{
-    asset::uuid::Uuid,
-    camera::{
-        ImageRenderTarget, RenderTarget,
-        primitives::Aabb,
-        visibility::{Layer, RenderLayers},
-    },
-    ecs::{message::MessageCursor, query::QueryData},
-    math::DVec2,
-    picking::{
-        PickingSystems,
-        pointer::{Location, PointerId, PointerInput, PointerInteraction},
-    },
-    post_process::bloom::Bloom,
-    prelude::*,
-    render::render_resource::{
-        Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-    },
-    window::{PrimaryWindow, WindowResized},
+use bevy::asset::uuid::Uuid;
+use bevy::camera::primitives::Aabb;
+use bevy::camera::visibility::{Layer, RenderLayers};
+use bevy::camera::{ImageRenderTarget, RenderTarget};
+use bevy::ecs::message::MessageCursor;
+use bevy::ecs::query::QueryData;
+use bevy::math::DVec2;
+use bevy::picking::PickingSystems;
+use bevy::picking::pointer::{Location, PointerId, PointerInput, PointerInteraction};
+use bevy::post_process::bloom::Bloom;
+use bevy::prelude::*;
+use bevy::render::render_resource::{
+    Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
-use bevy_egui::{EguiStartupSet, input::egui_wants_any_pointer_input};
-use big_space::{
-    floating_origins::{BigSpace, FloatingOrigin},
-    grid::Grid,
-    grid::cell::CellCoord,
-};
+use bevy::window::{PrimaryWindow, WindowResized};
+use bevy_egui::EguiStartupSet;
+use bevy_egui::input::egui_wants_any_pointer_input;
+use big_space::floating_origins::{BigSpace, FloatingOrigin};
+use big_space::grid::Grid;
+use big_space::grid::cell::CellCoord;
 use either::Either;
 use leafwing_input_manager::prelude::*;
 
-use crate::{physics::RigidBody, vessel::Vessel};
+use crate::physics::RigidBody;
+use crate::vessel::Vessel;
 
 /// In-game resolution width.
 const RES_WIDTH: u32 = 16 * 20;

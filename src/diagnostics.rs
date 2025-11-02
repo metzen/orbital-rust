@@ -1,8 +1,8 @@
-use bevy::{
-    camera::visibility::RenderLayers,
-    diagnostic::{DiagnosticsStore, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin},
-    prelude::*,
+use bevy::camera::visibility::RenderLayers;
+use bevy::diagnostic::{
+    DiagnosticsStore, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
 };
+use bevy::prelude::*;
 
 use crate::camera::HIGH_RES_LAYER;
 

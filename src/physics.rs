@@ -1,16 +1,11 @@
-use bevy::{
-    camera::primitives::Aabb,
-    ecs::{
-        query::QueryData,
-        system::lifetimeless::{Read, Write},
-    },
-    math::DVec3,
-    prelude::*,
-};
-use big_space::{
-    floating_origins::BigSpace,
-    grid::{Grid, cell::CellCoord},
-};
+use bevy::camera::primitives::Aabb;
+use bevy::ecs::query::QueryData;
+use bevy::ecs::system::lifetimeless::{Read, Write};
+use bevy::math::DVec3;
+use bevy::prelude::*;
+use big_space::floating_origins::BigSpace;
+use big_space::grid::Grid;
+use big_space::grid::cell::CellCoord;
 
 /// Gravitational constant.
 const G: f64 = 6.67430e-11; // (N * m**2) / kg**2

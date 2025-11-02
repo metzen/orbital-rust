@@ -1,11 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use bevy::{
-    audio::{AddAudioSource, AudioPlugin, SpatialScale},
-    input::InputSystems,
-    prelude::*,
-    window::WindowResolution,
-};
+use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale};
+use bevy::input::InputSystems;
+use bevy::prelude::*;
+use bevy::window::WindowResolution;
 
 mod audio;
 mod camera;
@@ -20,7 +18,8 @@ mod vessel;
 
 use audio::SineAudio;
 use bevy::winit::WinitWindows;
-use bevy_egui::{EguiPlugin, input::EguiWantsInput};
+use bevy_egui::EguiPlugin;
+use bevy_egui::input::EguiWantsInput;
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use big_space::plugin::BigSpaceDefaultPlugins;
@@ -28,10 +27,9 @@ use camera::CameraPlugin;
 use clap::Parser;
 use diagnostics::DiagnosticsPlugin;
 use hud::HudPlugin;
-use leafwing_input_manager::{
-    plugin::InputManagerSystem,
-    user_input::{MouseMove, MouseScroll, updating::EnabledInput},
-};
+use leafwing_input_manager::plugin::InputManagerSystem;
+use leafwing_input_manager::user_input::updating::EnabledInput;
+use leafwing_input_manager::user_input::{MouseMove, MouseScroll};
 use physics::PhysicsPlugin;
 use scene::setup_scene;
 use timewarp::TimeWarpPlugin;
@@ -39,7 +37,8 @@ use trails::TrailsPlugin;
 use vessel::VesselPlugin;
 use winit::window::Icon;
 
-use crate::{lifetime::LifetimePlugin, scene::add_name_to_big_space};
+use crate::lifetime::LifetimePlugin;
+use crate::scene::add_name_to_big_space;
 
 // // The initial scene file will be loaded below and not change when the scene is saved
 // const SCENE_FILE_PATH: &str = "scenes/solar_system.scn.ron";
