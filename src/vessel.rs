@@ -199,7 +199,7 @@ fn setup_vessel(
                     y: 30.29e3,
                     z: 0.0,
                 },
-                mass: 100.0,
+                mass: 100_000.0,
                 ..default()
             },
             Vessel {
@@ -250,7 +250,7 @@ fn setup_vessel(
                     y: 30.29e3,
                     z: 0.0,
                 },
-                mass: 100.0,
+                mass: 200_000.0,
                 ..default()
             },
             Vessel {
