@@ -125,22 +125,29 @@ struct DragPrimaryQueryData {
 }
 
 fn drag(
-    mut query: Query<(&mut RigidBody, &Transform, &CellCoord), With<Drag>>,
+    mut query: Query<(&mut RigidBody, &Transform, &CellCoord, &Aabb), With<Drag>>,
     primary_query: Query<DragPrimaryQueryData, Without<Drag>>,
     grid: Single<&Grid, With<BigSpace>>,
     time: Res<Time>,
 ) {
-    for (mut rigidbody, transform, cell) in query.iter_mut() {
+    for (mut rigidbody, transform, cell, aabb) in query.iter_mut() {
         // D = Cd * A * .5 * r * V^2
         // TODO: This is just currently hard coded for the vessel engine particles.
         let drag_coefficient = 0.5;
-        let area = 1.0;
+        let area: f32;
         let velocity: Vec3;
         let density: f32;
         if let Some(primary_id) = rigidbody.primary
             && let Ok(primary) = primary_query.get(primary_id)
         {
             velocity = rigidbody.velocity - primary.rigidbody.velocity;
+            area = aabb.half_extents.y.lerp(
+                aabb.half_extents.x,
+                velocity
+                    .normalize_or_zero()
+                    .dot(transform.rotation * Vec3::Y)
+                    .abs(),
+            ) * 2.0;
             let distance = (grid.grid_position_double(cell, transform)
                 - grid.grid_position_double(primary.cell, primary.transform))
             .length();
@@ -149,6 +156,7 @@ fn drag(
         } else {
             velocity = rigidbody.velocity;
             density = 0.0;
+            area = 1.0;
         };
 
         let b = drag_coefficient * area * 0.5 * density;
