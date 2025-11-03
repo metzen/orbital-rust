@@ -2,7 +2,7 @@ use bevy::color::palettes::css::{DARK_BLUE, GRAY, LIGHT_BLUE, MAGENTA, RED};
 use bevy::mesh::CircleMeshBuilder;
 use bevy::prelude::*;
 use big_space::commands::BigSpaceCommands;
-use big_space::prelude::BigSpace;
+use big_space::prelude::{BigSpace, GridCommands, SpatialEntityCommands};
 
 use crate::camera::{Autoscale, Focusable};
 use crate::physics::{CelestialBody, Collider, PhysicsMaterial, RigidBody};
@@ -82,6 +82,26 @@ impl Planet {
     };
 }
 
+pub trait SceneCommands {
+    /// Spawn a celestial body.
+    fn spawn_body(&mut self, bundle: impl Bundle) -> SpatialEntityCommands<'_>;
+}
+
+impl SceneCommands for GridCommands<'_> {
+    fn spawn_body(&mut self, bundle: impl Bundle) -> SpatialEntityCommands<'_> {
+        let mut commands = self.spawn_spatial(bundle);
+        commands.insert((
+            Collider,
+            Focusable,
+            Trailable,
+            Pickable::default(),
+        ));
+        let id = commands.id();
+        commands.commands().entity(id).insert_if_new(Autoscale::new(2.0));
+        commands
+    }
+}
+
 /// Spawn the simulation entities.
 pub fn setup_scene(
     mut commands: Commands,
@@ -89,7 +109,7 @@ pub fn setup_scene(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands.spawn_big_space_default(|root| {
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Sun"),
             Transform::from_xyz(0.0, 0.0, 10.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::SUN.radius)))),
@@ -100,9 +120,8 @@ pub fn setup_scene(
                 ..default()
             },
             Autoscale::new(3.0),
-            Focusable,
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Mercury"),
             Transform::from_xyz(0.0, 46e9, 0.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MERCURY.radius)))),
@@ -116,11 +135,8 @@ pub fn setup_scene(
                 },
                 ..default()
             },
-            Trailable,
-            Autoscale::new(2.0),
-            Focusable,
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Venus"),
             Transform::from_xyz(0.0, -108.2e9, 0.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::VENUS.radius)))),
@@ -134,18 +150,14 @@ pub fn setup_scene(
                 },
                 ..default()
             },
-            Trailable,
-            Autoscale::new(2.0),
-            Focusable,
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Earth"),
             Transform::from_xyz(147.10e9, 0.0, 0.0),
             Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
                 Planet::EARTH.radius,
                 4000,
             )))),
-            Collider,
             PhysicsMaterial { restituion: 0.0 },
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::EARTH.color))),
             RigidBody {
@@ -163,9 +175,6 @@ pub fn setup_scene(
                 atmosphere_color: Color::srgba(0.0, 0.0, 0.0, 0.0),
                 radius: Planet::EARTH.radius,
             },
-            Trailable,
-            Autoscale::new(2.0),
-            Focusable,
         ))
         // TODO: Extract this to a helper function?
         .with_children(|earth| {
@@ -207,7 +216,7 @@ pub fn setup_scene(
                 )))),
             ));
         });
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Moon"),
             Transform::from_xyz(147.10e9 + 385e6, 0.0, -1.0),
             Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
@@ -224,11 +233,8 @@ pub fn setup_scene(
                 },
                 ..default()
             },
-            Trailable,
-            Autoscale::new(1.0),
-            Focusable,
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Mars"),
             Transform::from_xyz(206.7e9, 0.0, 0.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MARS.radius)))),
@@ -242,11 +248,8 @@ pub fn setup_scene(
                 },
                 ..default()
             },
-            Trailable,
-            Autoscale::new(2.0),
-            Focusable,
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Phobos"),
             Transform::from_xyz(206.7e9 + 9_376e3, 0.0, -1.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::PHOBOS.radius)))),
@@ -260,11 +263,8 @@ pub fn setup_scene(
                 },
                 ..default()
             },
-            Trailable,
-            Autoscale::new(1.0),
-            Focusable,
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Deimos"),
             Transform::from_xyz(206.7e9 + 23_455e3, 0.0, -1.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::DEIMOS.radius)))),
@@ -278,11 +278,8 @@ pub fn setup_scene(
                 },
                 ..default()
             },
-            Trailable,
-            Autoscale::new(1.0),
-            Focusable,
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Jupiter"),
             Transform::from_xyz(740.595e9, 0.0, 0.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::JUPITER.radius)))),
@@ -296,11 +293,8 @@ pub fn setup_scene(
                 },
                 ..default()
             },
-            Trailable,
-            Autoscale::new(2.0),
-            Focusable,
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Saturn"),
             Transform::from_xyz(1352.55e9, 0.0, 0.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::SATURN.radius)))),
@@ -314,9 +308,6 @@ pub fn setup_scene(
                 },
                 ..default()
             },
-            Trailable,
-            Autoscale::new(2.0),
-            Focusable,
         ))
         .with_child((
             Mesh2d(meshes.add(Mesh::from(Annulus::new(
@@ -325,7 +316,7 @@ pub fn setup_scene(
             )))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.44, 0.44, 0.44)))),
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Uranus"),
             Transform::from_xyz(2735.56e9, 0.0, 0.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::URANUS.radius)))),
@@ -339,11 +330,8 @@ pub fn setup_scene(
                 },
                 ..default()
             },
-            Trailable,
-            Autoscale::new(2.0),
-            Focusable,
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Neptune"),
             Transform::from_xyz(4471.05e9, 0.0, 0.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::NEPTUNE.radius)))),
@@ -357,18 +345,15 @@ pub fn setup_scene(
                 },
                 ..default()
             },
-            Trailable,
-            Autoscale::new(2.0),
-            Focusable,
         ));
-        root.spawn_spatial((
+        root.spawn_body((
             Name::new("Proxima Centauri"),
             Transform::from_xyz(4.017499e16, 0.0, 0.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::PROXIMA_CENTAURI.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::PROXIMA_CENTAURI.color))),
             RigidBody {
                 mass: Planet::PROXIMA_CENTAURI.mass,
-                velocity: Vec3::ZERO,
+                velocity: Vec3::new(0.0, 40.0, 0.0),
                 ..default()
             },
             Autoscale::new(3.0),
