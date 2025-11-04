@@ -420,7 +420,7 @@ fn scale_entities(
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct Autofollow {
     pub target: Option<Entity>,
 }
