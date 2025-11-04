@@ -183,7 +183,7 @@ fn setup_camera(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
     big_space: Single<Entity, With<BigSpace>>,
-    vessel_query: Query<Entity, With<Vessel>>,
+    vessel_query: Query<(Entity, &Vessel)>,
 ) {
     let canvas_size = Extent3d {
         width: RES_WIDTH,
@@ -238,7 +238,11 @@ fn setup_camera(
         HighPrecisionScale(1.0),
         CellCoord::default(),
         Autofollow {
-            target: vessel_query.iter().sort::<Entity>().next(),
+            target: vessel_query
+                .iter()
+                .filter(|(_, vessel)| vessel.controlled)
+                .map(|(entity, _)| entity)
+                .next(),
         },
         Bloom::OLD_SCHOOL,
         SpatialListener::new(100.0),
