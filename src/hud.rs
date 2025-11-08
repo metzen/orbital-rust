@@ -20,7 +20,7 @@ pub struct HudPlugin;
 
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_hud);
+        app.add_systems(Startup, (setup_hud, setup_gizmos));
         app.add_systems(
             Update,
             (
@@ -81,6 +81,11 @@ const BORDER_COLOR: BorderColor = BorderColor {
     left: Color::srgb(0.184, 0.188, 0.251),
 };
 
+fn setup_gizmos(mut config_store: ResMut<GizmoConfigStore>) {
+    let (config, _config_group) = config_store.config_mut::<DefaultGizmoConfigGroup>();
+    config.line.width = 1.0;
+    // config.render_layers = RenderLayers::layer(1);
+}
 
 fn setup_throttle_widget(commands: &mut Commands, text_font: &TextFont) {
     commands
