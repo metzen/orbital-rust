@@ -668,8 +668,10 @@ fn update_time_warp(
             if let Ok(mut bg_color) = background_color_query.get_mut(timewarp_box_id) {
                 bg_color.0 = if i <= timewarp_index {
                     Color::srgb(0.027, 0.69, 0.286)
-                } else {
+                } else if i <= time_warp.max_allowed_index {
                     Color::srgb(0.439, 0.451, 0.525)
+                } else {
+                    Color::srgb(0.14, 0.13, 0.16)
                 }
             }
         }
