@@ -83,6 +83,11 @@ fn gravitation_force(m1: f64, m2: f64, distance: DVec3) -> Vec3 {
     (unit * (G * m1 * m2 / distance.length_squared())).as_vec3()
 }
 
+fn tidal_force(m1: f64, m2: f64, distance: DVec3) -> Vec3 {
+    let unit = distance.normalize() * DVec3::new(1.0, 1.0, 0.0);
+    (unit * (2.0 * G * m1 * m2 / distance.length().powi(3))).as_vec3()
+}
+
 #[derive(QueryData)]
 #[query_data(mutable)]
 struct GravityQuery {
@@ -98,23 +103,28 @@ fn gravity(
 ) {
     let mut iter = query.iter_combinations_mut();
     while let Some([mut a, mut b]) = iter.fetch_next() {
-        let force = gravitation_force(
-            a.rigidbody.mass.into(),
-            b.rigidbody.mass.into(),
-            grid.grid_position_double(a.grid_cell, a.transform)
-                - grid.grid_position_double(b.grid_cell, b.transform),
-        );
-        let force_magnitude = force.length();
+        let distance = grid.grid_position_double(a.grid_cell, a.transform)
+            - grid.grid_position_double(b.grid_cell, b.transform);
+        let force = gravitation_force(a.rigidbody.mass.into(), b.rigidbody.mass.into(), distance);
+        let tidal_force = tidal_force(a.rigidbody.mass.into(), b.rigidbody.mass.into(), distance);
         a.rigidbody.force -= force;
-        if force_magnitude > a.rigidbody.primary_force_magnitude {
+        let tidal_force_magnitude = tidal_force.length();
+        if a.rigidbody.mass < b.rigidbody.mass
+            && tidal_force_magnitude > a.rigidbody.primary_force_magnitude
+        {
             a.rigidbody.primary = Some(b.entity);
-            a.rigidbody.primary_force_magnitude = force_magnitude;
+            a.rigidbody.primary_force_magnitude = tidal_force_magnitude;
         }
         b.rigidbody.force += force;
-        if force_magnitude > b.rigidbody.primary_force_magnitude {
+        if b.rigidbody.mass < a.rigidbody.mass
+            && tidal_force_magnitude > b.rigidbody.primary_force_magnitude
+        {
             b.rigidbody.primary = Some(a.entity);
-            b.rigidbody.primary_force_magnitude = force_magnitude;
+            b.rigidbody.primary_force_magnitude = tidal_force_magnitude;
         }
+    }
+    for mut item in query.iter_mut() {
+        item.rigidbody.primary_force_magnitude = 0.0;
     }
 }
 
@@ -241,7 +251,7 @@ fn collision(
             let relative_velocity = primary.rigidbody.velocity - secondary.rigidbody.velocity;
             // TODO: Replace 0.2 with restituion from colliding entities.
             let collision_speed =
-                relative_velocity.dot(relative_position_normalized.as_vec3()) * 0.2;
+                relative_velocity.dot(relative_position_normalized.as_vec3()) * 1.0;
             if collision_speed < 0.0 {
                 // Already moving away from each other, so just ignore for now.
                 continue;
