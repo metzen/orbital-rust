@@ -1,36 +1,79 @@
+use std::error::Error;
+use std::fmt;
 use std::time::Duration;
 
 use bevy::prelude::*;
+use big_space::grid::Grid;
+use big_space::prelude::{BigSpace, CellCoord};
 use leafwing_input_manager::Actionlike;
+use leafwing_input_manager::common_conditions::action_just_pressed;
 use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::audio::SineAudio;
+use crate::physics::{CelestialBody, RigidBody};
 use crate::vessel::Vessel;
 
-pub const TIME_WARPS: [f32; 15] = [
-    1.0, 2.0, 3.0, 4.0, 10.0, 50.0, 100.0, 500.0, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
+pub const TIME_WARPS: [f32; 14] = [
+    1.0, 2.0, 3.0, 4.0, 10.0, 50.0, 100.0, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
 ];
+const TIME_WARP_MAX: f32 = 1e9;
 
-pub struct TimeWarpPlugin;
+#[derive(Debug)]
+struct OutOfRange {
+    reason: String,
+}
 
-impl Plugin for TimeWarpPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(InputManagerPlugin::<TimeWarpAction>::default());
-        app.init_resource::<ActionState<TimeWarpAction>>();
-        app.init_resource::<TimeWarp>();
-        app.insert_resource(TimeWarpAction::default_input_map());
-        app.add_systems(Startup, setup_timewarp);
-        app.add_systems(Update, timewarp_control);
-        app.add_observer(play_sound_on_timewarp_change);
+impl Error for OutOfRange {}
+
+impl fmt::Display for OutOfRange {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.reason)
     }
 }
 
-#[derive(Resource, Debug, Copy, Clone, Reflect)]
+#[derive(Resource, Debug, Reflect)]
 #[reflect(Resource)]
 pub struct TimeWarp {
     pub value: f32,
-    pub index: isize,
+    pub index: usize,
+    pub max_allowed_index: usize,
+    pub max_allowed_reason: String,
+}
+
+impl TimeWarp {
+    fn shift_warp(&mut self, shift: isize) -> Result<usize, OutOfRange> {
+        let index = self.index as isize + shift;
+        if (0..(self.max_allowed_index + 1) as isize).contains(&index) {
+            self.index = index as usize;
+            self.value = TIME_WARPS[self.index];
+            Ok(self.index)
+        } else {
+            Err(OutOfRange {
+                reason: if index > 0 {
+                    self.max_allowed_reason.clone()
+                } else {
+                    String::new()
+                },
+            })
+        }
+    }
+
+    fn increase_warp(&mut self) -> Result<usize, OutOfRange> {
+        self.shift_warp(1)
+    }
+
+    fn decrease_warp(&mut self) -> Result<usize, OutOfRange> {
+        self.shift_warp(-1)
+    }
+
+    fn set_max_allowed_warp(&mut self, max_allowed_warp: f32, reason: String) {
+        let index = TIME_WARPS.iter().rev().position(|v| *v < max_allowed_warp);
+        self.max_allowed_index = TIME_WARPS.len() - index.unwrap_or(0);
+        self.max_allowed_reason = reason;
+        self.index = self.index.clamp(0, self.max_allowed_index);
+        self.value = TIME_WARPS[self.index];
+    }
 }
 
 impl Default for TimeWarp {
@@ -38,6 +81,8 @@ impl Default for TimeWarp {
         Self {
             value: 1.0,
             index: 0,
+            max_allowed_index: 0,
+            max_allowed_reason: String::default(),
         }
     }
 }
@@ -45,7 +90,13 @@ impl Default for TimeWarp {
 #[derive(Event)]
 struct TimeWarpChangeEvent {
     // The index of the new time warp.
-    index: isize,
+    index: usize,
+}
+
+impl TimeWarpChangeEvent {
+    fn new(index: usize) -> Self {
+        Self { index }
+    }
 }
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
@@ -70,46 +121,96 @@ fn setup_timewarp(mut virtual_time: ResMut<Time<Virtual>>) {
     virtual_time.set_max_delta(Duration::MAX);
 }
 
-fn timewarp_shift_from_action_state(action_state: &Res<ActionState<TimeWarpAction>>) -> isize {
-    if action_state.just_pressed(&TimeWarpAction::IncreaseTimewarp) {
-        1
-    } else if action_state.just_pressed(&TimeWarpAction::DecreaseTimewarp) {
-        -1
-    } else {
-        0
+/// Updates the maximum allowed warp factor based on the current game state.
+fn update_max_allowed_timewarp(
+    mut timewarp: ResMut<TimeWarp>,
+    vessels: Query<(&Vessel, &CellCoord, &Transform, &RigidBody)>,
+    position_query: Query<(&CellCoord, &Transform, &CelestialBody)>,
+    grid: Single<&Grid, With<BigSpace>>,
+) {
+    let (limit, reason) = vessels
+        .iter()
+        .map(|(vessel, vessel_cell, vessel_transform, rigidbody)| {
+            if vessel.throttle > 0.0 {
+                (
+                    4.0,
+                    String::from("Time Warp limited to 4x while vessel burn active"),
+                )
+            } else if let Some(primary_id) = rigidbody.primary
+                && let Ok((primary_cell, primary_transform, primary_celestial_body)) =
+                    position_query.get(primary_id)
+            {
+                let vessel_position = grid.grid_position_double(vessel_cell, vessel_transform);
+                let primary_position = grid.grid_position_double(primary_cell, primary_transform);
+                let distance = vessel_position.distance(primary_position) as f32;
+                let altitude = distance - primary_celestial_body.radius;
+                let warp_limits_per_atmosphere_height_factor = [
+                    (f32::INFINITY, TIME_WARP_MAX),
+                    (8.0, 10_000.0),
+                    (6.0, 1_000.0),
+                    (4.0, 100.0),
+                    (2.0, 50.0),
+                    (1.0, 4.0),
+                ];
+                let (boundary, limit) = warp_limits_per_atmosphere_height_factor
+                    .into_iter()
+                    .map(|(f, l)| (f * primary_celestial_body.atmosphere_height, l))
+                    .take_while(|(boundary, _)| altitude < *boundary)
+                    .last()
+                    .unwrap();
+
+                (
+                    limit,
+                    format!(
+                        "Time Warp limited to {:.0}x while vessel altitude below {:.0}m",
+                        limit, boundary
+                    ),
+                )
+            } else {
+                (TIME_WARP_MAX, String::new())
+            }
+        })
+        .fold((TIME_WARP_MAX, String::new()), |acc, value| {
+            if acc.0 < value.0 { acc } else { value }
+        });
+    timewarp.set_max_allowed_warp(limit, reason);
+}
+
+/// Toggles the paused state of the virtual clock.
+fn toggle_pause(mut virtual_time: ResMut<Time<Virtual>>) {
+    match virtual_time.is_paused() {
+        true => virtual_time.unpause(),
+        false => virtual_time.pause(),
     }
 }
 
-fn timewarp_control(
-    action_state: Res<ActionState<TimeWarpAction>>,
-    mut timewarp: ResMut<TimeWarp>,
+/// Increases the TimeWarp by one step.
+fn increase_timewarp(mut timewarp: ResMut<TimeWarp>, mut commands: Commands) {
+    match timewarp.increase_warp() {
+        Ok(index) => commands.trigger(TimeWarpChangeEvent::new(index)),
+        Err(error) => info!("{}", error.reason),
+    }
+}
+
+/// Decreases the TimeWarp by one step.
+fn decrease_timewarp(mut timewarp: ResMut<TimeWarp>, mut commands: Commands) {
+    match timewarp.decrease_warp() {
+        Ok(index) => commands.trigger(TimeWarpChangeEvent::new(index)),
+        Err(error) => info!("{}", error.reason),
+    }
+}
+
+/// Applies the current TimeWarp settings to the virtual clock.
+fn apply_timewarp_settings_to_virtual_clock(
+    timewarp: Res<TimeWarp>,
     mut virtual_time: ResMut<Time<Virtual>>,
     mut fixed_time: ResMut<Time<Fixed>>,
-    vessels: Query<&Vessel>,
-    mut commands: Commands,
 ) {
-    if action_state.just_pressed(&TimeWarpAction::ToggleTimewarpPause) {
-        match virtual_time.is_paused() {
-            true => virtual_time.unpause(),
-            false => virtual_time.pause(),
-        }
-    }
-    let timewarp_shift = timewarp_shift_from_action_state(&action_state);
-    if timewarp_shift != 0 {
-        let new_index = (timewarp.index + timewarp_shift).clamp(0, TIME_WARPS.len() as isize - 1);
-        let new_timewarp = TIME_WARPS[new_index as usize];
-        if new_timewarp > 4.0 && vessels.iter().any(|v| v.throttle > 0.0) {
-            info!("Timewarp limited to 4x while performing burn");
-        } else {
-            timewarp.value = new_timewarp;
-            timewarp.index = new_index;
-            virtual_time.set_relative_speed(timewarp.value);
-            fixed_time.set_timestep_seconds(virtual_time.relative_speed_f64() / 64.0);
-            commands.trigger(TimeWarpChangeEvent { index: new_index });
-        }
-    }
+    virtual_time.set_relative_speed(timewarp.value);
+    fixed_time.set_timestep_seconds(virtual_time.relative_speed_f64() / 64.0);
 }
 
+/// Plays a sound when the user changes the warp factor.
 fn play_sound_on_timewarp_change(
     event: On<TimeWarpChangeEvent>,
     mut commands: Commands,
@@ -119,4 +220,28 @@ fn play_sound_on_timewarp_change(
         AudioPlayer(assets.add(SineAudio::new(550.0 + event.index as f32 * 100.0))),
         PlaybackSettings::DESPAWN.with_duration(Duration::from_millis(30)),
     ));
+}
+
+pub struct TimeWarpPlugin;
+
+impl Plugin for TimeWarpPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(InputManagerPlugin::<TimeWarpAction>::default());
+        app.init_resource::<ActionState<TimeWarpAction>>();
+        app.init_resource::<TimeWarp>();
+        app.insert_resource(TimeWarpAction::default_input_map());
+        app.add_systems(Startup, setup_timewarp);
+        app.add_systems(FixedUpdate, update_max_allowed_timewarp);
+        app.add_systems(
+            Update,
+            (
+                toggle_pause.run_if(action_just_pressed(TimeWarpAction::ToggleTimewarpPause)),
+                increase_timewarp.run_if(action_just_pressed(TimeWarpAction::IncreaseTimewarp)),
+                decrease_timewarp.run_if(action_just_pressed(TimeWarpAction::DecreaseTimewarp)),
+                apply_timewarp_settings_to_virtual_clock,
+            )
+                .chain(),
+        );
+        app.add_observer(play_sound_on_timewarp_change);
+    }
 }
