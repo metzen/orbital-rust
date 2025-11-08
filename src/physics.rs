@@ -1,7 +1,10 @@
+use std::f64::consts::PI;
+use std::time::Duration;
+
 use bevy::camera::primitives::Aabb;
 use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::{Read, Write};
-use bevy::math::DVec3;
+use bevy::math::{DVec2, DVec3};
 use bevy::prelude::*;
 use big_space::floating_origins::BigSpace;
 use big_space::grid::Grid;
@@ -259,5 +262,115 @@ fn collision(
             secondary.rigidbody.velocity +=
                 impulse * primary.rigidbody.mass * relative_position_normalized.as_vec3();
         }
+    }
+}
+
+/// A 64-bit floating-point type representing an angle in radians.
+#[derive(Deref)]
+struct Rad64(f64);
+
+pub struct Orbit {
+    pub position: DVec2,
+    pub velocity: DVec2,
+    pub μ: f64,
+    pub semi_major_axis: f64,
+    pub semi_minor_axis: f64,
+    pub eccentricity: f64,
+    pub period: Duration,
+    pub apoapsis: f64,
+    pub periapsis: f64,
+    // https://space.stackexchange.com/questions/2562/2d-orbital-path-from-state-vectors
+    // https://en.wikipedia.org/wiki/Eccentricity_vector
+    pub eccentricity_vector: DVec2,
+}
+
+impl Orbit {
+    pub fn new(position: DVec2, velocity: DVec2, primary_mass: f32, secondary_mass: f32) -> Self {
+        let μ = G * (primary_mass as f64 + secondary_mass as f64);
+        let position_length = position.length();
+        let velocity_length_squared = velocity.length_squared();
+        let orbital_energy = velocity_length_squared / 2.0 - μ / position_length;
+        let angular_momentum = position.perp_dot(velocity);
+        let eccentricity =
+            (1.0 + ((2.0 * orbital_energy * angular_momentum.powi(2)) / (μ.powi(2)))).sqrt();
+        let semi_major_axis =
+            -(μ * position_length / (position_length * velocity_length_squared - (2.0 * μ)));
+        let semi_minor_axis = semi_major_axis * (1.0 - eccentricity.powi(2)).sqrt();
+        let period = Duration::from_secs_f64(2.0 * PI * (semi_major_axis.powi(3) / μ).sqrt());
+        let apoapsis = semi_major_axis * (1.0 + eccentricity);
+        let periapsis = semi_major_axis * (1.0 - eccentricity);
+        let eccentricity_vector = (velocity_length_squared / μ - 1.0 / position_length) * position
+            - ((position.dot(velocity)) / μ) * velocity;
+        Self { 
+            position,
+            velocity,
+            μ,
+            semi_major_axis,
+            semi_minor_axis,
+            eccentricity,
+            period,
+            apoapsis,
+            periapsis,
+            eccentricity_vector,
+        }
+    }
+
+    // Some implementations taken from
+    // https://stackoverflow.com/questions/71863525/calculating-2d-orbital-paths-in-newtonian-gravity-simulation
+    // but these might be a little off.
+
+    fn true_anomaly(&self) -> Rad64 {
+        // https://en.wikipedia.org/wiki/True_anomaly
+        let value = (((self.eccentricity_vector.dot(self.position))
+            / (self.eccentricity * self.position.length()))
+        .clamp(-1.0, 1.0))
+        .acos();
+        Rad64(if self.position.dot(self.velocity) < 0.0 {
+            2.0 * PI - value
+        } else {
+            value
+        })
+    }
+
+    fn mean_anomaly(&self) -> Rad64 {
+        // https://en.wikipedia.org/wiki/Mean_anomaly
+        let eccentric_anomaly = self.eccentric_anomaly();
+        Rad64(eccentric_anomaly.0 - self.eccentricity * eccentric_anomaly.sin())
+    }
+
+    fn eccentric_anomaly(&self) -> Rad64 {
+        // https://en.wikipedia.org/wiki/Eccentric_anomaly
+        let true_anomaly = self.true_anomaly();
+        let value = f64::atan2(
+            (1.0 - self.eccentricity.powi(2)).sqrt() * (true_anomaly).sin(),
+            self.eccentricity + (true_anomaly).cos(),
+        );
+        // Keep in range [0, 2pi] instead of [-pi, pi] radians.
+        Rad64(if value < 0.0 { 2.0 * PI + value } else { value })
+    }
+
+    fn orbital_time_at(&self, eccentric_anomaly: Rad64) -> Duration {
+        Duration::from_secs_f64(
+            (self.semi_major_axis.powi(3) / self.μ).sqrt()
+                * (eccentric_anomaly.0 - self.eccentricity * eccentric_anomaly.sin()),
+        )
+    }
+
+    fn time_since_periapsis(&self) -> Duration {
+        Duration::from_secs_f64(self.mean_anomaly().0 * self.period.as_secs_f64() / (2.0 * PI))
+    }
+
+    pub fn time_until_apoapsis(&self) -> Duration {
+        let time_since_periapsis = self.time_since_periapsis();
+        let time_at_apoapsis = self.orbital_time_at(Rad64(PI));
+        if time_since_periapsis < time_at_apoapsis {
+            time_at_apoapsis - time_since_periapsis
+        } else {
+            self.period - time_since_periapsis + time_at_apoapsis
+        }
+    }
+
+    pub fn time_to_periapsis(&self) -> Duration {
+        self.period - self.time_since_periapsis()
     }
 }
