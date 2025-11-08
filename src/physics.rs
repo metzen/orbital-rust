@@ -306,12 +306,13 @@ impl Orbit {
         let semi_major_axis =
             -(μ * position_length / (position_length * velocity_length_squared - (2.0 * μ)));
         let semi_minor_axis = semi_major_axis * (1.0 - eccentricity.powi(2)).sqrt();
-        let period = Duration::from_secs_f64(2.0 * PI * (semi_major_axis.powi(3) / μ).sqrt());
+        let period = Duration::try_from_secs_f64(2.0 * PI * (semi_major_axis.powi(3) / μ).sqrt())
+            .unwrap_or(Duration::MAX);
         let apoapsis = semi_major_axis * (1.0 + eccentricity);
         let periapsis = semi_major_axis * (1.0 - eccentricity);
         let eccentricity_vector = (velocity_length_squared / μ - 1.0 / position_length) * position
             - ((position.dot(velocity)) / μ) * velocity;
-        Self { 
+        Self {
             position,
             velocity,
             μ,
@@ -360,14 +361,16 @@ impl Orbit {
     }
 
     fn orbital_time_at(&self, eccentric_anomaly: Rad64) -> Duration {
-        Duration::from_secs_f64(
+        Duration::try_from_secs_f64(
             (self.semi_major_axis.powi(3) / self.μ).sqrt()
                 * (eccentric_anomaly.0 - self.eccentricity * eccentric_anomaly.sin()),
         )
+        .unwrap_or(Duration::MAX)
     }
 
     fn time_since_periapsis(&self) -> Duration {
-        Duration::from_secs_f64(self.mean_anomaly().0 * self.period.as_secs_f64() / (2.0 * PI))
+        Duration::try_from_secs_f64(self.mean_anomaly().0 * self.period.as_secs_f64() / (2.0 * PI))
+            .unwrap_or(Duration::MAX)
     }
 
     pub fn time_until_apoapsis(&self) -> Duration {
