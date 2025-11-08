@@ -73,7 +73,14 @@ pub struct ThrottleBar;
 #[derive(Component)]
 pub struct VerticalSpeedText;
 
-const BORDER: UiRect = UiRect::new(Val::Px(1.0), Val::Px(1.0), Val::Px(1.0), Val::Px(2.0));
+// TODO: Use old value? BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0))
+const BORDER_COLOR: BorderColor = BorderColor {
+    top: Color::srgb(0.184, 0.188, 0.251),
+    right: Color::srgb(0.184, 0.188, 0.251),
+    bottom: Color::srgb(0.298, 0.310, 0.478),
+    left: Color::srgb(0.184, 0.188, 0.251),
+};
+
 
 fn setup_throttle_widget(commands: &mut Commands, text_font: &TextFont) {
     commands
@@ -91,7 +98,7 @@ fn setup_throttle_widget(commands: &mut Commands, text_font: &TextFont) {
                 padding: UiRect::all(Val::Px(5.0)),
                 ..default()
             },
-            BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
+            BORDER_COLOR,
             BorderRadius::all(Val::Px(3.0)),
             BackgroundColor::from(BLACK),
             Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
@@ -132,7 +139,7 @@ fn setup_time_widget(commands: &mut Commands, text_font: &TextFont) {
                 row_gap: Val::Px(4.0),
                 ..default()
             },
-            BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
+            BORDER_COLOR,
             BorderRadius::all(Val::Px(3.0)),
             BackgroundColor::from(BLACK),
             Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
@@ -332,7 +339,7 @@ fn setup_orbital_info_widget(commands: &mut Commands, text_font: &TextFont) {
                 flex_direction: FlexDirection::Column,
                 ..default()
             },
-            BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
+            BORDER_COLOR,
             BorderRadius::all(Val::Px(3.0)),
             BackgroundColor::from(BLACK),
             Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
@@ -400,7 +407,7 @@ fn setup_staging_widget(commands: &mut Commands) {
                 flex_direction: FlexDirection::Column,
                 ..default()
             },
-            BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
+            BORDER_COLOR,
             BorderRadius::all(Val::Px(3.0)),
             BackgroundColor::from(BLACK),
             Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
@@ -434,7 +441,7 @@ fn setup_vertical_speed_widget(commands: &mut Commands, text_font: &TextFont) {
                 row_gap: Val::Px(14.0),
                 ..default()
             },
-            BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
+            BORDER_COLOR,
             BorderRadius::all(Val::Px(3.0)),
             BackgroundColor::from(BLACK),
             Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
@@ -495,7 +502,7 @@ fn setup_rotation_widget(commands: &mut Commands, text_font: &TextFont) {
             row_gap: Val::Px(14.0),
             ..default()
         },
-        BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
+        BORDER_COLOR,
         BorderRadius::all(Val::Percent(50.0)),
         BackgroundColor::from(BLACK),
         Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
