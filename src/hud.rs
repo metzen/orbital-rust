@@ -73,6 +73,12 @@ pub struct ThrottleBar;
 #[derive(Component)]
 pub struct VerticalSpeedText;
 
+#[derive(Component)]
+pub struct ApoapsisText;
+
+#[derive(Component)]
+pub struct PeriapsisText;
+
 const BORDER: UiRect = UiRect::new(Val::Px(1.0), Val::Px(1.0), Val::Px(1.0), Val::Px(1.0));
 // TODO: Use old value? BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0))
 const BORDER_COLOR: BorderColor = BorderColor {
@@ -361,6 +367,7 @@ fn setup_orbital_info_widget(commands: &mut Commands, text_font: &TextFont) {
         ))
         .with_children(|node| {
             node.spawn((
+                ApoapsisText,
                 Node {
                     column_gap: Val::Px(5.0),
                     ..default()
@@ -374,8 +381,9 @@ fn setup_orbital_info_widget(commands: &mut Commands, text_font: &TextFont) {
                     TextColor::from(Color::srgb(0.643, 0.427, 0.518)),
                 ));
                 text.spawn((TextSpan::new("000,000"), text_font.clone()));
+                text.spawn((TextSpan::new(" "), text_font.clone()));
                 text.spawn((
-                    TextSpan::new(" m"),
+                    TextSpan::new("m"),
                     text_font.clone(),
                     TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
                 ));
@@ -400,10 +408,46 @@ fn setup_orbital_info_widget(commands: &mut Commands, text_font: &TextFont) {
                 text.spawn((TextSpan::new("00"), text_font.clone()));
             });
             node.spawn((
-                Text::new("PE"),
-                text_font.clone(),
-                TextColor::from(Color::srgb(0.125, 0.506, 0.63)),
-            ));
+                PeriapsisText,
+                Node {
+                    column_gap: Val::Px(5.0),
+                    ..default()
+                },
+                Text::default(),
+            ))
+            .with_children(|text| {
+                text.spawn((
+                    TextSpan::new("PE "),
+                    text_font.clone(),
+                    TextColor::from(Color::srgb(0.125, 0.506, 0.63)),
+                ));
+                text.spawn((TextSpan::new("000,000"), text_font.clone()));
+                text.spawn((TextSpan::new(" "), text_font.clone()));
+                text.spawn((
+                    TextSpan::new("m"),
+                    text_font.clone(),
+                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                ));
+                text.spawn((TextSpan::new(" in "), text_font.clone()));
+                text.spawn((
+                    TextSpan::new("T-"),
+                    text_font.clone(),
+                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                ));
+                text.spawn((TextSpan::new("00"), text_font.clone()));
+                text.spawn((
+                    TextSpan::new(":"),
+                    text_font.clone(),
+                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                ));
+                text.spawn((TextSpan::new("00"), text_font.clone()));
+                text.spawn((
+                    TextSpan::new(":"),
+                    text_font.clone(),
+                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                ));
+                text.spawn((TextSpan::new("00"), text_font.clone()));
+            });
         });
 }
 
