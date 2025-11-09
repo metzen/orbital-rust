@@ -62,7 +62,7 @@ pub struct CelestialBody {
 
 impl CelestialBody {
     /// Calculate the atmospheric density for this CelestialBody at a given altitude.
-    fn density_at_altitude(&self, altitude: f32) -> f32 {
+    fn atmosphere_density_at_altitude(&self, altitude: f32) -> f32 {
         self.atmosphere_density_at_sea_level
             * (altitude / self.atmosphere_height)
                 .min(1.0)
@@ -165,7 +165,9 @@ fn drag(
                 - grid.grid_position_double(primary.cell, primary.transform))
             .length();
             let altitude = distance as f32 - primary.aabb.half_extents.x;
-            density = primary.celestial_body.density_at_altitude(altitude);
+            density = primary
+                .celestial_body
+                .atmosphere_density_at_altitude(altitude);
         } else {
             velocity = rigidbody.velocity;
             density = 0.0;
