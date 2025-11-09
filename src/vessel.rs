@@ -182,98 +182,96 @@ fn setup_vessel(
         AudioPlayer(assets.add(SineAudio::new(120.0))),
         ChildOf(big_space),
     ));
-    commands
-        .spawn_vessel((
-            Name::new("Pizza"),
-            Mesh2d(meshes.add(Mesh::from(Triangle2d::new(
-                Vec2::new(0.0, 20.0),
-                Vec2::new(-13.0, -15.0),
-                Vec2::new(13.0, -15.0),
-            )))),
-            Transform::from_translation(translation + Vec3::X * 75.0),
-            grid_cell,
-            MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgba(1.0, 0.8, 0.54, 1.0)))),
-            RigidBody {
-                velocity: Vec3 {
-                    x: 0.0,
-                    y: 30.29e3,
-                    z: 0.0,
-                },
-                mass: 100_000.0,
-                ..default()
+    commands.spawn_vessel((
+        Name::new("Pizza"),
+        Mesh2d(meshes.add(Mesh::from(Triangle2d::new(
+            Vec2::new(0.0, 20.0),
+            Vec2::new(-13.0, -15.0),
+            Vec2::new(13.0, -15.0),
+        )))),
+        Transform::from_translation(translation + Vec3::X * 75.0),
+        grid_cell,
+        MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgba(1.0, 0.8, 0.54, 1.0)))),
+        RigidBody {
+            velocity: Vec3 {
+                x: 0.0,
+                y: 30.29e3,
+                z: 0.0,
             },
-            Vessel {
-                engine_translation: -Vec3::Y * 15.0,
-                ..default()
-            },
-            AudioPlayer(assets.add(SineAudio::new(150.0))),
-            ChildOf(big_space),
-        ))
-        .with_children(|vessel| {
-            vessel.spawn((
+            mass: 100_000.0,
+            ..default()
+        },
+        Vessel {
+            engine_translation: -Vec3::Y * 15.0,
+            ..default()
+        },
+        AudioPlayer(assets.add(SineAudio::new(150.0))),
+        ChildOf(big_space),
+        children![
+            (
                 Name::new("pepperoni"),
                 Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 Transform::from_xyz(-2.0, -2.0, 1.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
-            ));
-            vessel.spawn((
+            ),
+            (
                 Name::new("pepperoni"),
                 Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 Transform::from_xyz(3.0, -8.0, 1.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
-            ));
-            vessel.spawn((
+            ),
+            (
                 Name::new("pepperoni"),
                 Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 Transform::from_xyz(1.0, 5.0, 1.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
-            ));
-            vessel.spawn((
+            ),
+            (
                 Name::new("crust"),
                 Mesh2d(meshes.add(Mesh::from(Capsule2d::new(3.0, 20.0)))),
                 Transform::from_xyz(0.0, -15.0, 1.0).with_rotation(Quat::from_rotation_z(PI / 2.0)),
                 MeshMaterial2d(
                     materials.add(ColorMaterial::from(Color::srgba(0.96, 0.69, 0.24, 1.0))),
                 ),
-            ));
-        });
-    commands
-        .spawn_vessel((
-            Name::new("Hotdog"),
-            Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
-            Transform::from_translation(translation),
-            grid_cell,
-            MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16)))),
-            RigidBody {
-                velocity: Vec3 {
-                    x: 0.0,
-                    y: 30.29e3,
-                    z: 0.0,
-                },
-                mass: 200_000.0,
-                ..default()
+            )
+        ],
+    ));
+    commands.spawn_vessel((
+        Name::new("Hotdog"),
+        Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
+        Transform::from_translation(translation),
+        grid_cell,
+        MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16)))),
+        RigidBody {
+            velocity: Vec3 {
+                x: 0.0,
+                y: 30.29e3,
+                z: 0.0,
             },
-            Vessel {
-                engine_translation: -Vec3::Y * 30.0,
-                ..default()
-            },
-            AudioPlayer(assets.add(SineAudio::new(150.0))),
-            ChildOf(big_space),
-        ))
-        .with_children(|vessel| {
-            vessel.spawn((
+            mass: 200_000.0,
+            ..default()
+        },
+        Vessel {
+            engine_translation: -Vec3::Y * 30.0,
+            ..default()
+        },
+        AudioPlayer(assets.add(SineAudio::new(150.0))),
+        ChildOf(big_space),
+        children![
+            (
                 Name::new("Hot dog bun 1"),
                 Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
                 Transform::from_xyz(-10.0, 0.0, -1.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27)))),
-            ));
-            vessel.spawn((
+            ),
+            (
                 Name::new("Hot dog bun 2"),
                 Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
                 Transform::from_xyz(10.0, 0.0, -1.0),
                 MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27)))),
-            ));
-        });
+            ),
+        ],
+    ));
 }
 
 fn vessel_control(
