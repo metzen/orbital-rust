@@ -210,26 +210,26 @@ fn setup_vessel(
         children![
             (
                 Name::new("pepperoni"),
-                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 Transform::from_xyz(-2.0, -2.0, 1.0),
+                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
             ),
             (
                 Name::new("pepperoni"),
-                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 Transform::from_xyz(3.0, -8.0, 1.0),
+                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
             ),
             (
                 Name::new("pepperoni"),
-                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 Transform::from_xyz(1.0, 5.0, 1.0),
+                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
                 MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
             ),
             (
                 Name::new("crust"),
-                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(3.0, 20.0)))),
                 Transform::from_xyz(0.0, -15.0, 1.0).with_rotation(Quat::from_rotation_z(PI / 2.0)),
+                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(3.0, 20.0)))),
                 MeshMaterial2d(
                     materials.add(ColorMaterial::from(Color::srgba(0.96, 0.69, 0.24, 1.0))),
                 ),
@@ -260,14 +260,14 @@ fn setup_vessel(
         children![
             (
                 Name::new("Hot dog bun 1"),
-                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
                 Transform::from_xyz(-10.0, 0.0, -1.0),
+                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
                 MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27)))),
             ),
             (
                 Name::new("Hot dog bun 2"),
-                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
                 Transform::from_xyz(10.0, 0.0, -1.0),
+                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
                 MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.9, 0.58, 0.27)))),
             ),
         ],
