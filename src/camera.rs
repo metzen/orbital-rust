@@ -13,8 +13,8 @@ use bevy::render::render_resource::{
     Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
 use bevy::window::{PrimaryWindow, WindowResized};
-use bevy_egui::EguiStartupSet;
 use bevy_egui::input::egui_wants_any_pointer_input;
+use bevy_egui::{EguiGlobalSettings, EguiStartupSet, PrimaryEguiContext};
 use big_space::floating_origins::{BigSpace, FloatingOrigin};
 use big_space::grid::Grid;
 use big_space::grid::cell::CellCoord;
@@ -166,16 +166,19 @@ impl Plugin for CameraPlugin {
     }
 }
 
-fn setup_outer_camera(mut commands: Commands) {
-    // The "outer" camera, which renders whatever is on `HIGH_RES_LAYER` to the screen.
-    //
-    // By default, Egui will render to the first Camera created by an application, so this
-    // one should be spawned first.
+/// Spawns the "outer" camera, which renders whatever is on `HIGH_RES_LAYER` to the screen.
+fn setup_outer_camera(
+    mut commands: Commands,
+    mut egui_global_settings: ResMut<EguiGlobalSettings>,
+) {
+    // Disable the automatic creation of a primary context to set it up manually.
+    egui_global_settings.auto_create_primary_context = false;
     commands.spawn((
         Camera2d,
         OuterCamera,
         Projection::from(OrthographicProjection::default_2d()),
         RenderLayers::layer(HIGH_RES_LAYER),
+        PrimaryEguiContext,
     ));
 }
 
