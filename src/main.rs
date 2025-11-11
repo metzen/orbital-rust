@@ -101,7 +101,6 @@ fn set_window_icon(windows: Option<NonSend<WinitWindows>>) {
 fn main() {
     let args = Args::parse();
     App::new()
-        .insert_resource(ClearColor(Color::BLACK))
         .add_plugins((
             DefaultPlugins
                 .build()
@@ -137,14 +136,15 @@ fn main() {
             WorldInspectorPlugin::new().run_if(input_toggle_active(false, KeyCode::F12)),
             // LogDiagnosticsPlugin::default(),
         ))
+        .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(FramepaceSettings {
             limiter: match args.framerate_limit {
                 None => Limiter::Auto,
                 Some(framerate) => Limiter::from_framerate(framerate),
             },
         })
-        .add_audio_source::<SineAudio>()
         .insert_resource(Time::<Fixed>::from_hz(args.fixed_update_frequency))
+        .add_audio_source::<SineAudio>()
         .add_systems(
             PreStartup,
             (set_window_icon, setup_scene, add_name_to_big_space).chain(),
