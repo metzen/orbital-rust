@@ -52,7 +52,15 @@ enum CameraViewMode {
 }
 
 impl CameraViewMode {
-    const VALUES: [Self; 4] = [Self::Free, Self::Locked, Self::Chase, Self::Orbital];
+    fn next(&self) -> CameraViewMode {
+        match self {
+            CameraViewMode::Free => CameraViewMode::Locked,
+            CameraViewMode::Locked => CameraViewMode::Chase,
+            CameraViewMode::Chase => CameraViewMode::Orbital,
+            CameraViewMode::Orbital => CameraViewMode::Auto,
+            CameraViewMode::Auto => CameraViewMode::Free,
+        }
+    }
 }
 
 /// Camera that renders the pixel-perfect world to the [`Canvas`].
@@ -394,12 +402,7 @@ fn camera_control(
         }
 
         if action_state.just_pressed(&CameraAction::NextViewMode) {
-            let index = CameraViewMode::VALUES
-                .iter()
-                .position(|m| m == &camera.in_game_camera.view_mode)
-                .unwrap();
-            camera.in_game_camera.view_mode =
-                CameraViewMode::VALUES[(index + 1) % CameraViewMode::VALUES.len()];
+            camera.in_game_camera.view_mode = camera.in_game_camera.view_mode.next();
             info!("Camera mode: {:?}", camera.in_game_camera.view_mode);
         }
     }
