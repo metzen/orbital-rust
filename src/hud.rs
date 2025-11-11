@@ -57,6 +57,9 @@ struct AccelerationText;
 struct AltitudeText;
 
 #[derive(Component)]
+struct AltitudeUnitsText;
+
+#[derive(Component)]
 pub struct HudSubject;
 
 #[derive(Component)]
@@ -732,25 +735,31 @@ fn update_acceleration(
 }
 
 fn update_altitude(
-    mut text: Single<&mut TextSpan, With<AltitudeText>>,
+    mut text: Single<&mut TextSpan, (With<AltitudeText>, Without<AltitudeUnitsText>)>,
+    mut units_text: Single<&mut TextSpan, (With<AltitudeUnitsText>, Without<AltitudeText>)>,
     grid: Single<&Grid, With<BigSpace>>,
     subject_query: Query<(&Transform, &CellCoord, &RigidBody, &Aabb), With<HudSubject>>,
-    primary_body_query: Query<(&Transform, &CellCoord, &CelestialBody)>,
+    primary_body_query: Query<(&Transform, &CellCoord, &Aabb)>,
 ) {
     if let Ok((subject_transform, subject_grid_cell, subject_rigidbody, subject_aabb)) =
         subject_query.single()
         && let Some(primary_body) = subject_rigidbody.primary
-        && let Ok((primary_transform, primary_grid_cell, celestial_body)) =
+        && let Ok((primary_transform, primary_grid_cell, primary_aabb)) =
             primary_body_query.get(primary_body)
     {
         let primary_position = grid.grid_position_double(primary_grid_cell, primary_transform);
         let subject_position = grid.grid_position_double(subject_grid_cell, subject_transform);
         let distance = primary_position.distance(subject_position);
         // TODO: Calculate from lowest vertex of mesh instead of the Aabb.
-        let altitude = distance - celestial_body.radius as f64 - subject_aabb.half_extents.y as f64;
-        text.0 = format!("{:.0}", altitude);
+        // TODO: Use CelestialBody.radius after it's defined for all planets.
+        let altitude =
+            distance - primary_aabb.half_extents.y as f64 - subject_aabb.half_extents.y as f64;
+        let (humanized_altitude, units) = humanize_distance(altitude);
+        text.0 = format!("{:.0}", humanized_altitude);
+        units_text.0 = units;
     } else {
         text.0 = String::new();
+        units_text.0 = String::new();
     }
 }
 
@@ -839,6 +848,18 @@ fn update_time(
     *writer.text(*text, 8) = format!("{:02}", elapsed_seconds / 60 % 60);
     *writer.text(*text, 10) = format!("{:02}", elapsed_seconds % 60);
 }
+
+fn humanize_distance(altitude: f64) -> (f64, String) {
+    let (value, units) = match altitude.abs() {
+        // AU..INFINITY => (altitude / AU, "au"),
+        0.0..1e6 => (altitude, "m "),
+        1e6..1e9 => (altitude / 1e3, "km"),
+        1e9..1e12 => (altitude / 1e6, "Mm"),
+        _ => (altitude / 1e9, "Gm"),
+    };
+    (value, units.into())
+}
+
 
 fn update_hover_text(
     interactions: Query<&PointerInteraction, With<InGamePointer>>,
