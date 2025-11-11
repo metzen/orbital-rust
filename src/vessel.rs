@@ -146,11 +146,9 @@ fn setup_vessel(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut assets: ResMut<Assets<SineAudio>>,
-    big_space_query: Query<(Entity, &Grid), With<BigSpace>>,
+    big_space: Single<(Entity, &Grid), With<BigSpace>>,
 ) {
-    let Ok((big_space, grid)) = big_space_query.single() else {
-        todo!()
-    };
+    let (big_space, grid) = big_space.into_inner();
     let (grid_cell, translation) = grid.translation_to_grid(DVec3 {
         x: 147.10e9,
         y: Planet::EARTH.radius as f64 + 40.0,
