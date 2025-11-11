@@ -3,6 +3,7 @@ use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::css::{BLACK, MAGENTA, YELLOW};
 use bevy::ecs::query::QuerySingleError;
 use bevy::math::ops::log10;
+use bevy::picking::pointer::PointerInteraction;
 use bevy::prelude::*;
 use big_space::floating_origins::BigSpace;
 use big_space::grid::Grid;
@@ -11,7 +12,7 @@ use leafwing_input_manager::Actionlike;
 use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
-use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera};
+use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera, InGamePointer};
 use crate::physics::{CelestialBody, RigidBody};
 use crate::timewarp::{TIME_WARPS, TimeWarp};
 use crate::vessel::Vessel;
@@ -32,6 +33,7 @@ impl Plugin for HudPlugin {
                 update_hud_subject,
                 update_time,
                 update_vertical_speed,
+                update_hover_text,
             ),
         );
         app.add_plugins(InputManagerPlugin::<HudAction>::default());
@@ -69,6 +71,9 @@ pub struct TimeWarpBoxes;
 
 #[derive(Component)]
 pub struct ThrottleBar;
+
+#[derive(Component)]
+pub struct HoverText;
 
 #[derive(Component)]
 pub struct VerticalSpeedText;
@@ -568,6 +573,24 @@ fn setup_rotation_widget(commands: &mut Commands, text_font: &TextFont) {
     ));
 }
 
+fn setup_hover_text(commands: &mut Commands, text_font: &TextFont) {
+    commands.spawn((
+        Name::new("hover text"),
+        Node {
+            margin: UiRect {
+                left: Val::Auto,
+                right: Val::Auto,
+                top: Val::Px(100.0),
+                bottom: Val::Auto,
+            },
+            ..default()
+        },
+        Text::default(),
+        text_font.clone(),
+        HoverText,
+    ));
+}
+
 fn setup_hud(mut commands: Commands) {
     let text_font = TextFont {
         font_size: 12.0,
@@ -582,6 +605,7 @@ fn setup_hud(mut commands: Commands) {
         text_font.clone(),
     ));
     setup_rotation_widget(&mut commands, &text_font);
+    setup_hover_text(&mut commands, &text_font);
     setup_throttle_widget(&mut commands, &text_font);
     setup_staging_widget(&mut commands);
     setup_orbital_info_widget(&mut commands, &text_font);
@@ -818,3 +842,22 @@ fn update_time(
     *writer.text(*text, 8) = format!("{:02}", elapsed_seconds / 60 % 60);
     *writer.text(*text, 10) = format!("{:02}", elapsed_seconds % 60);
 }
+
+fn update_hover_text(
+    interactions: Query<&PointerInteraction, With<InGamePointer>>,
+    names: Query<&Name>,
+    mut text: Single<&mut Text, With<HoverText>>,
+) {
+    for interaction in interactions.iter() {
+        if let Some((entity, _hit)) = interaction.get_nearest_hit() {
+            if let Ok(name) = names.get(*entity) {
+                text.0 = name.to_string();
+            } else {
+                text.0.clear();
+            }
+        } else {
+            text.0.clear();
+        }
+    }
+}
+
