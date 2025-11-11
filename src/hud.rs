@@ -6,6 +6,7 @@ use bevy::math::ops::log10;
 use bevy::math::{DVec2, DVec3};
 use bevy::picking::pointer::PointerInteraction;
 use bevy::prelude::*;
+use bevy::text::LineHeight;
 use big_space::floating_origins::BigSpace;
 use big_space::grid::Grid;
 use big_space::grid::cell::CellCoord;
