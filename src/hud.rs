@@ -594,6 +594,7 @@ fn setup_hover_text(commands: &mut Commands, text_font: &TextFont) {
 fn setup_hud(mut commands: Commands) {
     let text_font = TextFont {
         font_size: 12.0,
+        line_height: LineHeight::RelativeToFont(1.0),
         font_smoothing: bevy::text::FontSmoothing::AntiAliased,
         ..default()
     };
