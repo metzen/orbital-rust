@@ -721,9 +721,12 @@ fn update_velocity(
         && let Some(primary_body_entity) = rigidbody.primary
         && let Ok(primary_body) = primary_body_query.get(primary_body_entity)
     {
+        let relative_velocity = (rigidbody.velocity - primary_body.velocity).length();
         text.0 = format!(
-            "{:.2}",
-            (rigidbody.velocity - primary_body.velocity).length()
+            "{:.*}",
+            // Show one digit of decimal precision when velocity is low.
+            if relative_velocity < 10_000.0 { 1 } else { 0 },
+            relative_velocity
         );
     } else {
         text.0 = String::new();
