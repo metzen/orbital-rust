@@ -733,15 +733,6 @@ fn update_velocity(
     };
 }
 
-fn update_acceleration(
-    mut query: Query<&mut Text, With<AccelerationText>>,
-    vessel_rigidbody_query: Query<&RigidBody, With<HudSubject>>,
-) {
-    if let Some(rigidbody) = vessel_rigidbody_query.iter().next() {
-        query.single_mut().unwrap().0 = format!("{:.2}", rigidbody.acceleration);
-    }
-}
-
 fn update_altitude(
     mut text: Single<&mut TextSpan, (With<AltitudeText>, Without<AltitudeUnitsText>)>,
     mut units_text: Single<&mut TextSpan, (With<AltitudeUnitsText>, Without<AltitudeText>)>,
