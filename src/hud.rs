@@ -1,8 +1,9 @@
 use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::RenderLayers;
-use bevy::color::palettes::css::{BLACK, MAGENTA, YELLOW};
-use bevy::ecs::query::QuerySingleError;
+use bevy::color::palettes::css::{BLACK, LIGHT_GRAY};
+use bevy::input::common_conditions::input_toggle_active;
 use bevy::math::ops::log10;
+use bevy::math::{DVec2, DVec3};
 use bevy::picking::pointer::PointerInteraction;
 use bevy::prelude::*;
 use big_space::floating_origins::BigSpace;
@@ -13,7 +14,7 @@ use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera, InGamePointer};
-use crate::physics::{CelestialBody, RigidBody};
+use crate::physics::{NoGravity, Orbit, RigidBody};
 use crate::timewarp::{TIME_WARPS, TimeWarp};
 use crate::vessel::Vessel;
 
@@ -23,7 +24,7 @@ impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (setup_hud, setup_gizmos));
         app.add_systems(
-            Update,
+            FixedUpdate,
             (
                 update_time_warp,
                 update_throttle,
@@ -36,6 +37,11 @@ impl Plugin for HudPlugin {
                 update_orbital_info,
             ),
         );
+        app.add_systems(
+            PostUpdate,
+            draw_orbits
+                .after(TransformSystems::Propagate)
+                .run_if(input_toggle_active(true, KeyCode::F8)),
         );
         app.add_plugins(InputManagerPlugin::<HudAction>::default());
         app.init_resource::<ActionState<HudAction>>();
@@ -936,3 +942,94 @@ fn update_hover_text(
     }
 }
 
+fn draw_orbits(
+    orbiting_entities: Query<
+        (
+            &CellCoord,
+            &Transform,
+            &RigidBody,
+            &MeshMaterial2d<ColorMaterial>,
+            Option<&Vessel>,
+        ),
+        Without<NoGravity>,
+    >,
+    query: Query<(&CellCoord, &Transform, &RigidBody, &GlobalTransform)>,
+    grid: Single<&Grid, With<BigSpace>>,
+    projection: Single<&Projection, With<InGameCamera>>,
+    mut gizmos: Gizmos,
+    materials: Res<Assets<ColorMaterial>>,
+) {
+    let Projection::Orthographic(orthographic_projection) = *projection else {
+        return;
+    };
+    for (grid_cell, transform, rigidbody, mesh_material_2d, vessel) in &orbiting_entities {
+        if let Some(primary) = rigidbody.primary
+            && let Ok((p_cell, p_transform, p_rigidbody, p_gtransform)) = query.get(primary)
+        {
+            let orbit = Orbit::new(
+                (grid.grid_position_double(grid_cell, transform)
+                    - grid.grid_position_double(p_cell, p_transform))
+                .xy(),
+                (rigidbody.velocity - p_rigidbody.velocity).xy().as_dvec2(),
+                p_rigidbody.mass,
+                rigidbody.mass,
+            );
+            let perifocal_unit_vec = orbit.eccentricity_vector / orbit.eccentricity;
+            let ap_vec = orbit.apoapsis * -perifocal_unit_vec;
+            let pe_vec = orbit.periapsis * perifocal_unit_vec;
+            let (cell, translation) = grid.translation_to_grid(
+                grid.grid_position_double(p_cell, p_transform)
+                    + DVec3::new(ap_vec.x, ap_vec.y, 20.0),
+            );
+
+            let orbit_transform =
+                grid.global_transform(&cell, &Transform::from_translation(translation));
+            let orbit_angle = DVec2::Y.angle_to(orbit.eccentricity_vector) as f32;
+            let orbit_color = match materials.get(mesh_material_2d) {
+                Some(material) => material.color,
+                None => Color::from(LIGHT_GRAY),
+            };
+            gizmos
+                .ellipse(
+                    Isometry3d::new(
+                        Vec3::new(
+                            orbit_transform.translation().x
+                                - (orbit.semi_major_axis * -perifocal_unit_vec.dot(DVec2::X))
+                                    as f32,
+                            orbit_transform.translation().y
+                                - (orbit.semi_major_axis * -perifocal_unit_vec.dot(DVec2::Y))
+                                    as f32,
+                            1.0,
+                        ),
+                        if orbit_angle.is_normal() {
+                            Quat::from_rotation_z(orbit_angle)
+                        } else {
+                            Quat::IDENTITY
+                        },
+                    ),
+                    DVec2::new(orbit.semi_minor_axis, orbit.semi_major_axis).as_vec2(),
+                    orbit_color.with_alpha(0.2),
+                )
+                .resolution(4000);
+            // AP and PE markers for controlled vessel.
+            if let Some(vessel) = vessel
+                && vessel.controlled
+            {
+                gizmos.circle_2d(
+                    Isometry2d::from_translation(
+                        p_gtransform.translation().xy() + ap_vec.as_vec2(),
+                    ),
+                    orthographic_projection.scale,
+                    orbit_color.with_alpha(1.0),
+                );
+                gizmos.circle_2d(
+                    Isometry2d::from_translation(
+                        p_gtransform.translation().xy() + pe_vec.as_vec2(),
+                    ),
+                    orthographic_projection.scale,
+                    orbit_color.with_alpha(1.0),
+                );
+            }
+        }
+    }
+}
