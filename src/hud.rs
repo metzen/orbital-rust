@@ -590,6 +590,27 @@ fn setup_hover_text(commands: &mut Commands, text_font: &TextFont) {
     ));
 }
 
+fn setup_subject_widget(commands: &mut Commands, text_font: &TextFont) {
+    commands
+        .spawn((
+            Name::new("Subject text"),
+            Node {
+                top: px(20.0),
+                left: px(20.0),
+                padding: px(10.0).into(),
+                ..default()
+            },
+            RenderLayers::layer(HIGH_RES_LAYER),
+            BackgroundColor::from(Srgba::new(0.05, 0.11, 0.15, 1.0)),
+        ))
+        .with_child((
+            Text::default(),
+            TextLayout::new_with_justify(Justify::Center),
+            HubSubjectText,
+            text_font.clone(),
+        ));
+}
+
 fn setup_hud(mut commands: Commands) {
     let text_font = TextFont {
         font_size: 12.0,
@@ -597,13 +618,7 @@ fn setup_hud(mut commands: Commands) {
         font_smoothing: bevy::text::FontSmoothing::AntiAliased,
         ..default()
     };
-    commands.spawn((
-        Node::default(),
-        Text::default(),
-        HubSubjectText,
-        RenderLayers::layer(HIGH_RES_LAYER),
-        text_font.clone(),
-    ));
+    setup_subject_widget(&mut commands, &text_font);
     setup_rotation_widget(&mut commands, &text_font);
     setup_hover_text(&mut commands, &text_font);
     setup_throttle_widget(&mut commands, &text_font);
@@ -760,19 +775,23 @@ fn update_hud_subject(
     action_state: Res<ActionState<HudAction>>,
     mut vessels_query: Query<(Entity, &mut Vessel, Option<&HudSubject>), With<Vessel>>,
     mut camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
-    subject_vessel_query: Query<&Name, With<HudSubject>>,
+    subject_vessel_query: Query<Entity, With<HudSubject>>,
     mut hud_subject_text: Single<&mut Text, With<HubSubjectText>>,
+    name_query: Query<(&Name, &RigidBody)>,
 ) {
-    match subject_vessel_query.single() {
-        Ok(name) => {
-            hud_subject_text.0 = format!("Subject: {}", name);
+    if let Ok(entity) = subject_vessel_query.single() {
+        let mut parent = Some(entity);
+        let mut parts = Vec::new();
+        while let Some(entity) = parent
+            && let Ok((name, rigidbody)) = name_query.get(entity)
+        {
+            parts.push(format!("{}", name));
+            parent = rigidbody.primary;
         }
-        Err(QuerySingleError::NoEntities(_)) => {
-            info!("no subject?");
-        }
-        Err(QuerySingleError::MultipleEntities(_)) => {
-            info!("multi subject");
-        }
+        parts.reverse();
+        hud_subject_text.0 = parts.join(" / ");
+    } else {
+        hud_subject_text.0 = String::from("none");
     }
     if action_state.just_pressed(&HudAction::NextVessel)
         || action_state.just_pressed(&HudAction::PreviousVessel)
