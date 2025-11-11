@@ -253,7 +253,7 @@ fn collision(
             let relative_velocity = primary.rigidbody.velocity - secondary.rigidbody.velocity;
             // TODO: Replace 0.2 with restituion from colliding entities.
             let collision_speed =
-                relative_velocity.dot(relative_position_normalized.as_vec3()) * 1.0;
+                relative_velocity.dot(relative_position_normalized.as_vec3()) * 0.2;
             if collision_speed < 0.0 {
                 // Already moving away from each other, so just ignore for now.
                 continue;
