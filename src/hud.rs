@@ -354,10 +354,18 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
                     ));
                 });
             node.spawn((
-                Text::new("m"),
-                TextColor::from(Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0)),
-                BackgroundColor::from(Color::srgb(36.0 / 255.0, 5.0 / 365.0, 35.0 / 255.0)),
+                Text::default(),
                 text_font.clone(),
+                BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
+            ))
+            .with_child((
+                TextSpan::default(),
+                AltitudeUnitsText,
+                TextColor::from(Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0)),
+                text_font
+                    .clone()
+                    .with_font_size(12.0)
+                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
             ));
         });
 }
