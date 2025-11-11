@@ -281,6 +281,12 @@ fn collision(
 #[derive(Deref)]
 struct Rad64(f64);
 
+impl Rad64 {
+    fn to_f64(&self) -> f64 {
+        self.0
+    }
+}
+
 pub struct Orbit {
     pub position: DVec2,
     pub velocity: DVec2,
@@ -348,7 +354,7 @@ impl Orbit {
     fn mean_anomaly(&self) -> Rad64 {
         // https://en.wikipedia.org/wiki/Mean_anomaly
         let eccentric_anomaly = self.eccentric_anomaly();
-        Rad64(eccentric_anomaly.0 - self.eccentricity * eccentric_anomaly.sin())
+        Rad64(eccentric_anomaly.to_f64() - self.eccentricity * eccentric_anomaly.sin())
     }
 
     fn eccentric_anomaly(&self) -> Rad64 {
@@ -365,14 +371,16 @@ impl Orbit {
     fn orbital_time_at(&self, eccentric_anomaly: Rad64) -> Duration {
         Duration::try_from_secs_f64(
             (self.semi_major_axis.powi(3) / self.μ).sqrt()
-                * (eccentric_anomaly.0 - self.eccentricity * eccentric_anomaly.sin()),
+                * (eccentric_anomaly.to_f64() - self.eccentricity * eccentric_anomaly.sin()),
         )
         .unwrap_or(Duration::MAX)
     }
 
     fn time_since_periapsis(&self) -> Duration {
-        Duration::try_from_secs_f64(self.mean_anomaly().0 * self.period.as_secs_f64() / (2.0 * PI))
-            .unwrap_or(Duration::MAX)
+        Duration::try_from_secs_f64(
+            self.mean_anomaly().to_f64() * self.period.as_secs_f64() / (2.0 * PI),
+        )
+        .unwrap_or(Duration::MAX)
     }
 
     pub fn time_until_apoapsis(&self) -> Duration {
