@@ -21,7 +21,7 @@ use big_space::grid::cell::CellCoord;
 use either::Either;
 use leafwing_input_manager::prelude::*;
 
-use crate::physics::RigidBody;
+use crate::physics::{CelestialBody, Orbit, RigidBody};
 use crate::vessel::Vessel;
 
 /// In-game resolution width.
@@ -44,10 +44,10 @@ enum CameraViewMode {
     Locked,
     // The camera follows the surface-based prograde direction.
     Chase,
-    // The camera is aligned fixed cardinal orientation in space (like a map), rather than the planet.
-    #[default]
+    // The camera is aligned with a fixed cardinal orientation in space (like a map), rather than the planet.
     Orbital,
     // The camera switches between free and orbital when vessel is in a stable or hyperbolic orbit.
+    #[default]
     Auto,
 }
 
@@ -279,34 +279,31 @@ fn fit_canvas(
 }
 
 fn update_camera_position_for_autofollow(
-    mut camera: Query<(&mut Transform, &mut CellCoord, &Autofollow, &InGameCamera)>,
-    player: Query<(&Transform, &CellCoord, &RigidBody), Without<InGameCamera>>,
     grid: Single<&Grid, With<BigSpace>>,
+    camera: Single<(&mut Transform, &mut CellCoord, &Autofollow, &InGameCamera)>,
+    position_query: Query<(&Transform, &CellCoord), Without<InGameCamera>>,
+    rigidbody_query: Query<&RigidBody>,
+    celestial_body_query: Query<&CelestialBody>,
 ) {
-    let Ok((mut camera_transform, mut camera_grid_cell, autofollow, in_game_camera)) =
-        camera.single_mut()
-    else {
-        return;
-    };
+    let (mut camera_transform, mut camera_cell, autofollow, in_game_camera) = camera.into_inner();
     let Some(target_entity) = autofollow.target else {
         camera_transform.rotation = Quat::default();
         return;
     };
-    let target = player.get(target_entity);
-    let Ok((target_transform, target_grid_cell, rigidbody)) = target else {
+    let (target_transform, target_cell) = position_query.get(target_entity).unwrap();
+    let Ok(target_rigidbody) = rigidbody_query.get(target_entity) else {
         return;
     };
+    camera_cell.clone_from(target_cell);
     camera_transform.translation = target_transform.translation;
     camera_transform.rotation = match in_game_camera.view_mode {
         CameraViewMode::Orbital => Quat::default(),
         CameraViewMode::Free => {
-            if let Some(primary) = rigidbody.primary
-                && let Ok((primary_transform, primary_gridcell, _primary_rigidbody)) =
-                    player.get(primary)
+            if let Some(primary) = target_rigidbody.primary
+                && let Ok((primary_transform, primary_cell)) = position_query.get(primary)
             {
-                let target_position = grid.grid_position_double(target_grid_cell, target_transform);
-                let primary_position =
-                    grid.grid_position_double(primary_gridcell, primary_transform);
+                let target_position = grid.grid_position_double(target_cell, target_transform);
+                let primary_position = grid.grid_position_double(primary_cell, primary_transform);
                 let direction = target_position - primary_position;
                 Quat::from_rotation_z(-direction.xy().normalize().angle_to(DVec2::Y) as f32)
             } else {
@@ -317,21 +314,37 @@ fn update_camera_position_for_autofollow(
             .rotation
             .lerp(target_transform.rotation, 0.1),
         CameraViewMode::Chase => Quat::default(), // TODO
-        CameraViewMode::Auto => Quat::default(),  // TODO
+        CameraViewMode::Auto => {
+            if let Some(primary) = target_rigidbody.primary
+                && let Ok((primary_transform, primary_cell)) = position_query.get(primary)
+                && let Ok(primary_rigidbody) = rigidbody_query.get(primary)
+                && let Ok(primary_celestial_body) = celestial_body_query.get(primary)
+            {
+                let target_position = grid.grid_position_double(target_cell, target_transform);
+                let primary_position = grid.grid_position_double(primary_cell, primary_transform);
+                let orbit = Orbit::new(
+                    (target_position - primary_position).xy(),
+                    (target_rigidbody.velocity - primary_rigidbody.velocity)
+                        .xy()
+                        .as_dvec2(),
+                    primary_rigidbody.mass,
+                    target_rigidbody.mass,
+                );
+                if (orbit.periapsis - primary_celestial_body.radius as f64) < 0.0
+                    && (orbit.apoapsis - primary_celestial_body.radius as f64) > 0.0
+                {
+                    // Free mode.
+                    let direction = target_position - primary_position;
+                    Quat::from_rotation_z(-direction.xy().normalize().angle_to(DVec2::Y) as f32)
+                } else {
+                    // Orbital mode.
+                    Quat::default()
+                }
+            } else {
+                Quat::default()
+            }
+        }
     };
-    *camera_grid_cell = *target_grid_cell;
-
-    // let Vec3 { x, y, .. } = player.translation;
-    // let direction = Vec3::new(x, y, camera.translation.z);
-
-    // // Applies a smooth effect to camera movement using interpolation between
-    // // the camera position and the player position on the x and y axes.
-    // // Here we use the in-game time, to get the elapsed time (in seconds)
-    // // since the previous update. This avoids jittery movement when tracking
-    // // the player.
-    // camera.translation = camera
-    //     .translation
-    //     .lerp(direction, time.delta_seconds() * CAM_LERP_FACTOR);
 }
 
 #[derive(Component)]
