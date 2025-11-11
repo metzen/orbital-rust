@@ -28,7 +28,6 @@ impl Plugin for HudPlugin {
                 update_time_warp,
                 update_throttle,
                 update_velocity,
-                update_acceleration,
                 update_altitude,
                 update_hud_subject,
                 update_time,
@@ -614,31 +613,6 @@ fn setup_hud(mut commands: Commands) {
     setup_velocity_widget(&mut commands, &text_font);
     setup_altitude_widget(&mut commands, &text_font);
     setup_vertical_speed_widget(&mut commands, &text_font);
-    commands
-        .spawn(Node {
-            // fill the entire window
-            width: Val::Percent(100.0),
-            height: Val::Percent(100.0),
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::End,
-            // padding: UiRect::all(MARGIN),
-            // row_gap: Val::Px(),
-            margin: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(30.0), Val::Px(0.0)),
-            ..default()
-        })
-        .with_children(|root| {
-            root.spawn((
-                Text::new("ACC: "),
-                RenderLayers::layer(HIGH_RES_LAYER),
-                text_font.clone(),
-            ));
-            root.spawn((
-                Text::default(),
-                AccelerationText,
-                RenderLayers::layer(HIGH_RES_LAYER),
-                text_font.clone(),
-            ));
-        });
 }
 
 fn symlog_plot(value: f32, max_value: f32, linear_threshold: f32, linear_scale: f32) {
