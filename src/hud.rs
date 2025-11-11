@@ -33,7 +33,9 @@ impl Plugin for HudPlugin {
                 update_time,
                 update_vertical_speed,
                 update_hover_text,
+                update_orbital_info,
             ),
+        );
         );
         app.add_plugins(InputManagerPlugin::<HudAction>::default());
         app.init_resource::<ActionState<HudAction>>();
@@ -860,6 +862,61 @@ fn humanize_distance(altitude: f64) -> (f64, String) {
     (value, units.into())
 }
 
+
+fn update_orbital_info(
+    ap_text: Single<Entity, With<ApoapsisText>>,
+    pe_text: Single<Entity, With<PeriapsisText>>,
+    vessels: Query<(&Vessel, &CellCoord, &Transform, &RigidBody)>,
+    primary_query: Query<(&CellCoord, &Transform, &RigidBody, &Aabb)>,
+    mut writer: TextUiWriter,
+    grid: Single<&Grid, With<BigSpace>>,
+) {
+    for (vessel, grid_cell, transform, rigidbody) in &vessels {
+        if vessel.controlled
+            && let Some(primary) = rigidbody.primary
+            && let Ok((primary_grid_cell, primary_transform, primary_rigidbody, primary_aabb)) =
+                primary_query.get(primary)
+        {
+            let position = grid.grid_position_double(grid_cell, transform)
+                - grid.grid_position_double(primary_grid_cell, primary_transform);
+            // info!("{:.0} {:.0}", position.x, position.y);
+            let orbit = Orbit::new(
+                (grid.grid_position_double(grid_cell, transform)
+                    - grid.grid_position_double(primary_grid_cell, primary_transform))
+                .xy(),
+                (rigidbody.velocity - primary_rigidbody.velocity)
+                    .xy()
+                    .as_dvec2(),
+                primary_rigidbody.mass,
+                rigidbody.mass,
+            );
+
+            let ap = orbit.apoapsis - primary_aabb.half_extents.y as f64;
+            let (humanized_ap, ap_units) = humanize_distance(ap);
+            *writer.text(*ap_text, 2) = format!("{:>7.0}", humanized_ap);
+            // *writer.text(*ap_text, 2) = format!(
+            //     "{:>7.*}",
+            //     usize::saturating_sub(4, humanized_ap.log10() as usize),
+            //     humanized_ap
+            // );
+            *writer.text(*ap_text, 4) = ap_units;
+            let time_to_ap = orbit.time_until_apoapsis().as_secs();
+            *writer.text(*ap_text, 7) = format!("{:02}", time_to_ap / 60 / 60);
+            *writer.text(*ap_text, 9) = format!("{:02}", time_to_ap / 60 % 60);
+            *writer.text(*ap_text, 11) = format!("{:02}", time_to_ap % 60);
+
+            let pe = orbit.periapsis - primary_aabb.half_extents.y as f64;
+            let (humanized_pe, pe_units) = humanize_distance(pe);
+            *writer.text(*pe_text, 2) = format!("{:>7.0}", humanized_pe);
+            *writer.text(*pe_text, 4) = pe_units;
+            let time_to_pe = orbit.time_to_periapsis().as_secs();
+            *writer.text(*pe_text, 7) = format!("{:02}", time_to_pe / 60 / 60);
+            *writer.text(*pe_text, 9) = format!("{:02}", time_to_pe / 60 % 60);
+            *writer.text(*pe_text, 11) = format!("{:02}", time_to_pe % 60);
+            break;
+        }
+    }
+}
 
 fn update_hover_text(
     interactions: Query<&PointerInteraction, With<InGamePointer>>,
