@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale};
+use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale, Volume};
 use bevy::input::InputSystems;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::prelude::*;
@@ -120,7 +120,7 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest())
                 .set(AudioPlugin {
-                    global_volume: GlobalVolume::new(bevy::audio::Volume::Linear(1.0)),
+                    global_volume: GlobalVolume::new(Volume::Linear(1.0)),
                     default_spatial_scale: SpatialScale::new_2d(AUDIO_SCALE),
                 }),
             BigSpaceDefaultPlugins,
