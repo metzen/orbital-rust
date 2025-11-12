@@ -294,7 +294,7 @@ fn update_camera_position_for_autofollow(
     let Ok(target_rigidbody) = rigidbody_query.get(target_entity) else {
         return;
     };
-    camera_cell.clone_from(target_cell);
+    *camera_cell = *target_cell;
     camera_transform.translation = target_transform.translation;
     camera_transform.rotation = match in_game_camera.view_mode {
         CameraViewMode::Orbital => Quat::default(),
