@@ -281,16 +281,24 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
             Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
         ))
         .with_children(|node| {
-            node.spawn((
-                Text::new("SURFACE"),
-                TextLayout::new_with_justify(Justify::Right),
-                TextColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
-                BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
-                text_font
-                    .clone()
-                    .with_font_size(12.0)
-                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
-            ));
+            node.spawn(Node {
+                column_gap: px(1.0),
+                justify_content: JustifyContent::End,
+                ..default()
+            })
+            .with_children(|label_container| {
+                for char in String::from("SURFACE").as_bytes() {
+                    label_container.spawn((
+                        Text::new(*char as char),
+                        TextColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
+                        BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
+                        text_font
+                            .clone()
+                            .with_font_size(12.0)
+                            .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                    ));
+                }
+            });
             node.spawn((
                 Text::default(),
                 TextLayout::new_with_justify(Justify::Right),
@@ -337,15 +345,23 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
             Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
         ))
         .with_children(|node| {
-            node.spawn((
-                Text::new("SEA LVL"),
-                TextColor::from(Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0)),
-                BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
-                text_font
-                    .clone()
-                    .with_font_size(12.0)
-                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
-            ));
+            node.spawn(Node {
+                column_gap: px(1.0),
+                ..default()
+            })
+            .with_children(|label_container| {
+                for char in String::from("SEA LVL").as_bytes() {
+                    label_container.spawn((
+                        Text::new(*char as char),
+                        TextColor::from(Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0)),
+                        BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
+                        text_font
+                            .clone()
+                            .with_font_size(12.0)
+                            .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                    ));
+                }
+            });
             node.spawn((Text::default(), text_font.clone()))
                 .with_children(|parent| {
                     parent.spawn((
@@ -867,7 +883,6 @@ fn humanize_distance(altitude: f64) -> (f64, String) {
     };
     (value, units.into())
 }
-
 
 fn update_orbital_info(
     ap_text: Single<Entity, With<ApoapsisText>>,
