@@ -295,7 +295,7 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                         BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
                         text_font
                             .clone()
-                            .with_font_size(12.0)
+                            .with_font_size(11.0)
                             .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
                     ));
                 }
@@ -335,9 +335,10 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                 Node {
                     position_type: PositionType::Absolute,
                     flex_direction: FlexDirection::Column,
-                    left: px(-2.0),
-                    top: px(18.0),
+                    left: px(-1.0),
+                    top: px(14.0),
                     row_gap: px(2.0),
+                    padding: UiRect::vertical(px(1.0)),
                     ..default()
                 },
                 BackgroundColor::from(Color::BLACK),
@@ -396,7 +397,7 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
                         BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
                         text_font
                             .clone()
-                            .with_font_size(12.0)
+                            .with_font_size(11.0)
                             .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
                     ));
                 }
@@ -427,9 +428,10 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
                 Node {
                     position_type: PositionType::Absolute,
                     flex_direction: FlexDirection::Column,
-                    right: px(-2.0),
-                    top: px(18.0),
+                    right: px(-1.0),
+                    top: px(14.0),
                     row_gap: px(2.0),
+                    padding: UiRect::vertical(px(1.0)),
                     ..default()
                 },
                 BackgroundColor::from(Color::BLACK),
