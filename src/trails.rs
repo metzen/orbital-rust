@@ -58,9 +58,9 @@ impl FromWorld for TrailAssets {
 #[derive(QueryData)]
 #[query_data(mutable)]
 struct TrailableQueryData {
-    transform: &'static Transform,
-    grid_cell: &'static CellCoord,
-    material: &'static MeshMaterial2d<ColorMaterial>,
+    transform: Read<Transform>,
+    grid_cell: Read<CellCoord>,
+    material: Read<MeshMaterial2d<ColorMaterial>>,
 }
 
 #[derive(QueryData)]

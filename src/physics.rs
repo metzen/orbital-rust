@@ -93,9 +93,9 @@ fn tidal_force(m1: f64, m2: f64, distance: DVec3) -> Vec3 {
 #[query_data(mutable)]
 struct GravityQuery {
     entity: Entity,
-    grid_cell: &'static CellCoord,
-    transform: &'static Transform,
-    rigidbody: &'static mut RigidBody,
+    grid_cell: Read<CellCoord>,
+    transform: Read<Transform>,
+    rigidbody: Write<RigidBody>,
 }
 
 fn gravity(

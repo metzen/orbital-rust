@@ -4,6 +4,7 @@ use bevy::camera::visibility::{Layer, RenderLayers};
 use bevy::camera::{ImageRenderTarget, RenderTarget};
 use bevy::ecs::message::MessageCursor;
 use bevy::ecs::query::QueryData;
+use bevy::ecs::system::lifetimeless::Write;
 use bevy::math::DVec2;
 use bevy::picking::PickingSystems;
 use bevy::picking::pointer::{Location, PointerId, PointerInput, PointerInteraction};
@@ -354,11 +355,11 @@ pub struct HighPrecisionScale(pub f64);
 #[query_data(mutable)]
 struct CameraQueryData {
     entity: Entity,
-    transform: &'static mut Transform,
-    projection: &'static mut Projection,
-    grid_cell: &'static mut CellCoord,
-    scale: &'static mut HighPrecisionScale,
-    in_game_camera: &'static mut InGameCamera,
+    transform: Write<Transform>,
+    projection: Write<Projection>,
+    grid_cell: Write<CellCoord>,
+    scale: Write<HighPrecisionScale>,
+    in_game_camera: Write<InGameCamera>,
 }
 
 fn camera_control(
