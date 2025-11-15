@@ -107,13 +107,27 @@ const BORDER_COLOR: BorderColor = BorderColor {
     left: Color::srgb(0.184, 0.188, 0.251),
 };
 
+trait TextFontExt {
+    fn ui_default() -> Self;
+}
+
+impl TextFontExt for TextFont {
+    fn ui_default() -> Self {
+        Self {
+            font_size: 12.0,
+            line_height: LineHeight::RelativeToFont(1.0),
+            ..default()
+        }
+    }
+}
+
 fn setup_gizmos(mut config_store: ResMut<GizmoConfigStore>) {
     let (config, _config_group) = config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line.width = 1.0;
     // config.render_layers = RenderLayers::layer(1);
 }
 
-fn setup_throttle_widget(commands: &mut Commands, text_font: &TextFont) {
+fn setup_throttle_widget(commands: &mut Commands) {
     commands.spawn((
         Name::new("Throttle Widget"),
         Node {
@@ -142,13 +156,12 @@ fn setup_throttle_widget(commands: &mut Commands, text_font: &TextFont) {
                 ThrottleBar,
                 BackgroundColor::from(Color::srgb(0.0, 0.8, 0.32)),
             ),
-            (Text::default(), ThrottleText, text_font.clone()),
+            (Text::default(), ThrottleText, TextFont::ui_default()),
         ],
     ));
 }
 
-fn setup_time_widget(commands: &mut Commands, text_font: &TextFont) {
-    let text_font_clone = text_font.clone();
+fn setup_time_widget(commands: &mut Commands) {
     commands.spawn((
         Name::new("Time widget"),
         Node {
@@ -180,34 +193,34 @@ fn setup_time_widget(commands: &mut Commands, text_font: &TextFont) {
                 children![
                     (
                         TextSpan::new("T+"),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                         TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
                     ),
-                    (TextSpan::new("000"), text_font.clone()),
+                    (TextSpan::new("000"), TextFont::ui_default()),
                     (
                         TextSpan::new("y "),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                         TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
                     ),
-                    (TextSpan::new("000"), text_font.clone()),
+                    (TextSpan::new("000"), TextFont::ui_default()),
                     (
                         TextSpan::new("d "),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                         TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
                     ),
-                    (TextSpan::new("00"), text_font.clone()),
+                    (TextSpan::new("00"), TextFont::ui_default()),
                     (
                         TextSpan::new(":"),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                         TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
                     ),
-                    (TextSpan::new("00"), text_font.clone()),
+                    (TextSpan::new("00"), TextFont::ui_default()),
                     (
                         TextSpan::new(":"),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                         TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
                     ),
-                    (TextSpan::new("00"), text_font.clone()),
+                    (TextSpan::new("00"), TextFont::ui_default()),
                 ]
             ),
             (
@@ -229,7 +242,7 @@ fn setup_time_widget(commands: &mut Commands, text_font: &TextFont) {
                             Children::spawn_one((
                                 Text::new(">"),
                                 TextColor::BLACK,
-                                text_font_clone.clone(),
+                                TextFont::ui_default(),
                             )),
                         ));
                     }
@@ -241,18 +254,18 @@ fn setup_time_widget(commands: &mut Commands, text_font: &TextFont) {
                 children![
                     (
                         TextSpan::new("TIME.WARP= "),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                         TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
                     ),
                     (
                         TextSpan::default(),
                         TimeWarpText,
-                        text_font.clone(),
+                        TextFont::ui_default(),
                         TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
                     ),
                     (
                         TextSpan::new("x"),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                         TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
                     ),
                 ],
@@ -261,9 +274,8 @@ fn setup_time_widget(commands: &mut Commands, text_font: &TextFont) {
     ));
 }
 
-fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
+fn setup_velocity_widget(commands: &mut Commands) {
     let widget_color = Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0);
-    let text_font = text_font.clone();
     commands.spawn((
         Name::new("Velocity widget"),
         Node {
@@ -296,10 +308,7 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                                 Text::new(char),
                                 TextColor::from(widget_color),
                                 BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
-                                text_font
-                                    .clone()
-                                    .with_font_size(11.0)
-                                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                                TextFont::ui_default().with_font_size(11.0),
                             )
                         })
                         .collect::<Vec<_>>()
@@ -308,10 +317,10 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
             (
                 Text::default(),
                 TextLayout::new_with_justify(Justify::Right),
-                text_font.clone(),
+                TextFont::ui_default(),
                 children![(
                     TextSpan::default(),
-                    text_font.clone().with_font_size(18.0),
+                    TextFont::ui_default().with_font_size(18.0),
                     VelocityText,
                 )]
             ),
@@ -330,10 +339,7 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                                 TextLayout::new_with_justify(Justify::Right),
                                 TextColor::from(widget_color),
                                 BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
-                                text_font
-                                    .clone()
-                                    .with_font_size(12.0)
-                                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                                TextFont::ui_default(),
                             )
                         })
                         .collect::<Vec<_>>()
@@ -354,17 +360,17 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                     (
                         Text::new("V"),
                         TextColor::from(widget_color),
-                        text_font.clone()
+                        TextFont::ui_default()
                     ),
                     (
                         Text::new("E"),
                         TextColor::from(widget_color),
-                        text_font.clone()
+                        TextFont::ui_default()
                     ),
                     (
                         Text::new("L"),
                         TextColor::from(widget_color),
-                        text_font.clone()
+                        TextFont::ui_default()
                     ),
                 ],
             ),
@@ -372,7 +378,7 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
     ));
 }
 
-fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
+fn setup_altitude_widget(commands: &mut Commands) {
     let widget_color = Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0);
     commands.spawn((
         Name::new("Altitude widget"),
@@ -405,10 +411,7 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
                                 Text::new(char as char),
                                 TextColor::from(widget_color),
                                 BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
-                                text_font
-                                    .clone()
-                                    .with_font_size(11.0)
-                                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                                TextFont::ui_default().with_font_size(11.0),
                             )
                         })
                         .collect::<Vec<_>>()
@@ -416,25 +419,22 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
             ),
             (
                 Text::default(),
-                text_font.clone(),
+                TextFont::ui_default(),
                 children![(
                     TextSpan::default(),
-                    text_font.clone().with_font_size(18.0),
+                    TextFont::ui_default().with_font_size(18.0),
                     AltitudeText,
                 ),]
             ),
             (
                 Text::default(),
-                text_font.clone(),
+                TextFont::ui_default(),
                 BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
                 children![(
                     TextSpan::default(),
                     AltitudeUnitsText,
                     TextColor::from(widget_color),
-                    text_font
-                        .clone()
-                        .with_font_size(12.0)
-                        .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                    TextFont::ui_default().with_font_size(12.0),
                 )]
             ),
             (
@@ -452,17 +452,17 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
                     (
                         Text::new("A"),
                         TextColor::from(widget_color),
-                        text_font.clone()
+                        TextFont::ui_default()
                     ),
                     (
                         Text::new("L"),
                         TextColor::from(widget_color),
-                        text_font.clone()
+                        TextFont::ui_default()
                     ),
                     (
                         Text::new("T"),
                         TextColor::from(widget_color),
-                        text_font.clone()
+                        TextFont::ui_default()
                     ),
                 ],
             ),
@@ -470,7 +470,7 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
     ));
 }
 
-fn setup_orbital_info_widget(commands: &mut Commands, text_font: &TextFont) {
+fn setup_orbital_info_widget(commands: &mut Commands) {
     commands.spawn((
         Name::new("Orbit info"),
         Node {
@@ -498,34 +498,34 @@ fn setup_orbital_info_widget(commands: &mut Commands, text_font: &TextFont) {
                     (
                         TextSpan::new("AP "),
                         TextColor::from(Color::srgb(0.643, 0.427, 0.518)),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                     ),
-                    (TextSpan::new("000,000"), text_font.clone()),
-                    (TextSpan::new(" "), text_font.clone()),
+                    (TextSpan::new("000,000"), TextFont::ui_default()),
+                    (TextSpan::new(" "), TextFont::ui_default()),
                     (
                         TextSpan::new("m"),
                         TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                     ),
-                    (TextSpan::new(" in "), text_font.clone()),
+                    (TextSpan::new(" in "), TextFont::ui_default()),
                     (
                         TextSpan::new("T-"),
                         TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                     ),
-                    (TextSpan::new("00"), text_font.clone()),
+                    (TextSpan::new("00"), TextFont::ui_default()),
                     (
                         TextSpan::new(":"),
                         TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                     ),
-                    (TextSpan::new("00"), text_font.clone()),
+                    (TextSpan::new("00"), TextFont::ui_default()),
                     (
                         TextSpan::new(":"),
                         TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                     ),
-                    (TextSpan::new("00"), text_font.clone()),
+                    (TextSpan::new("00"), TextFont::ui_default()),
                 ],
             ),
             (
@@ -539,34 +539,34 @@ fn setup_orbital_info_widget(commands: &mut Commands, text_font: &TextFont) {
                     (
                         TextSpan::new("PE "),
                         TextColor::from(Color::srgb(0.125, 0.506, 0.63)),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                     ),
-                    (TextSpan::new("000000"), text_font.clone()),
-                    (TextSpan::new(" "), text_font.clone()),
+                    (TextSpan::new("000000"), TextFont::ui_default()),
+                    (TextSpan::new(" "), TextFont::ui_default()),
                     (
                         TextSpan::new("m"),
                         TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                     ),
-                    (TextSpan::new(" in "), text_font.clone()),
+                    (TextSpan::new(" in "), TextFont::ui_default()),
                     (
                         TextSpan::new("T-"),
                         TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                     ),
-                    (TextSpan::new("00"), text_font.clone()),
+                    (TextSpan::new("00"), TextFont::ui_default()),
                     (
                         TextSpan::new(":"),
                         TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                     ),
-                    (TextSpan::new("00"), text_font.clone()),
+                    (TextSpan::new("00"), TextFont::ui_default()),
                     (
                         TextSpan::new(":"),
                         TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        text_font.clone(),
+                        TextFont::ui_default(),
                     ),
-                    (TextSpan::new("00"), text_font.clone()),
+                    (TextSpan::new("00"), TextFont::ui_default()),
                 ]
             ),
         ],
@@ -603,7 +603,7 @@ fn setup_staging_widget(commands: &mut Commands) {
     ));
 }
 
-fn setup_vertical_speed_widget(commands: &mut Commands, text_font: &TextFont) {
+fn setup_vertical_speed_widget(commands: &mut Commands) {
     commands.spawn((
         Name::new("Vertical speed"),
         Node {
@@ -625,27 +625,27 @@ fn setup_vertical_speed_widget(commands: &mut Commands, text_font: &TextFont) {
         children![
             (
                 Text::new("+100"),
-                text_font.clone(),
+                TextFont::ui_default(),
                 TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
             ),
             (
                 Text::new("+10"),
-                text_font.clone(),
+                TextFont::ui_default(),
                 TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
             ),
             (
                 Text::new("0"),
-                text_font.clone(),
+                TextFont::ui_default(),
                 TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
             ),
             (
                 Text::new("-10"),
-                text_font.clone(),
+                TextFont::ui_default(),
                 TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
             ),
             (
                 Text::new("-100"),
-                text_font.clone(),
+                TextFont::ui_default(),
                 TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
             ),
             (
@@ -656,14 +656,14 @@ fn setup_vertical_speed_widget(commands: &mut Commands, text_font: &TextFont) {
                     ..default()
                 },
                 Text::default(),
-                text_font.clone(),
+                TextFont::ui_default(),
                 VerticalSpeedText,
             ),
         ],
     ));
 }
 
-fn setup_rotation_widget(commands: &mut Commands, text_font: &TextFont) {
+fn setup_rotation_widget(commands: &mut Commands) {
     commands.spawn((
         Name::new("Rotation widget"),
         Node {
@@ -686,7 +686,7 @@ fn setup_rotation_widget(commands: &mut Commands, text_font: &TextFont) {
     ));
 }
 
-fn setup_hover_text(commands: &mut Commands, text_font: &TextFont) {
+fn setup_hover_text(commands: &mut Commands) {
     commands.spawn((
         Name::new("hover text"),
         Node {
@@ -699,12 +699,12 @@ fn setup_hover_text(commands: &mut Commands, text_font: &TextFont) {
             ..default()
         },
         Text::default(),
-        text_font.clone(),
+        TextFont::ui_default(),
         HoverText,
     ));
 }
 
-fn setup_subject_widget(commands: &mut Commands, text_font: &TextFont) {
+fn setup_subject_widget(commands: &mut Commands) {
     commands.spawn((
         Name::new("Subject text"),
         Node {
@@ -719,28 +719,22 @@ fn setup_subject_widget(commands: &mut Commands, text_font: &TextFont) {
             Text::default(),
             TextLayout::new_with_justify(Justify::Center),
             HubSubjectText,
-            text_font.clone(),
+            TextFont::ui_default(),
         ),],
     ));
 }
 
 fn setup_hud(mut commands: Commands) {
-    let text_font = TextFont {
-        font_size: 12.0,
-        line_height: LineHeight::RelativeToFont(1.0),
-        font_smoothing: bevy::text::FontSmoothing::AntiAliased,
-        ..default()
-    };
-    setup_subject_widget(&mut commands, &text_font);
-    setup_rotation_widget(&mut commands, &text_font);
-    setup_hover_text(&mut commands, &text_font);
-    setup_throttle_widget(&mut commands, &text_font);
+    setup_subject_widget(&mut commands);
+    setup_rotation_widget(&mut commands);
+    setup_hover_text(&mut commands);
+    setup_throttle_widget(&mut commands);
     setup_staging_widget(&mut commands);
-    setup_orbital_info_widget(&mut commands, &text_font);
-    setup_time_widget(&mut commands, &text_font);
-    setup_velocity_widget(&mut commands, &text_font);
-    setup_altitude_widget(&mut commands, &text_font);
-    setup_vertical_speed_widget(&mut commands, &text_font);
+    setup_orbital_info_widget(&mut commands);
+    setup_time_widget(&mut commands);
+    setup_velocity_widget(&mut commands);
+    setup_altitude_widget(&mut commands);
+    setup_vertical_speed_widget(&mut commands);
 }
 
 fn symlog_plot(value: f32, max_value: f32, linear_threshold: f32, linear_scale: f32) {

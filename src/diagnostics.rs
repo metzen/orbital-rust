@@ -6,6 +6,8 @@ use bevy::prelude::*;
 
 use crate::camera::HIGH_RES_LAYER;
 
+const FONT_SIZE: f32 = 11.0;
+
 #[derive(Component)]
 struct Fps;
 
@@ -26,11 +28,6 @@ impl Plugin for DiagnosticsPlugin {
 }
 
 fn setup(mut commands: Commands) {
-    let text_style = TextFont {
-        font_size: 11.0,
-        font_smoothing: bevy::text::FontSmoothing::AntiAliased,
-        ..default()
-    };
     commands.spawn((
         Node {
             // fill the entire window
@@ -47,23 +44,23 @@ fn setup(mut commands: Commands) {
         children![
             (
                 Text::new("FPS: "),
-                text_style.clone(),
+                TextFont::from_font_size(FONT_SIZE),
                 RenderLayers::layer(HIGH_RES_LAYER),
             ),
             (
                 Text::default(),
-                text_style.clone(),
+                TextFont::from_font_size(FONT_SIZE),
                 Fps,
                 RenderLayers::layer(HIGH_RES_LAYER),
             ),
             (
                 Text::new("Entities: "),
-                text_style.clone(),
+                TextFont::from_font_size(FONT_SIZE),
                 RenderLayers::layer(HIGH_RES_LAYER),
             ),
             (
                 Text::default(),
-                text_style.clone(),
+                TextFont::from_font_size(FONT_SIZE),
                 EntityCount,
                 RenderLayers::layer(HIGH_RES_LAYER),
             ),
