@@ -1,3 +1,4 @@
+use std::f64::INFINITY;
 use std::f64::consts::PI;
 use std::time::Duration;
 
@@ -287,6 +288,14 @@ impl Rad64 {
     }
 }
 
+#[derive(Debug)]
+pub enum OrbitShape {
+    Circle,
+    Ellipse,
+    Parabola,
+    Hyperbola,
+}
+
 pub struct Orbit {
     pub position: DVec2,
     pub velocity: DVec2,
@@ -311,13 +320,27 @@ impl Orbit {
         let angular_momentum = position.perp_dot(velocity);
         let eccentricity =
             (1.0 + ((2.0 * orbital_energy * angular_momentum.powi(2)) / (μ.powi(2)))).sqrt();
-        let semi_major_axis =
-            -(μ * position_length / (position_length * velocity_length_squared - (2.0 * μ)));
-        let semi_minor_axis = semi_major_axis * (1.0 - eccentricity.powi(2)).sqrt();
+        let eccentricity_squared = eccentricity.powi(2);
+        let semi_major_axis = if eccentricity < 1.0 {
+            -(μ * position_length / (position_length * velocity_length_squared - (2.0 * μ)))
+        } else {
+            (angular_momentum.powi(2) / μ) * (1.0 / (eccentricity_squared - 1.0))
+        };
+        let semi_minor_axis = if eccentricity < 1.0 {
+            semi_major_axis * (1.0 - eccentricity_squared).sqrt()
+        } else {
+            semi_major_axis * (eccentricity_squared - 1.0).sqrt()
+        };
         let period = Duration::try_from_secs_f64(2.0 * PI * (semi_major_axis.powi(3) / μ).sqrt())
             .unwrap_or(Duration::MAX);
-        let apoapsis = semi_major_axis * (1.0 + eccentricity);
-        let periapsis = semi_major_axis * (1.0 - eccentricity);
+        let apoapsis = match eccentricity {
+            1.0..INFINITY => -semi_major_axis * (eccentricity + 1.0),
+            _ => semi_major_axis * (1.0 + eccentricity),
+        };
+        let periapsis = match eccentricity {
+            1.0..INFINITY => semi_major_axis * (eccentricity - 1.0),
+            _ => semi_major_axis * (1.0 - eccentricity),
+        };
         let eccentricity_vector = (velocity_length_squared / μ - 1.0 / position_length) * position
             - ((position.dot(velocity)) / μ) * velocity;
         Self {
@@ -331,6 +354,16 @@ impl Orbit {
             apoapsis,
             periapsis,
             eccentricity_vector,
+        }
+    }
+
+    pub fn shape(&self) -> OrbitShape {
+        match self.eccentricity {
+            0.0 => OrbitShape::Circle,
+            0.0..1.0 => OrbitShape::Ellipse,
+            1.0 => OrbitShape::Parabola,
+            1.0..INFINITY => OrbitShape::Hyperbola,
+            _ => panic!("Unexpected eccentricity: {}", self.eccentricity),
         }
     }
 
@@ -384,16 +417,24 @@ impl Orbit {
     }
 
     pub fn time_until_apoapsis(&self) -> Duration {
-        let time_since_periapsis = self.time_since_periapsis();
-        let time_at_apoapsis = self.orbital_time_at(Rad64(PI));
-        if time_since_periapsis < time_at_apoapsis {
-            time_at_apoapsis - time_since_periapsis
+        if self.eccentricity >= 1.0 {
+            Duration::ZERO
         } else {
-            self.period - time_since_periapsis + time_at_apoapsis
+            let time_since_periapsis = self.time_since_periapsis();
+            let time_at_apoapsis = self.orbital_time_at(Rad64(PI));
+            if time_since_periapsis < time_at_apoapsis {
+                time_at_apoapsis - time_since_periapsis
+            } else {
+                self.period - time_since_periapsis + time_at_apoapsis
+            }
         }
     }
 
     pub fn time_to_periapsis(&self) -> Duration {
-        self.period - self.time_since_periapsis()
+        if self.eccentricity >= 1.0 {
+            Duration::ZERO
+        } else {
+            self.period - self.time_since_periapsis()
+        }
     }
 }

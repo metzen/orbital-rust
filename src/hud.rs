@@ -1,3 +1,5 @@
+use std::f32::consts::FRAC_PI_2;
+
 use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::css::{BLACK, LIGHT_GRAY};
@@ -15,7 +17,7 @@ use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera, InGamePointer};
-use crate::physics::{NoGravity, Orbit, RigidBody};
+use crate::physics::{NoGravity, Orbit, OrbitShape, RigidBody};
 use crate::timewarp::{TIME_WARPS, TimeWarp};
 use crate::vessel::Vessel;
 
@@ -1026,6 +1028,25 @@ fn update_hover_text(
     }
 }
 
+/// Additional shape drawing extensions for [`Gizmos`].
+trait GizmosExt {
+    fn hyperbola(&mut self, isometry: Isometry3d, half_size: Vec2, resolution: i32, color: Color);
+}
+
+impl<'w, 's> GizmosExt for Gizmos<'w, 's> {
+    fn hyperbola(&mut self, isometry: Isometry3d, half_size: Vec2, resolution: i32, color: Color) {
+        let step = 0.01;
+        let positions: Vec<Vec3> = (-resolution..resolution)
+            .map(|i| {
+                let t = i as f32 * step;
+                Vec2::new(half_size.x * t.cosh(), half_size.y * t.sinh())
+            })
+            .map(|p| isometry * p.extend(1.0))
+            .collect();
+        self.linestrip(positions, color);
+    }
+}
+
 fn draw_orbits(
     orbiting_entities: Query<
         (
@@ -1073,28 +1094,59 @@ fn draw_orbits(
                 Some(material) => material.color,
                 None => Color::from(LIGHT_GRAY),
             };
-            gizmos
-                .ellipse(
-                    Isometry3d::new(
-                        Vec3::new(
-                            orbit_transform.translation().x
-                                - (orbit.semi_major_axis * -perifocal_unit_vec.dot(DVec2::X))
-                                    as f32,
-                            orbit_transform.translation().y
-                                - (orbit.semi_major_axis * -perifocal_unit_vec.dot(DVec2::Y))
-                                    as f32,
-                            1.0,
+            match orbit.shape() {
+                OrbitShape::Ellipse => {
+                    gizmos
+                        .ellipse(
+                            Isometry3d::new(
+                                Vec3::new(
+                                    orbit_transform.translation().x
+                                        - (orbit.semi_major_axis
+                                            * -perifocal_unit_vec.dot(DVec2::X))
+                                            as f32,
+                                    orbit_transform.translation().y
+                                        - (orbit.semi_major_axis
+                                            * -perifocal_unit_vec.dot(DVec2::Y))
+                                            as f32,
+                                    1.0,
+                                ),
+                                if orbit_angle.is_normal() {
+                                    Quat::from_rotation_z(orbit_angle)
+                                } else {
+                                    Quat::IDENTITY
+                                },
+                            ),
+                            DVec2::new(orbit.semi_minor_axis, orbit.semi_major_axis).as_vec2(),
+                            orbit_color.with_alpha(0.2),
+                        )
+                        .resolution(4000);
+                }
+                OrbitShape::Hyperbola | OrbitShape::Parabola => {
+                    gizmos.hyperbola(
+                        Isometry3d::new(
+                            Vec3::new(
+                                orbit_transform.translation().x
+                                    + (orbit.semi_major_axis * -perifocal_unit_vec.dot(DVec2::X))
+                                        as f32,
+                                orbit_transform.translation().y
+                                    + (orbit.semi_major_axis * -perifocal_unit_vec.dot(DVec2::Y))
+                                        as f32,
+                                1.0,
+                            ),
+                            if orbit_angle.is_normal() {
+                                Quat::from_rotation_z(orbit_angle - FRAC_PI_2)
+                            } else {
+                                Quat::IDENTITY
+                            },
                         ),
-                        if orbit_angle.is_normal() {
-                            Quat::from_rotation_z(orbit_angle)
-                        } else {
-                            Quat::IDENTITY
-                        },
-                    ),
-                    DVec2::new(orbit.semi_minor_axis, orbit.semi_major_axis).as_vec2(),
-                    orbit_color.with_alpha(0.2),
-                )
-                .resolution(4000);
+                        DVec2::new(orbit.semi_major_axis, orbit.semi_minor_axis).as_vec2(),
+                        100,
+                        orbit_color.with_alpha(0.2),
+                    );
+                    // .resolution(4000);
+                }
+                o => todo!("Implement draw for other orbit shapes {:?}", o),
+            }
             // AP and PE markers for controlled vessel.
             if let Some(vessel) = vessel
                 && vessel.controlled
