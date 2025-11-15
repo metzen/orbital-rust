@@ -261,6 +261,7 @@ fn setup_time_widget(commands: &mut Commands, text_font: &TextFont) {
 }
 
 fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
+    let border_color = Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0);
     commands
         .spawn((
             Name::new("Velocity widget"),
@@ -275,7 +276,7 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                 row_gap: Val::Px(6.0),
                 ..default()
             },
-            BorderColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
+            BorderColor::from(border_color),
             BackgroundColor::from(BLACK),
             BorderRadius::all(Val::Px(3.0)),
             Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
@@ -330,10 +331,39 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                     ));
                 }
             });
+            node.spawn((
+                Node {
+                    position_type: PositionType::Absolute,
+                    flex_direction: FlexDirection::Column,
+                    left: px(-2.0),
+                    top: px(18.0),
+                    row_gap: px(2.0),
+                    ..default()
+                },
+                BackgroundColor::from(Color::BLACK),
+                children![
+                    (
+                        Text::new("V"),
+                        TextColor::from(border_color),
+                        text_font.clone()
+                    ),
+                    (
+                        Text::new("E"),
+                        TextColor::from(border_color),
+                        text_font.clone()
+                    ),
+                    (
+                        Text::new("L"),
+                        TextColor::from(border_color),
+                        text_font.clone()
+                    ),
+                ],
+            ));
         });
 }
 
 fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
+    let border_color = Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0);
     commands
         .spawn((
             Name::new("Altitude widget"),
@@ -349,7 +379,7 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
                 ..default()
             },
             BackgroundColor::from(BLACK),
-            BorderColor::from(Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0)),
+            BorderColor::from(border_color),
             BorderRadius::all(Val::Px(3.0)),
             Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
         ))
@@ -392,6 +422,34 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
                     .clone()
                     .with_font_size(12.0)
                     .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+            ));
+            node.spawn((
+                Node {
+                    position_type: PositionType::Absolute,
+                    flex_direction: FlexDirection::Column,
+                    right: px(-2.0),
+                    top: px(18.0),
+                    row_gap: px(2.0),
+                    ..default()
+                },
+                BackgroundColor::from(Color::BLACK),
+                children![
+                    (
+                        Text::new("A"),
+                        TextColor::from(border_color),
+                        text_font.clone()
+                    ),
+                    (
+                        Text::new("L"),
+                        TextColor::from(border_color),
+                        text_font.clone()
+                    ),
+                    (
+                        Text::new("T"),
+                        TextColor::from(border_color),
+                        text_font.clone()
+                    ),
+                ],
             ));
         });
 }
