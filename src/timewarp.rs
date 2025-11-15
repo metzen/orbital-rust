@@ -133,8 +133,8 @@ fn update_max_allowed_timewarp(
         .map(|(vessel, vessel_cell, vessel_transform, rigidbody)| {
             if vessel.throttle > 0.0 {
                 (
-                    4.0,
-                    String::from("Time Warp limited to 4x while vessel burn active"),
+                    50.0,
+                    String::from("Time Warp limited to 50x while vessel burn active"),
                 )
             } else if let Some(primary_id) = rigidbody.primary
                 && let Ok((primary_cell, primary_transform, primary_celestial_body)) =
