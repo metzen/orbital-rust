@@ -311,16 +311,25 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                     VelocityText,
                 ));
             });
-            node.spawn((
-                Text::new("m/s"),
-                TextLayout::new_with_justify(Justify::Right),
-                TextColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
-                BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
-                text_font
-                    .clone()
-                    .with_font_size(12.0)
-                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
-            ));
+            node.spawn(Node {
+                column_gap: px(2.0),
+                justify_content: JustifyContent::End,
+                ..default()
+            })
+            .with_children(|node| {
+                for char in String::from("   m/s").as_bytes() {
+                    node.spawn((
+                        Text::new(*char as char),
+                        TextLayout::new_with_justify(Justify::Right),
+                        TextColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
+                        BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
+                        text_font
+                            .clone()
+                            .with_font_size(12.0)
+                            .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                    ));
+                }
+            });
         });
 }
 
