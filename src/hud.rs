@@ -282,7 +282,7 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
         ))
         .with_children(|node| {
             node.spawn(Node {
-                column_gap: px(1.0),
+                column_gap: px(2.0),
                 justify_content: JustifyContent::End,
                 ..default()
             })
@@ -355,7 +355,7 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
         ))
         .with_children(|node| {
             node.spawn(Node {
-                column_gap: px(1.0),
+                column_gap: px(2.0),
                 ..default()
             })
             .with_children(|label_container| {
