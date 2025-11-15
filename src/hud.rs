@@ -3,7 +3,6 @@ use std::f32::consts::FRAC_PI_2;
 use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::css::{BLACK, LIGHT_GRAY};
-use bevy::ecs::relationship::RelatedSpawner;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::math::ops::log10;
 use bevy::math::{DVec2, DVec3};
@@ -229,7 +228,7 @@ fn setup_time_widget(commands: &mut Commands) {
                     ..default()
                 },
                 TimeWarpBoxes,
-                Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<ChildOf>| {
+                Children::spawn(SpawnWith(move |parent: &mut ChildSpawner| {
                     for _ in TIME_WARPS.into_iter() {
                         parent.spawn((
                             Node {
