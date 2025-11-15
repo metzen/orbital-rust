@@ -31,45 +31,44 @@ fn setup(mut commands: Commands) {
         font_smoothing: bevy::text::FontSmoothing::AntiAliased,
         ..default()
     };
-    commands
-        .spawn(
-            Node {
-                // fill the entire window
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                flex_direction: FlexDirection::Column,
-                align_items: AlignItems::Start,
-                // padding: UiRect::all(MARGIN),
-                // row_gap: Val::Px(),
-                margin: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(50.0), Val::Px(0.0)),
-                ..default()
-            },
-            // background_color: BackgroundColor(Color::BLACK),
-        )
-        .with_children(|root| {
-            root.spawn((
+    commands.spawn((
+        Node {
+            // fill the entire window
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Start,
+            // padding: UiRect::all(MARGIN),
+            // row_gap: Val::Px(),
+            margin: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(50.0), Val::Px(0.0)),
+            ..default()
+        },
+        // background_color: BackgroundColor(Color::BLACK),
+        children![
+            (
                 Text::new("FPS: "),
                 text_style.clone(),
                 RenderLayers::layer(HIGH_RES_LAYER),
-            ));
-            root.spawn((
+            ),
+            (
                 Text::default(),
                 text_style.clone(),
                 Fps,
                 RenderLayers::layer(HIGH_RES_LAYER),
-            ));
-            root.spawn((
+            ),
+            (
                 Text::new("Entities: "),
                 text_style.clone(),
                 RenderLayers::layer(HIGH_RES_LAYER),
-            ));
-            root.spawn((
+            ),
+            (
                 Text::default(),
                 text_style.clone(),
                 EntityCount,
                 RenderLayers::layer(HIGH_RES_LAYER),
-            ));
-        });
+            ),
+        ],
+    ));
 }
 
 fn update_fps(mut query: Query<&mut Text, With<Fps>>, diagnostics: Res<DiagnosticsStore>) {

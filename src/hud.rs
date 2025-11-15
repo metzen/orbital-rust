@@ -3,6 +3,7 @@ use std::f32::consts::FRAC_PI_2;
 use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::css::{BLACK, LIGHT_GRAY};
+use bevy::ecs::relationship::RelatedSpawner;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::math::ops::log10;
 use bevy::math::{DVec2, DVec3};
@@ -113,28 +114,26 @@ fn setup_gizmos(mut config_store: ResMut<GizmoConfigStore>) {
 }
 
 fn setup_throttle_widget(commands: &mut Commands, text_font: &TextFont) {
-    commands
-        .spawn((
-            Name::new("Throttle Widget"),
-            Node {
-                left: Val::Px(20.0),
-                bottom: Val::Px(20.0),
-                height: Val::Px(140.0),
-                width: Val::Px(30.0),
-                position_type: PositionType::Absolute,
-                flex_direction: FlexDirection::ColumnReverse,
-                align_items: AlignItems::FlexEnd,
-                border: BORDER,
-                padding: UiRect::all(Val::Px(5.0)),
-                ..default()
-            },
-            BORDER_COLOR,
-            BorderRadius::all(Val::Px(3.0)),
-            BackgroundColor::from(BLACK),
-            Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        ))
-        .with_children(|node| {
-            node.spawn((
+    commands.spawn((
+        Name::new("Throttle Widget"),
+        Node {
+            left: Val::Px(20.0),
+            bottom: Val::Px(20.0),
+            height: Val::Px(140.0),
+            width: Val::Px(30.0),
+            position_type: PositionType::Absolute,
+            flex_direction: FlexDirection::ColumnReverse,
+            align_items: AlignItems::FlexEnd,
+            border: BORDER,
+            padding: UiRect::all(Val::Px(5.0)),
+            ..default()
+        },
+        BORDER_COLOR,
+        BorderRadius::all(Val::Px(3.0)),
+        BackgroundColor::from(BLACK),
+        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        children![
+            (
                 Node {
                     height: Val::Percent(0.0),
                     width: Val::Percent(100.0),
@@ -142,198 +141,205 @@ fn setup_throttle_widget(commands: &mut Commands, text_font: &TextFont) {
                 },
                 ThrottleBar,
                 BackgroundColor::from(Color::srgb(0.0, 0.8, 0.32)),
-            ));
-            node.spawn((Text::default(), ThrottleText, text_font.clone()));
-        });
+            ),
+            (Text::default(), ThrottleText, text_font.clone()),
+        ],
+    ));
 }
 
 fn setup_time_widget(commands: &mut Commands, text_font: &TextFont) {
-    commands
-        .spawn((
-            Name::new("Time widget"),
-            Node {
-                margin: UiRect {
-                    left: Val::Auto,
-                    right: Val::Auto,
-                    bottom: Val::Px(20.0),
-                    top: Val::Auto,
-                },
-                border: BORDER,
-                padding: UiRect {
-                    top: Val::Px(8.0),
-                    right: Val::Px(8.0),
-                    bottom: Val::Px(2.0),
-                    left: Val::Px(8.0),
-                },
-                flex_direction: FlexDirection::Column,
-                row_gap: Val::Px(4.0),
-                ..default()
+    let text_font_clone = text_font.clone();
+    commands.spawn((
+        Name::new("Time widget"),
+        Node {
+            margin: UiRect {
+                left: Val::Auto,
+                right: Val::Auto,
+                bottom: Val::Px(20.0),
+                top: Val::Auto,
             },
-            BORDER_COLOR,
-            BorderRadius::all(Val::Px(3.0)),
-            BackgroundColor::from(BLACK),
-            Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        ))
-        .with_children(|node| {
-            node.spawn((Text::default(), TimeText))
-                .with_children(|text| {
-                    text.spawn((
+            border: BORDER,
+            padding: UiRect {
+                top: Val::Px(8.0),
+                right: Val::Px(8.0),
+                bottom: Val::Px(2.0),
+                left: Val::Px(8.0),
+            },
+            flex_direction: FlexDirection::Column,
+            row_gap: Val::Px(4.0),
+            ..default()
+        },
+        BORDER_COLOR,
+        BorderRadius::all(Val::Px(3.0)),
+        BackgroundColor::from(BLACK),
+        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        children![
+            (
+                Text::default(),
+                TimeText,
+                children![
+                    (
                         TextSpan::new("T+"),
                         text_font.clone(),
                         TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
-                    ));
-                    text.spawn((TextSpan::new("000"), text_font.clone()));
-                    text.spawn((
+                    ),
+                    (TextSpan::new("000"), text_font.clone()),
+                    (
                         TextSpan::new("y "),
                         text_font.clone(),
                         TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
-                    ));
-                    text.spawn((TextSpan::new("000"), text_font.clone()));
-                    text.spawn((
+                    ),
+                    (TextSpan::new("000"), text_font.clone()),
+                    (
                         TextSpan::new("d "),
                         text_font.clone(),
                         TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
-                    ));
-                    text.spawn((TextSpan::new("00"), text_font.clone()));
-                    text.spawn((
+                    ),
+                    (TextSpan::new("00"), text_font.clone()),
+                    (
                         TextSpan::new(":"),
                         text_font.clone(),
                         TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
-                    ));
-                    text.spawn((TextSpan::new("00"), text_font.clone()));
-                    text.spawn((
+                    ),
+                    (TextSpan::new("00"), text_font.clone()),
+                    (
                         TextSpan::new(":"),
                         text_font.clone(),
                         TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
-                    ));
-                    text.spawn((TextSpan::new("00"), text_font.clone()));
-                });
-        })
-        .with_children(|node| {
-            node.spawn((
+                    ),
+                    (TextSpan::new("00"), text_font.clone()),
+                ]
+            ),
+            (
                 Node {
                     column_gap: Val::Px(2.0),
                     ..default()
                 },
                 TimeWarpBoxes,
-            ))
-            .with_children(|node| {
-                for _ in 0..TIME_WARPS.len() {
-                    node.spawn((
-                        Node {
-                            width: Val::Px(20.0),
-                            height: Val::Px(16.0),
-                            justify_content: JustifyContent::Center,
-                            ..default()
-                        },
-                        BackgroundColor::from(Color::srgb(0.446, 0.471, 0.525)),
-                    ))
-                    .with_child((
-                        Text::new(">"),
-                        text_font.clone(),
-                        TextColor::BLACK,
-                    ));
-                }
-            });
-        })
-        .with_children(|node| {
-            node.spawn((
+                Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<ChildOf>| {
+                    for _ in TIME_WARPS.into_iter() {
+                        parent.spawn((
+                            Node {
+                                width: Val::Px(20.0),
+                                height: Val::Px(16.0),
+                                justify_content: JustifyContent::Center,
+                                ..default()
+                            },
+                            BackgroundColor::from(Color::srgb(0.446, 0.471, 0.525)),
+                            Children::spawn_one((
+                                Text::new(">"),
+                                TextColor::BLACK,
+                                text_font_clone.clone(),
+                            )),
+                        ));
+                    }
+                })),
+            ),
+            (
                 Text::default(),
                 TextLayout::new_with_justify(Justify::Center),
-            ))
-            .with_children(|text| {
-                text.spawn((
-                    TextSpan::new("TIME.WARP= "),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-                ));
-                text.spawn((
-                    TextSpan::default(),
-                    TimeWarpText,
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-                ));
-                text.spawn((
-                    TextSpan::new("x"),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-                ));
-            });
-        });
+                children![
+                    (
+                        TextSpan::new("TIME.WARP= "),
+                        text_font.clone(),
+                        TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
+                    ),
+                    (
+                        TextSpan::default(),
+                        TimeWarpText,
+                        text_font.clone(),
+                        TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
+                    ),
+                    (
+                        TextSpan::new("x"),
+                        text_font.clone(),
+                        TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
+                    ),
+                ],
+            ),
+        ],
+    ));
 }
 
 fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
-    let border_color = Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0);
-    commands
-        .spawn((
-            Name::new("Velocity widget"),
-            Node {
-                position_type: PositionType::Absolute,
-                left: Val::Px(70.0),
-                bottom: Val::Px(130.0),
-                border: UiRect::px(1.0, 1.0, 1.0, 3.0),
-                padding: UiRect::all(Val::Px(5.0)),
-                flex_direction: FlexDirection::Column,
-                width: Val::Px(80.0),
-                row_gap: Val::Px(6.0),
-                ..default()
-            },
-            BorderColor::from(border_color),
-            BackgroundColor::from(BLACK),
-            BorderRadius::all(Val::Px(3.0)),
-            Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        ))
-        .with_children(|node| {
-            node.spawn(Node {
-                column_gap: px(2.0),
-                justify_content: JustifyContent::End,
-                ..default()
-            })
-            .with_children(|label_container| {
-                for char in String::from("SURFACE").chars() {
-                    label_container.spawn((
-                        Text::new(char),
-                        TextColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
-                        BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
-                        text_font
-                            .clone()
-                            .with_font_size(11.0)
-                            .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
-                    ));
-                }
-            });
-            node.spawn((
+    let widget_color = Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0);
+    let text_font = text_font.clone();
+    commands.spawn((
+        Name::new("Velocity widget"),
+        Node {
+            position_type: PositionType::Absolute,
+            left: Val::Px(70.0),
+            bottom: Val::Px(130.0),
+            border: UiRect::px(1.0, 1.0, 1.0, 3.0),
+            padding: UiRect::all(Val::Px(5.0)),
+            flex_direction: FlexDirection::Column,
+            width: Val::Px(80.0),
+            row_gap: Val::Px(6.0),
+            ..default()
+        },
+        BorderColor::from(widget_color),
+        BackgroundColor::from(BLACK),
+        BorderRadius::all(Val::Px(3.0)),
+        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        children![
+            (
+                Node {
+                    column_gap: px(2.0),
+                    justify_content: JustifyContent::End,
+                    ..default()
+                },
+                Children::spawn(
+                    "SURFACE"
+                        .chars()
+                        .map(|char| {
+                            (
+                                Text::new(char),
+                                TextColor::from(widget_color),
+                                BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
+                                text_font
+                                    .clone()
+                                    .with_font_size(11.0)
+                                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                )
+            ),
+            (
                 Text::default(),
                 TextLayout::new_with_justify(Justify::Right),
                 text_font.clone(),
-            ))
-            .with_children(|parent| {
-                parent.spawn((
+                children![(
                     TextSpan::default(),
                     text_font.clone().with_font_size(18.0),
                     VelocityText,
-                ));
-            });
-            node.spawn(Node {
-                column_gap: px(2.0),
-                justify_content: JustifyContent::End,
-                ..default()
-            })
-            .with_children(|node| {
-                for char in String::from("   m/s").chars() {
-                    node.spawn((
-                        Text::new(char),
-                        TextLayout::new_with_justify(Justify::Right),
-                        TextColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
-                        BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
-                        text_font
-                            .clone()
-                            .with_font_size(12.0)
-                            .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
-                    ));
-                }
-            });
-            node.spawn((
+                )]
+            ),
+            (
+                Node {
+                    column_gap: px(2.0),
+                    justify_content: JustifyContent::End,
+                    ..default()
+                },
+                Children::spawn(
+                    "   m/s"
+                        .chars()
+                        .map(|char| {
+                            (
+                                Text::new(char),
+                                TextLayout::new_with_justify(Justify::Right),
+                                TextColor::from(widget_color),
+                                BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
+                                text_font
+                                    .clone()
+                                    .with_font_size(12.0)
+                                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                ),
+            ),
+            (
                 Node {
                     position_type: PositionType::Absolute,
                     flex_direction: FlexDirection::Column,
@@ -347,86 +353,91 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                 children![
                     (
                         Text::new("V"),
-                        TextColor::from(border_color),
+                        TextColor::from(widget_color),
                         text_font.clone()
                     ),
                     (
                         Text::new("E"),
-                        TextColor::from(border_color),
+                        TextColor::from(widget_color),
                         text_font.clone()
                     ),
                     (
                         Text::new("L"),
-                        TextColor::from(border_color),
+                        TextColor::from(widget_color),
                         text_font.clone()
                     ),
                 ],
-            ));
-        });
+            ),
+        ],
+    ));
 }
 
 fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
-    let border_color = Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0);
-    commands
-        .spawn((
-            Name::new("Altitude widget"),
-            Node {
-                position_type: PositionType::Absolute,
-                left: Val::Px(350.0),
-                bottom: Val::Px(130.0),
-                width: Val::Px(80.0),
-                border: UiRect::px(1.0, 1.0, 1.0, 3.0),
-                padding: UiRect::all(Val::Px(5.0)),
-                flex_direction: FlexDirection::Column,
-                row_gap: Val::Px(6.0),
-                ..default()
-            },
-            BackgroundColor::from(BLACK),
-            BorderColor::from(border_color),
-            BorderRadius::all(Val::Px(3.0)),
-            Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        ))
-        .with_children(|node| {
-            node.spawn(Node {
-                column_gap: px(2.0),
-                ..default()
-            })
-            .with_children(|label_container| {
-                for char in String::from("SEA LVL").as_bytes() {
-                    label_container.spawn((
-                        Text::new(*char as char),
-                        TextColor::from(Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0)),
-                        BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
-                        text_font
-                            .clone()
-                            .with_font_size(11.0)
-                            .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
-                    ));
-                }
-            });
-            node.spawn((Text::default(), text_font.clone()))
-                .with_children(|parent| {
-                    parent.spawn((
-                        TextSpan::default(),
-                        text_font.clone().with_font_size(18.0),
-                        AltitudeText,
-                    ));
-                });
-            node.spawn((
+    let widget_color = Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0);
+    commands.spawn((
+        Name::new("Altitude widget"),
+        Node {
+            position_type: PositionType::Absolute,
+            left: Val::Px(350.0),
+            bottom: Val::Px(130.0),
+            width: Val::Px(80.0),
+            border: UiRect::px(1.0, 1.0, 1.0, 3.0),
+            padding: UiRect::all(Val::Px(5.0)),
+            flex_direction: FlexDirection::Column,
+            row_gap: Val::Px(6.0),
+            ..default()
+        },
+        BackgroundColor::from(BLACK),
+        BorderColor::from(widget_color),
+        BorderRadius::all(Val::Px(3.0)),
+        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        children![
+            (
+                Node {
+                    column_gap: px(2.0),
+                    ..default()
+                },
+                Children::spawn(
+                    "SEA LVL"
+                        .chars()
+                        .map(|char| {
+                            (
+                                Text::new(char as char),
+                                TextColor::from(widget_color),
+                                BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
+                                text_font
+                                    .clone()
+                                    .with_font_size(11.0)
+                                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                )
+            ),
+            (
+                Text::default(),
+                text_font.clone(),
+                children![(
+                    TextSpan::default(),
+                    text_font.clone().with_font_size(18.0),
+                    AltitudeText,
+                ),]
+            ),
+            (
                 Text::default(),
                 text_font.clone(),
                 BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
-            ))
-            .with_child((
-                TextSpan::default(),
-                AltitudeUnitsText,
-                TextColor::from(Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0)),
-                text_font
-                    .clone()
-                    .with_font_size(12.0)
-                    .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
-            ));
-            node.spawn((
+                children![(
+                    TextSpan::default(),
+                    AltitudeUnitsText,
+                    TextColor::from(widget_color),
+                    text_font
+                        .clone()
+                        .with_font_size(12.0)
+                        .with_line_height(bevy::text::LineHeight::RelativeToFont(1.0)),
+                )]
+            ),
+            (
                 Node {
                     position_type: PositionType::Absolute,
                     flex_direction: FlexDirection::Column,
@@ -440,209 +451,204 @@ fn setup_altitude_widget(commands: &mut Commands, text_font: &TextFont) {
                 children![
                     (
                         Text::new("A"),
-                        TextColor::from(border_color),
+                        TextColor::from(widget_color),
                         text_font.clone()
                     ),
                     (
                         Text::new("L"),
-                        TextColor::from(border_color),
+                        TextColor::from(widget_color),
                         text_font.clone()
                     ),
                     (
                         Text::new("T"),
-                        TextColor::from(border_color),
+                        TextColor::from(widget_color),
                         text_font.clone()
                     ),
                 ],
-            ));
-        });
+            ),
+        ],
+    ));
 }
 
 fn setup_orbital_info_widget(commands: &mut Commands, text_font: &TextFont) {
-    commands
-        .spawn((
-            Name::new("Orbit info"),
-            Node {
-                position_type: PositionType::Absolute,
-                left: Val::Px(145.0),
-                bottom: Val::Px(20.0),
-                border: BORDER,
-                padding: UiRect::axes(Val::Px(10.0), Val::Px(6.0)),
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },
-            BORDER_COLOR,
-            BorderRadius::all(Val::Px(3.0)),
-            BackgroundColor::from(BLACK),
-            Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        ))
-        .with_children(|node| {
-            node.spawn((
+    commands.spawn((
+        Name::new("Orbit info"),
+        Node {
+            position_type: PositionType::Absolute,
+            left: Val::Px(145.0),
+            bottom: Val::Px(20.0),
+            border: BORDER,
+            padding: UiRect::axes(Val::Px(10.0), Val::Px(6.0)),
+            flex_direction: FlexDirection::Column,
+            ..default()
+        },
+        BORDER_COLOR,
+        BorderRadius::all(Val::Px(3.0)),
+        BackgroundColor::from(BLACK),
+        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        children![
+            (
                 ApoapsisText,
                 Node {
                     column_gap: Val::Px(5.0),
                     ..default()
                 },
                 Text::default(),
-            ))
-            .with_children(|text| {
-                text.spawn((
-                    TextSpan::new("AP "),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(0.643, 0.427, 0.518)),
-                ));
-                text.spawn((TextSpan::new("000,000"), text_font.clone()));
-                text.spawn((TextSpan::new(" "), text_font.clone()));
-                text.spawn((
-                    TextSpan::new("m"),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                ));
-                text.spawn((TextSpan::new(" in "), text_font.clone()));
-                text.spawn((
-                    TextSpan::new("T-"),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                ));
-                text.spawn((TextSpan::new("00"), text_font.clone()));
-                text.spawn((
-                    TextSpan::new(":"),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                ));
-                text.spawn((TextSpan::new("00"), text_font.clone()));
-                text.spawn((
-                    TextSpan::new(":"),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                ));
-                text.spawn((TextSpan::new("00"), text_font.clone()));
-            });
-            node.spawn((
+                children![
+                    (
+                        TextSpan::new("AP "),
+                        TextColor::from(Color::srgb(0.643, 0.427, 0.518)),
+                        text_font.clone(),
+                    ),
+                    (TextSpan::new("000,000"), text_font.clone()),
+                    (TextSpan::new(" "), text_font.clone()),
+                    (
+                        TextSpan::new("m"),
+                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                        text_font.clone(),
+                    ),
+                    (TextSpan::new(" in "), text_font.clone()),
+                    (
+                        TextSpan::new("T-"),
+                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                        text_font.clone(),
+                    ),
+                    (TextSpan::new("00"), text_font.clone()),
+                    (
+                        TextSpan::new(":"),
+                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                        text_font.clone(),
+                    ),
+                    (TextSpan::new("00"), text_font.clone()),
+                    (
+                        TextSpan::new(":"),
+                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                        text_font.clone(),
+                    ),
+                    (TextSpan::new("00"), text_font.clone()),
+                ],
+            ),
+            (
                 PeriapsisText,
                 Node {
                     column_gap: Val::Px(5.0),
                     ..default()
                 },
                 Text::default(),
-            ))
-            .with_children(|text| {
-                text.spawn((
-                    TextSpan::new("PE "),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(0.125, 0.506, 0.63)),
-                ));
-                text.spawn((TextSpan::new("000,000"), text_font.clone()));
-                text.spawn((TextSpan::new(" "), text_font.clone()));
-                text.spawn((
-                    TextSpan::new("m"),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                ));
-                text.spawn((TextSpan::new(" in "), text_font.clone()));
-                text.spawn((
-                    TextSpan::new("T-"),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                ));
-                text.spawn((TextSpan::new("00"), text_font.clone()));
-                text.spawn((
-                    TextSpan::new(":"),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                ));
-                text.spawn((TextSpan::new("00"), text_font.clone()));
-                text.spawn((
-                    TextSpan::new(":"),
-                    text_font.clone(),
-                    TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                ));
-                text.spawn((TextSpan::new("00"), text_font.clone()));
-            });
-        });
+                children![
+                    (
+                        TextSpan::new("PE "),
+                        TextColor::from(Color::srgb(0.125, 0.506, 0.63)),
+                        text_font.clone(),
+                    ),
+                    (TextSpan::new("000000"), text_font.clone()),
+                    (TextSpan::new(" "), text_font.clone()),
+                    (
+                        TextSpan::new("m"),
+                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                        text_font.clone(),
+                    ),
+                    (TextSpan::new(" in "), text_font.clone()),
+                    (
+                        TextSpan::new("T-"),
+                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                        text_font.clone(),
+                    ),
+                    (TextSpan::new("00"), text_font.clone()),
+                    (
+                        TextSpan::new(":"),
+                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                        text_font.clone(),
+                    ),
+                    (TextSpan::new("00"), text_font.clone()),
+                    (
+                        TextSpan::new(":"),
+                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
+                        text_font.clone(),
+                    ),
+                    (TextSpan::new("00"), text_font.clone()),
+                ]
+            ),
+        ],
+    ));
 }
 
 fn setup_staging_widget(commands: &mut Commands) {
-    commands
-        .spawn((
+    commands.spawn((
+        Node {
+            margin: UiRect {
+                left: Val::Auto,
+                right: Val::Px(20.0),
+                bottom: Val::Px(20.0),
+                top: Val::Auto,
+            },
+            border: BORDER,
+            padding: UiRect::all(Val::Px(5.0)),
+            flex_direction: FlexDirection::Column,
+            ..default()
+        },
+        BORDER_COLOR,
+        BorderRadius::all(Val::Px(3.0)),
+        BackgroundColor::from(BLACK),
+        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        children![(
             Node {
-                margin: UiRect {
-                    left: Val::Auto,
-                    right: Val::Px(20.0),
-                    bottom: Val::Px(20.0),
-                    top: Val::Auto,
-                },
-                border: BORDER,
-                padding: UiRect::all(Val::Px(5.0)),
-                flex_direction: FlexDirection::Column,
+                width: Val::Px(200.0),
+                height: Val::Px(50.0),
                 ..default()
             },
-            BORDER_COLOR,
+            BackgroundColor::from(Color::srgb(0.0, 0.8, 0.32)),
             BorderRadius::all(Val::Px(3.0)),
-            BackgroundColor::from(BLACK),
-            Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        ))
-        .with_children(|node| {
-            node.spawn((
-                Node {
-                    width: Val::Px(200.0),
-                    height: Val::Px(50.0),
-                    ..default()
-                },
-                BackgroundColor::from(Color::srgb(0.0, 0.8, 0.32)),
-                BorderRadius::all(Val::Px(3.0)),
-            ));
-        });
+        ),],
+    ));
 }
 
 fn setup_vertical_speed_widget(commands: &mut Commands, text_font: &TextFont) {
-    commands
-        .spawn((
-            Name::new("Vertical speed"),
-            Node {
-                position_type: PositionType::Absolute,
-                bottom: Val::Px(20.0),
-                left: Val::Px(448.0),
-                width: Val::Px(50.0),
-                border: BORDER,
-                padding: UiRect::all(Val::Px(5.0)),
-                flex_direction: FlexDirection::Column,
-                align_items: AlignItems::End,
-                row_gap: Val::Px(14.0),
-                ..default()
-            },
-            BORDER_COLOR,
-            BorderRadius::all(Val::Px(3.0)),
-            BackgroundColor::from(BLACK),
-            Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        ))
-        .with_children(|node| {
-            node.spawn((
+    commands.spawn((
+        Name::new("Vertical speed"),
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(20.0),
+            left: Val::Px(448.0),
+            width: Val::Px(50.0),
+            border: BORDER,
+            padding: UiRect::all(Val::Px(5.0)),
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::End,
+            row_gap: Val::Px(14.0),
+            ..default()
+        },
+        BORDER_COLOR,
+        BorderRadius::all(Val::Px(3.0)),
+        BackgroundColor::from(BLACK),
+        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        children![
+            (
                 Text::new("+100"),
                 text_font.clone(),
                 TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-            ));
-            node.spawn((
+            ),
+            (
                 Text::new("+10"),
                 text_font.clone(),
                 TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-            ));
-            node.spawn((
+            ),
+            (
                 Text::new("0"),
                 text_font.clone(),
                 TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-            ));
-            node.spawn((
+            ),
+            (
                 Text::new("-10"),
                 text_font.clone(),
                 TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-            ));
-            node.spawn((
+            ),
+            (
                 Text::new("-100"),
                 text_font.clone(),
                 TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-            ));
-            node.spawn((
+            ),
+            (
                 Name::new("vertical speed indicator"),
                 Node {
                     position_type: PositionType::Absolute,
@@ -652,8 +658,9 @@ fn setup_vertical_speed_widget(commands: &mut Commands, text_font: &TextFont) {
                 Text::default(),
                 text_font.clone(),
                 VerticalSpeedText,
-            ));
-        });
+            ),
+        ],
+    ));
 }
 
 fn setup_rotation_widget(commands: &mut Commands, text_font: &TextFont) {
@@ -698,24 +705,23 @@ fn setup_hover_text(commands: &mut Commands, text_font: &TextFont) {
 }
 
 fn setup_subject_widget(commands: &mut Commands, text_font: &TextFont) {
-    commands
-        .spawn((
-            Name::new("Subject text"),
-            Node {
-                top: px(20.0),
-                left: px(20.0),
-                padding: px(10.0).into(),
-                ..default()
-            },
-            RenderLayers::layer(HIGH_RES_LAYER),
-            BackgroundColor::from(Srgba::new(0.05, 0.11, 0.15, 1.0)),
-        ))
-        .with_child((
+    commands.spawn((
+        Name::new("Subject text"),
+        Node {
+            top: px(20.0),
+            left: px(20.0),
+            padding: px(10.0).into(),
+            ..default()
+        },
+        RenderLayers::layer(HIGH_RES_LAYER),
+        BackgroundColor::from(Srgba::new(0.05, 0.11, 0.15, 1.0)),
+        children![(
             Text::default(),
             TextLayout::new_with_justify(Justify::Center),
             HubSubjectText,
             text_font.clone(),
-        ));
+        ),],
+    ));
 }
 
 fn setup_hud(mut commands: Commands) {
