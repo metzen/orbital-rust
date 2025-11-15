@@ -290,9 +290,9 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                 ..default()
             })
             .with_children(|label_container| {
-                for char in String::from("SURFACE").as_bytes() {
+                for char in String::from("SURFACE").chars() {
                     label_container.spawn((
-                        Text::new(*char as char),
+                        Text::new(char),
                         TextColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
                         BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
                         text_font
@@ -320,9 +320,9 @@ fn setup_velocity_widget(commands: &mut Commands, text_font: &TextFont) {
                 ..default()
             })
             .with_children(|node| {
-                for char in String::from("   m/s").as_bytes() {
+                for char in String::from("   m/s").chars() {
                     node.spawn((
-                        Text::new(*char as char),
+                        Text::new(char),
                         TextLayout::new_with_justify(Justify::Right),
                         TextColor::from(Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0)),
                         BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
