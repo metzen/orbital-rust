@@ -4,6 +4,7 @@
   inputs = {
     rust-overlay.url = "github:oxalica/rust-overlay";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    #    nixpkgs.config.allowUnfree = true;
     crane.url = "github:ipetkov/crane";
     # crane.inputs.nixpkgs.follows = "nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
@@ -11,8 +12,17 @@
   };
 
   # outputs = { self, nixpkgs, rust-overlay, flake-utils, ... }:
-  outputs = { self, nixpkgs, rust-overlay, crane, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      rust-overlay,
+      crane,
+      flake-utils,
+      ...
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         overlays = [ (import rust-overlay) ];
         # overlays = [ ];
@@ -27,7 +37,6 @@
           nixfmt
           # rustc
           # rustfmt
-          rust-bin.stable."1.90.0".default
           systemd
           udev
           # vscode
@@ -43,17 +52,37 @@
           binutils
           llvmPackages.bintools
           pkg-config
+          # TODO: How to override this with extensions in devShell?
+          # rust-bin.stable."1.90.0".default
         ];
-      in {
-        devShells.default = with pkgs;
+        rustWithExtensions =
+          with pkgs;
+          (rust-bin.stable."1.90.0".default.override {
+            extensions = [
+              "rust-src"
+              "rust-analyzer"
+            ];
+          });
+      in
+      {
+        devShells.default =
+          with pkgs;
           mkShell {
-            nativeBuildInputs = nativeBuildInputs;
+            nativeBuildInputs = nativeBuildInputs ++ [
+              rustWithExtensions
+            ];
             buildInputs = buildInputs;
             # RUST_SRC_PATH =
             #   "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
-
-            shellHook =
-              "export LD_LIBRARY_PATH=${lib.makeLibraryPath buildInputs};";
+            RUST_SRC_PATH = "${rustWithExtensions}/lib/rustlib/src";
+            packages =
+              with (import nixpkgs {
+                inherit system;
+                config.allowUnfree = true;
+              }); [
+                vscode
+              ];
+            shellHook = "export LD_LIBRARY_PATH=${lib.makeLibraryPath buildInputs};";
           };
 
         # packages.default = pkgs.rustPlatform.buildRustPackage {
@@ -71,5 +100,6 @@
           buildInputs = buildInputs;
           nativeBuildInputs = nativeBuildInputs;
         };
-      });
+      }
+    );
 }
