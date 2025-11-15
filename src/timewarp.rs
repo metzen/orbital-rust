@@ -144,13 +144,14 @@ fn update_max_allowed_timewarp(
                 let primary_position = grid.grid_position_double(primary_cell, primary_transform);
                 let distance = vessel_position.distance(primary_position) as f32;
                 let altitude = distance - primary_celestial_body.radius;
+                // TODO: This needs to work for bodies with no atmosphere.
                 let warp_limits_per_atmosphere_height_factor = [
                     (f32::INFINITY, TIME_WARP_MAX),
                     (8.0, 10_000.0),
                     (6.0, 1_000.0),
                     (4.0, 100.0),
                     (2.0, 50.0),
-                    (1.0, 4.0),
+                    // (1.0, 4.0),
                 ];
                 let (boundary, limit) = warp_limits_per_atmosphere_height_factor
                     .into_iter()

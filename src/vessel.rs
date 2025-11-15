@@ -312,8 +312,8 @@ fn vessel_control(
             };
             throttle = (vessel.throttle + change).clamp(0.0, 1.0);
         }
-        if timewarp.value > 4.0 && vessel.throttle != throttle {
-            info!("Throttle is locked while Time Warp is over 4x")
+        if timewarp.value > 50.0 && vessel.throttle != throttle {
+            info!("Throttle is locked while Time Warp is over 50x")
         } else {
             vessel.throttle = throttle;
         }
