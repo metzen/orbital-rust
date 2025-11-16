@@ -1027,25 +1027,6 @@ fn update_hover_text(
     }
 }
 
-/// Additional shape drawing extensions for [`Gizmos`].
-trait GizmosExt {
-    fn hyperbola(&mut self, isometry: Isometry3d, half_size: Vec2, resolution: i32, color: Color);
-}
-
-impl<'w, 's> GizmosExt for Gizmos<'w, 's> {
-    fn hyperbola(&mut self, isometry: Isometry3d, half_size: Vec2, resolution: i32, color: Color) {
-        let step = 0.01;
-        let positions: Vec<Vec3> = (-resolution..resolution)
-            .map(|i| {
-                let t = i as f32 * step;
-                Vec2::new(half_size.x * t.cosh(), half_size.y * t.sinh())
-            })
-            .map(|p| isometry * p.extend(1.0))
-            .collect();
-        self.linestrip(positions, color);
-    }
-}
-
 fn draw_orbits(
     orbiting_entities: Query<
         (
@@ -1121,28 +1102,31 @@ fn draw_orbits(
                         .resolution(4000);
                 }
                 OrbitShape::Hyperbola | OrbitShape::Parabola => {
-                    gizmos.hyperbola(
-                        Isometry3d::new(
-                            Vec3::new(
-                                orbit_transform.translation().x
-                                    + (orbit.semi_major_axis * -perifocal_unit_vec.dot(DVec2::X))
-                                        as f32,
-                                orbit_transform.translation().y
-                                    + (orbit.semi_major_axis * -perifocal_unit_vec.dot(DVec2::Y))
-                                        as f32,
-                                1.0,
+                    use crate::gizmos::GizmosExt;
+                    gizmos
+                        .hyperbola(
+                            Isometry3d::new(
+                                Vec3::new(
+                                    orbit_transform.translation().x
+                                        + (orbit.semi_major_axis
+                                            * -perifocal_unit_vec.dot(DVec2::X))
+                                            as f32,
+                                    orbit_transform.translation().y
+                                        + (orbit.semi_major_axis
+                                            * -perifocal_unit_vec.dot(DVec2::Y))
+                                            as f32,
+                                    1.0,
+                                ),
+                                if orbit_angle.is_normal() {
+                                    Quat::from_rotation_z(orbit_angle - FRAC_PI_2)
+                                } else {
+                                    Quat::IDENTITY
+                                },
                             ),
-                            if orbit_angle.is_normal() {
-                                Quat::from_rotation_z(orbit_angle - FRAC_PI_2)
-                            } else {
-                                Quat::IDENTITY
-                            },
-                        ),
-                        DVec2::new(orbit.semi_major_axis, orbit.semi_minor_axis).as_vec2(),
-                        100,
-                        orbit_color.with_alpha(0.2),
-                    );
-                    // .resolution(4000);
+                            DVec2::new(orbit.semi_major_axis, orbit.semi_minor_axis).as_vec2(),
+                            orbit_color.with_alpha(0.2),
+                        )
+                        .resolution(100);
                 }
                 o => todo!("Implement draw for other orbit shapes {:?}", o),
             }
