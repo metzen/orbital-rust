@@ -426,15 +426,25 @@ fn setup_altitude_widget(commands: &mut Commands) {
                 ),]
             ),
             (
-                Text::default(),
+                Node {
+                    column_gap: px(2.0),
+                    ..default()
+                },
                 TextFont::ui_default(),
-                BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
-                children![(
-                    TextSpan::default(),
-                    AltitudeUnitsText,
-                    TextColor::from(widget_color),
-                    TextFont::ui_default().with_font_size(12.0),
-                )]
+                AltitudeUnitsText,
+                Children::spawn(
+                    "      "
+                        .chars()
+                        .map(|_| {
+                            (
+                                Text::default(),
+                                TextColor::from(widget_color),
+                                TextFont::ui_default().with_font_size(12.0),
+                                BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                ),
             ),
             (
                 Node {
@@ -830,10 +840,11 @@ fn update_velocity(
 
 fn update_altitude(
     mut text: Single<&mut TextSpan, (With<AltitudeText>, Without<AltitudeUnitsText>)>,
-    mut units_text: Single<&mut TextSpan, (With<AltitudeUnitsText>, Without<AltitudeText>)>,
+    altitude_units_boxes: Single<&Children, (With<AltitudeUnitsText>, Without<AltitudeText>)>,
     grid: Single<&Grid, With<BigSpace>>,
     subject_query: Query<(&Transform, &CellCoord, &RigidBody, &Aabb), With<HudSubject>>,
     primary_body_query: Query<(&Transform, &CellCoord, &Aabb)>,
+    mut text_query: Query<&mut Text>,
 ) {
     if let Ok((subject_transform, subject_grid_cell, subject_rigidbody, subject_aabb)) =
         subject_query.single()
@@ -850,10 +861,21 @@ fn update_altitude(
             distance - primary_aabb.half_extents.y as f64 - subject_aabb.half_extents.y as f64;
         let (humanized_altitude, units) = humanize_distance(altitude);
         text.0 = format!("{:.0}", humanized_altitude);
-        units_text.0 = units;
+        // TODO: This is super hacky; clean it up.
+        let units_chars = units.chars().collect::<Vec<char>>();
+        for (i, char_box) in altitude_units_boxes.into_iter().enumerate() {
+            if let Ok(mut text) = text_query.get_mut(*char_box) {
+                text.0 = if i < units_chars.len() {
+                    units_chars[i].into()
+                } else {
+                    " ".into()
+                };
+            }
+        }
     } else {
         text.0 = String::new();
-        units_text.0 = String::new();
+        // TODO: Fixme.
+        // units_text.0 = String::new();
     }
 }
 
