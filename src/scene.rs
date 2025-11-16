@@ -90,14 +90,12 @@ pub trait SceneCommands {
 impl SceneCommands for GridCommands<'_> {
     fn spawn_body(&mut self, bundle: impl Bundle) -> SpatialEntityCommands<'_> {
         let mut commands = self.spawn_spatial(bundle);
-        commands.insert((
-            Collider,
-            Focusable,
-            Trailable,
-            Pickable::default(),
-        ));
+        commands.insert((Collider, Focusable, Trailable, Pickable::default()));
         let id = commands.id();
-        commands.commands().entity(id).insert_if_new(Autoscale::new(2.0));
+        commands
+            .commands()
+            .entity(id)
+            .insert_if_new(Autoscale::new(2.0));
         commands
     }
 }
