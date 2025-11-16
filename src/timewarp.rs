@@ -11,7 +11,7 @@ use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::audio::SineAudio;
-use crate::physics::{CelestialBody, RigidBody};
+use crate::physics::{Atmosphere, CelestialBody, RigidBody};
 use crate::vessel::Vessel;
 
 pub const TIME_WARPS: [f32; 14] = [
@@ -125,7 +125,7 @@ fn setup_timewarp(mut virtual_time: ResMut<Time<Virtual>>) {
 fn update_max_allowed_timewarp(
     mut timewarp: ResMut<TimeWarp>,
     vessels: Query<(&Vessel, &CellCoord, &Transform, &RigidBody)>,
-    position_query: Query<(&CellCoord, &Transform, &CelestialBody)>,
+    position_query: Query<(&CellCoord, &Transform, &CelestialBody, &Atmosphere)>,
     grid: Single<&Grid, With<BigSpace>>,
 ) {
     let (limit, reason) = vessels
@@ -137,8 +137,12 @@ fn update_max_allowed_timewarp(
                     String::from("Time Warp limited to 50x while vessel burn active"),
                 )
             } else if let Some(primary_id) = rigidbody.primary
-                && let Ok((primary_cell, primary_transform, primary_celestial_body)) =
-                    position_query.get(primary_id)
+                && let Ok((
+                    primary_cell,
+                    primary_transform,
+                    primary_celestial_body,
+                    primary_atmosphere,
+                )) = position_query.get(primary_id)
             {
                 let vessel_position = grid.grid_position_double(vessel_cell, vessel_transform);
                 let primary_position = grid.grid_position_double(primary_cell, primary_transform);
@@ -155,7 +159,7 @@ fn update_max_allowed_timewarp(
                 ];
                 let (boundary, limit) = warp_limits_per_atmosphere_height_factor
                     .into_iter()
-                    .map(|(f, l)| (f * primary_celestial_body.atmosphere_height, l))
+                    .map(|(f, l)| (f * primary_atmosphere.height, l))
                     .take_while(|(boundary, _)| altitude < *boundary)
                     .last()
                     .unwrap();

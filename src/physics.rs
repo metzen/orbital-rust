@@ -54,23 +54,22 @@ pub struct PhysicsMaterial {
 }
 
 #[derive(Component, Default)]
-pub struct CelestialBody {
-    pub atmosphere_height: f32,
-    pub atmosphere_density_at_sea_level: f32,
-    pub atmosphere_color: Color,
-    pub radius: f32,
+pub struct Atmosphere {
+    pub height: f32,
+    pub density_at_sea_level: f32,
+    pub color: Color,
 }
 
-impl CelestialBody {
-    /// Calculate the atmospheric density for this CelestialBody at a given altitude.
-    fn atmosphere_density_at_altitude(&self, altitude: f32) -> f32 {
-        self.atmosphere_density_at_sea_level
-            * (altitude / self.atmosphere_height)
-                .min(1.0)
-                .log(100.0)
-                .min(0.0)
-                .abs()
+impl Atmosphere {
+    /// Calculate the density at a given altitude.
+    fn density_at_altitude(&self, altitude: f32) -> f32 {
+        self.density_at_sea_level * (altitude / self.height).min(1.0).log(100.0).min(0.0).abs()
     }
+}
+
+#[derive(Component, Default)]
+pub struct CelestialBody {
+    pub radius: f32,
 }
 
 #[derive(Component)]
@@ -132,7 +131,7 @@ fn gravity(
 #[derive(QueryData)]
 struct DragPrimaryQueryData {
     rigidbody: Read<RigidBody>,
-    celestial_body: Read<CelestialBody>,
+    atmosphere: Read<Atmosphere>,
     aabb: Read<Aabb>,
     transform: Read<Transform>,
     cell: Read<CellCoord>,
@@ -166,9 +165,7 @@ fn drag(
                 - grid.grid_position_double(primary.cell, primary.transform))
             .length();
             let altitude = distance as f32 - primary.aabb.half_extents.x;
-            density = primary
-                .celestial_body
-                .atmosphere_density_at_altitude(altitude);
+            density = primary.atmosphere.density_at_altitude(altitude);
         } else {
             velocity = rigidbody.velocity;
             density = 0.0;

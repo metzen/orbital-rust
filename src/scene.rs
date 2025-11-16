@@ -5,7 +5,7 @@ use big_space::commands::BigSpaceCommands;
 use big_space::prelude::{BigSpace, GridCommands, SpatialEntityCommands};
 
 use crate::camera::{Autoscale, Focusable};
-use crate::physics::{CelestialBody, Collider, PhysicsMaterial, RigidBody};
+use crate::physics::{Atmosphere, CelestialBody, Collider, PhysicsMaterial, RigidBody};
 use crate::trails::Trailable;
 
 pub struct Planet {
@@ -169,53 +169,15 @@ pub fn setup_scene(
                 mass: Planet::EARTH.mass,
                 ..default()
             },
+            Atmosphere {
+                height: 100_000.0,
+                density_at_sea_level: 1.225, // kg/m³
+                color: Color::srgb_u8(17 / 3, 145 / 3, 250 / 3),
+            },
             CelestialBody {
-                atmosphere_height: 100_000.0,
-                atmosphere_density_at_sea_level: 1.225, // kg/m³
-                atmosphere_color: Color::srgba(0.0, 0.0, 0.0, 0.0),
                 radius: Planet::EARTH.radius,
             },
-        ))
-        // TODO: Extract this to a helper function?
-        .with_children(|earth| {
-            // Spawn Earth atmosphere layers.
-            earth.spawn((
-                Transform::from_xyz(0.0, 0.0, -1.0),
-                Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
-                    Planet::EARTH.radius + 100_000.0,
-                    2000,
-                )))),
-                MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb_u8(
-                    17 / 7,
-                    145 / 7,
-                    250 / 7,
-                )))),
-            ));
-            earth.spawn((
-                Transform::from_xyz(0.0, 0.0, -1.0),
-                Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
-                    Planet::EARTH.radius + 50_000.0,
-                    2000,
-                )))),
-                MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb_u8(
-                    17 / 5,
-                    145 / 5,
-                    250 / 5,
-                )))),
-            ));
-            earth.spawn((
-                Transform::from_xyz(0.0, 0.0, -1.0),
-                Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
-                    Planet::EARTH.radius + 12_000.0,
-                    2000,
-                )))),
-                MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb_u8(
-                    17 / 3,
-                    145 / 3,
-                    250 / 3,
-                )))),
-            ));
-        });
+        ));
         root.spawn_body((
             Name::new("Moon"),
             Transform::from_xyz(147.10e9 + 385e6, 0.0, -1.0),
@@ -368,4 +330,40 @@ pub fn add_name_to_big_space(
     commands
         .entity(*big_space_entity)
         .insert(Name::new("BigSpace"));
+}
+
+pub fn spawn_atmosphere_layers(
+    mut commands: Commands,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    bodies: Query<(Entity, &Atmosphere, &CelestialBody)>,
+) {
+    for (id, atmosphere, celestialbody) in &bodies {
+        commands.entity(id).insert(children![
+            (
+                Transform::from_xyz(0.0, 0.0, -1.0),
+                Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
+                    celestialbody.radius + atmosphere.height,
+                    2000,
+                )))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(atmosphere.color.darker(0.025)))),
+            ),
+            (
+                Transform::from_xyz(0.0, 0.0, -1.0),
+                Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
+                    celestialbody.radius + atmosphere.height / 2.0,
+                    2000,
+                )))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(atmosphere.color.darker(0.02)))),
+            ),
+            (
+                Transform::from_xyz(0.0, 0.0, -1.0),
+                Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
+                    celestialbody.radius + atmosphere.height / 10.0,
+                    2000,
+                )))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(atmosphere.color.darker(0.01)))),
+            ),
+        ]);
+    }
 }

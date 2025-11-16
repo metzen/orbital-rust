@@ -34,8 +34,7 @@ use crate::camera::CameraPlugin;
 use crate::hud::HudPlugin;
 use crate::lifetime::LifetimePlugin;
 use crate::physics::PhysicsPlugin;
-use crate::scene::add_name_to_big_space;
-use crate::scene::setup_scene;
+use crate::scene::{add_name_to_big_space, setup_scene, spawn_atmosphere_layers};
 use crate::timewarp::TimeWarpPlugin;
 use crate::trails::TrailsPlugin;
 use crate::vessel::VesselPlugin;
@@ -147,7 +146,13 @@ fn main() {
         .add_audio_source::<SineAudio>()
         .add_systems(
             PreStartup,
-            (set_window_icon, setup_scene, add_name_to_big_space).chain(),
+            (
+                set_window_icon,
+                setup_scene,
+                add_name_to_big_space,
+                spawn_atmosphere_layers,
+            )
+                .chain(),
         )
         .add_systems(
             PreUpdate,
