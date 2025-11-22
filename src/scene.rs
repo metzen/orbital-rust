@@ -198,7 +198,10 @@ pub fn setup_scene(
         root.spawn_body((
             Name::new("Mars"),
             Transform::from_xyz(206.7e9, 0.0, 0.0),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::MARS.radius)))),
+            Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
+                Planet::MARS.radius,
+                2000,
+            )))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::MARS.color))),
             RigidBody {
                 mass: Planet::MARS.mass,
@@ -209,6 +212,13 @@ pub fn setup_scene(
                 },
                 ..default()
             },
+            Atmosphere {
+                height: 100_000.0,
+                scale_height: 11_100.0,
+                density_at_sea_level: 0.02,
+                color: Color::srgb(0.6, 0.23, 0.16),
+            },
+            CelestialBody { radius: Planet::MARS.radius },
         ));
         root.spawn_body((
             Name::new("Phobos"),
