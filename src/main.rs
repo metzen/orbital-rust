@@ -110,7 +110,7 @@ fn main() {
                     primary_window: Some(Window {
                         title: String::from("Orbital"),
                         present_mode: bevy::window::PresentMode::AutoNoVsync,
-                        resolution: WindowResolution::new(1152, 720)
+                        resolution: WindowResolution::new(1280, 800)
                             .with_scale_factor_override(1.0),
                         ..default()
                     }),
