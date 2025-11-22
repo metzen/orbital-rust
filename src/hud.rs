@@ -38,6 +38,7 @@ impl Plugin for HudPlugin {
                 update_vertical_speed,
                 update_hover_text,
                 update_orbital_info,
+                update_sas_indicator_widget,
             ),
         );
         app.add_systems(
@@ -96,6 +97,9 @@ pub struct ApoapsisText;
 
 #[derive(Component)]
 pub struct PeriapsisText;
+
+#[derive(Component)]
+struct SasIndicator;
 
 const BORDER: UiRect = UiRect::new(Val::Px(1.0), Val::Px(1.0), Val::Px(1.0), Val::Px(1.0));
 // TODO: Use old value? BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0))
@@ -733,6 +737,37 @@ fn setup_subject_widget(commands: &mut Commands) {
     ));
 }
 
+fn setup_sas_indicator_widget(commands: &mut Commands) {
+    commands.spawn((
+        Node {
+            position_type: PositionType::Absolute,
+            left: px(250.0),
+            bottom: px(100.0),
+            ..default()
+        },
+        Text::new("SAS"),
+        TextFont::ui_default().with_font_size(14.0),
+        BackgroundColor::from(Srgba::new(0.0, 0.1, 0.0, 1.0)),
+        TextColor::from(Srgba::new(0.0, 0.9, 0.0, 1.0)),
+        SasIndicator,
+        ZIndex(2),
+    ));
+}
+
+fn update_sas_indicator_widget(
+    mut widget: Single<(&mut BackgroundColor, &mut TextColor), With<SasIndicator>>,
+    vessel: Single<&Vessel, With<HudSubject>>,
+) {
+    widget.0.0 = Color::from(match vessel.sas_enabled {
+        true => Srgba::new(0.0, 0.9, 0.0, 1.0),
+        false => Srgba::new(0.0, 0.1, 0.0, 1.0),
+    });
+    widget.1.0 = Color::from(match vessel.sas_enabled {
+        true => Srgba::new(0.0, 0.0, 0.0, 1.0),
+        false => Srgba::new(0.0, 0.3, 0.0, 1.0),
+    });
+}
+
 fn setup_hud(mut commands: Commands) {
     setup_subject_widget(&mut commands);
     setup_rotation_widget(&mut commands);
@@ -744,6 +779,7 @@ fn setup_hud(mut commands: Commands) {
     setup_velocity_widget(&mut commands);
     setup_altitude_widget(&mut commands);
     setup_vertical_speed_widget(&mut commands);
+    setup_sas_indicator_widget(&mut commands);
 }
 
 fn symlog_plot(value: f32, max_value: f32, linear_threshold: f32, linear_scale: f32) {

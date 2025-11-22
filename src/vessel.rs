@@ -71,6 +71,7 @@ enum VesselAction {
     SasModePrograde,
     SasModeRadial,
     SasModeRetrograde,
+    SasToggle,
     ThrottleIncrease,
     ThrottleDecrease,
     ThrottleOpen,
@@ -101,6 +102,7 @@ impl VesselAction {
             .with(Self::SasModeRetrograde, KeyCode::KeyR)
             .with(Self::SasModeRadial, KeyCode::KeyO)
             .with(Self::SasModeAntiRadial, KeyCode::KeyI)
+            .with(Self::SasToggle, KeyCode::KeyT)
     }
 }
 
@@ -113,6 +115,7 @@ pub struct Vessel {
     direction_lock: Option<Direction>,
     // # TODO: Maybe initialize to FINE if ecodes.LED_CAPSL in KEYBOARD.leds()
     control_mode: ControlMode,
+    pub sas_enabled: bool,
 }
 
 #[derive(Component, Default)]
@@ -176,6 +179,7 @@ fn setup_vessel(
         Vessel {
             engine_translation: -Vec3::Y * (1.85 + 35.0),
             controlled: true,
+            sas_enabled: true,
             ..default()
         },
         AudioPlayer(assets.add(SineAudio::new(120.0))),
@@ -202,6 +206,7 @@ fn setup_vessel(
         },
         Vessel {
             engine_translation: -Vec3::Y * 15.0,
+            sas_enabled: true,
             ..default()
         },
         AudioPlayer(assets.add(SineAudio::new(150.0))),
@@ -252,6 +257,7 @@ fn setup_vessel(
         },
         Vessel {
             engine_translation: -Vec3::Y * 30.0,
+            sas_enabled: true,
             ..default()
         },
         AudioPlayer(assets.add(SineAudio::new(150.0))),
@@ -340,6 +346,9 @@ fn vessel_control(
         if action_state.pressed(&VesselAction::SasModeAntiRadial) {
             vessel.direction_lock = Some(Direction::AntiRadial);
         }
+        if action_state.just_pressed(&VesselAction::SasToggle) {
+            vessel.sas_enabled = !vessel.sas_enabled;
+        }
     }
 }
 
@@ -392,7 +401,8 @@ fn vessel_systems(
     engine_particle_spawn_timer.0.tick(time.delta());
     let mut disabled_engine_particles = disabled_engine_particle_query.iter_mut();
     for (mut transform, mut rigidbody, vessel, grid_cell, global_transform) in vessels.iter_mut() {
-        if let Some(direction_lock) = &vessel.direction_lock
+        if vessel.sas_enabled
+            && let Some(direction_lock) = &vessel.direction_lock
             && let Some(primary) = rigidbody.primary
             && let Ok((primary_global_transform, primary_rigidbody)) = primary_query.get(primary)
         {
