@@ -56,6 +56,7 @@ pub struct PhysicsMaterial {
 #[derive(Component, Default)]
 pub struct Atmosphere {
     pub height: f32,
+    /// Density at sea level (in kg/m³).
     pub density_at_sea_level: f32,
     pub color: Color,
 }
