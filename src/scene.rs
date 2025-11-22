@@ -169,7 +169,8 @@ pub fn setup_scene(
             },
             Atmosphere {
                 height: 100_000.0,
-                density_at_sea_level: 1.225, // kg/m³
+                scale_height: 8_500.0,
+                density_at_sea_level: 1.225,
                 color: Color::srgb_u8(17 / 3, 145 / 3, 250 / 3),
             },
             CelestialBody {

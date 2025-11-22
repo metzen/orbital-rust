@@ -56,6 +56,8 @@ pub struct PhysicsMaterial {
 #[derive(Component, Default)]
 pub struct Atmosphere {
     pub height: f32,
+    /// The height increase (in meters) required for the atmospheric pressure to decrease by a factor of 1/e (about 37%).
+    pub scale_height: f32,
     /// Density at sea level (in kg/m³).
     pub density_at_sea_level: f32,
     pub color: Color,
@@ -64,6 +66,7 @@ pub struct Atmosphere {
 impl Atmosphere {
     /// Calculate the density at a given altitude.
     fn density_at_altitude(&self, altitude: f32) -> f32 {
+        // TODO: Use scale_height to calculate this.
         self.density_at_sea_level * (altitude / self.height).min(1.0).log(100.0).min(0.0).abs()
     }
 }
