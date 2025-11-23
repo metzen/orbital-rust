@@ -72,6 +72,8 @@ enum VesselAction {
     SasModeRadial,
     SasModeRetrograde,
     SasToggle,
+    #[actionlike(Axis)]
+    Throttle,
     ThrottleIncrease,
     ThrottleDecrease,
     ThrottleOpen,
@@ -88,10 +90,14 @@ impl VesselAction {
                 GamepadControlAxis::LEFT_X.with_deadzone_symmetric(0.3),
             )
             .with_axis(Self::Rotate, VirtualAxis::ad())
-            .with(Self::ThrottleIncrease, KeyCode::ShiftLeft)
-            .with(Self::ThrottleIncrease, GamepadButton::RightTrigger2)
-            .with(Self::ThrottleDecrease, KeyCode::ControlLeft)
-            .with(Self::ThrottleDecrease, GamepadButton::LeftTrigger2)
+            .with_axis(
+                Self::Throttle,
+                VirtualAxis::new(GamepadButton::LeftTrigger2, GamepadButton::RightTrigger2),
+            )
+            .with_axis(
+                Self::Throttle,
+                VirtualAxis::new(KeyCode::ControlLeft, KeyCode::ShiftLeft),
+            )
             .with(Self::ThrottleOpen, KeyCode::KeyZ)
             .with(Self::ThrottleOpen, GamepadButton::RightTrigger)
             .with(Self::ThrottleClose, KeyCode::KeyX)
@@ -320,20 +326,14 @@ fn vessel_control(
         if action_state.pressed(&VesselAction::ThrottleClose) {
             throttle = 0.0;
         }
-        if action_state.pressed(&VesselAction::ThrottleIncrease) {
+        if action_state.clamped_value(&VesselAction::Throttle) != 0.0 {
             let change = match vessel.control_mode {
                 ControlMode::Normal => 0.01,
                 ControlMode::Fine => 0.0005,
             };
-            let input = action_state.clamped_button_value(&VesselAction::ThrottleIncrease);
-            throttle = (vessel.throttle + change * input).clamp(0.0, 1.0);
-        }
-        if action_state.pressed(&VesselAction::ThrottleDecrease) {
-            let change = match vessel.control_mode {
-                ControlMode::Normal => -0.01,
-                ControlMode::Fine => -0.0005,
-            };
-            throttle = (vessel.throttle + change).clamp(0.0, 1.0);
+            throttle = (vessel.throttle
+                + change * action_state.clamped_value(&VesselAction::Throttle))
+            .clamp(0.0, 1.0);
         }
         if timewarp.value > 50.0 && vessel.throttle != throttle {
             info!("Throttle is locked while Time Warp is over 50x")
