@@ -3,8 +3,6 @@ use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::{Layer, RenderLayers};
 use bevy::camera::{ImageRenderTarget, RenderTarget};
 use bevy::ecs::message::MessageCursor;
-use bevy::ecs::query::QueryData;
-use bevy::ecs::system::lifetimeless::Write;
 use bevy::math::DVec2;
 use bevy::picking::PickingSystems;
 use bevy::picking::pointer::{Location, PointerId, PointerInput, PointerInteraction};
@@ -347,47 +345,34 @@ fn update_camera_position_for_autofollow(
     };
 }
 
-#[derive(QueryData)]
-#[query_data(mutable)]
-struct CameraQueryData {
-    entity: Entity,
-    transform: Write<Transform>,
-    projection: Write<Projection>,
-    grid_cell: Write<CellCoord>,
-    in_game_camera: Write<InGameCamera>,
-}
-
 fn camera_control(
     action_state: Res<ActionState<CameraAction>>,
-    mut query: Query<CameraQueryData, With<InGameCamera>>,
+    camera: Single<(&mut Transform, &mut Projection, &mut InGameCamera)>,
     time: Res<Time<Real>>,
-    // frames: ReferenceFrames<i32>,
 ) {
-    for mut camera in query.iter_mut() {
-        let Projection::Orthographic(orthographic_projection) = &mut *camera.projection else {
-            continue;
-        };
-        if action_state.axis_pair(&CameraAction::Pan) != Vec2::ZERO {
-            let delta = action_state.clamped_axis_pair(&CameraAction::Pan)
-                * orthographic_projection.scale
-                * time.delta_secs()
-                * 200.0;
-            camera.transform.translation += Vec3::new(delta.x, delta.y, 0.0);
-        }
+    let (mut transform, mut projection, mut in_game_camera) = camera.into_inner();
+    let Projection::Orthographic(ref mut orthographic_projection) = *projection else {
+        todo!("Handle non-orthographic camera projection");
+    };
+    if action_state.axis_pair(&CameraAction::Pan) != Vec2::ZERO {
+        let delta = action_state.clamped_axis_pair(&CameraAction::Pan)
+            * orthographic_projection.scale
+            * time.delta_secs()
+            * 200.0;
+        transform.translation += Vec3::new(delta.x, delta.y, 0.0);
+    }
 
-        let scale_factor = 5.0;
-        if action_state.pressed(&CameraAction::ZoomIn) {
-            orthographic_projection.scale *= 1.0 - scale_factor * time.delta_secs();
-        }
-        if action_state.pressed(&CameraAction::ZoomOut) {
-            orthographic_projection.scale *= 1.0 + scale_factor * time.delta_secs();
-        }
-        }
+    let scale_factor = 5.0;
+    if action_state.pressed(&CameraAction::ZoomIn) {
+        orthographic_projection.scale *= 1.0 - scale_factor * time.delta_secs();
+    }
+    if action_state.pressed(&CameraAction::ZoomOut) {
+        orthographic_projection.scale *= 1.0 + scale_factor * time.delta_secs();
+    }
 
-        if action_state.just_pressed(&CameraAction::NextViewMode) {
-            camera.in_game_camera.view_mode = camera.in_game_camera.view_mode.next();
-            info!("Camera mode: {:?}", camera.in_game_camera.view_mode);
-        }
+    if action_state.just_pressed(&CameraAction::NextViewMode) {
+        in_game_camera.view_mode = in_game_camera.view_mode.next();
+        info!("Camera mode: {:?}", in_game_camera.view_mode);
     }
 }
 
