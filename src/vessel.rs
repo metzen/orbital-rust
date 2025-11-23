@@ -99,10 +99,27 @@ impl VesselAction {
             .with(Self::TogglePrecisionControls, KeyCode::CapsLock)
             .with(Self::FirePhoton, KeyCode::Space)
             .with(Self::SasModePrograde, KeyCode::KeyP)
+            .with(
+                Self::SasModePrograde,
+                ButtonlikeChord::new([GamepadButton::North, GamepadButton::DPadUp]),
+            )
             .with(Self::SasModeRetrograde, KeyCode::KeyR)
+            .with(
+                Self::SasModeRetrograde,
+                ButtonlikeChord::new([GamepadButton::North, GamepadButton::DPadDown]),
+            )
             .with(Self::SasModeRadial, KeyCode::KeyO)
+            .with(
+                Self::SasModeRadial,
+                ButtonlikeChord::new([GamepadButton::North, GamepadButton::DPadLeft]),
+            )
             .with(Self::SasModeAntiRadial, KeyCode::KeyI)
+            .with(
+                Self::SasModeAntiRadial,
+                ButtonlikeChord::new([GamepadButton::North, GamepadButton::DPadRight]),
+            )
             .with(Self::SasToggle, KeyCode::KeyT)
+            .with(Self::SasToggle, GamepadButton::North)
     }
 }
 
