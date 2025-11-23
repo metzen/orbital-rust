@@ -114,6 +114,7 @@ impl TimeWarpAction {
             .with(Self::IncreaseTimewarp, KeyCode::Period)
             .with(Self::IncreaseTimewarp, GamepadButton::East)
             .with(Self::ToggleTimewarpPause, KeyCode::Slash)
+            .with(Self::ToggleTimewarpPause, GamepadButton::Start)
     }
 }
 
