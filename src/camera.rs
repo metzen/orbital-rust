@@ -35,6 +35,9 @@ pub const HIGH_RES_LAYER: Layer = 1;
 const PIXEL_CAM_POINTER_ID: PointerId =
     PointerId::Custom(Uuid::from_u128(0x230e8400e29b41d1a716446655446439));
 
+/// The maximum rate at which the camera zooms (in scale factor per second).
+const CAMERA_ZOOM_RATE_MAX: f32 = 5.0;
+
 #[derive(Default, PartialEq, Copy, Clone, Debug)]
 enum CameraViewMode {
     // The camera is aligned with the body (planet, moon, or sun) you are in orbit of, keeping it "below" you in the view.
@@ -108,6 +111,8 @@ pub struct Focusable;
 enum CameraAction {
     #[actionlike(DualAxis)]
     Pan,
+    #[actionlike(Axis)]
+    Zoom,
     ZoomIn,
     ZoomOut,
     NextViewMode,
@@ -120,16 +125,18 @@ enum CameraAction {
 impl CameraAction {
     fn default_input_map() -> InputMap<Self> {
         InputMap::default()
-            .with_dual_axis(Self::Pan, GamepadStick::RIGHT.with_deadzone_symmetric(0.2))
             .with_dual_axis(Self::Pan, VirtualDPad::arrow_keys())
-            .with(Self::ZoomIn, KeyCode::Equal)
-            .with(Self::ZoomIn, KeyCode::NumpadAdd)
+            .with_axis(Self::Zoom, VirtualAxis::new(KeyCode::Minus, KeyCode::Equal))
+            .with_axis(
+                Self::Zoom,
+                GamepadControlAxis::RIGHT_Y.with_deadzone_symmetric(0.2),
+            )
+            .with_axis(
+                Self::Zoom,
+                VirtualAxis::new(KeyCode::NumpadSubtract, KeyCode::NumpadAdd),
+            )
             .with(Self::ZoomIn, MouseScrollDirection::UP)
-            .with(Self::ZoomIn, GamepadButton::RightThumb)
-            .with(Self::ZoomOut, KeyCode::Minus)
-            .with(Self::ZoomOut, KeyCode::NumpadSubtract)
             .with(Self::ZoomOut, MouseScrollDirection::DOWN)
-            .with(Self::ZoomOut, GamepadButton::LeftThumb)
             .with(Self::NextViewMode, KeyCode::KeyV)
             .with(Self::FocusNext, KeyCode::Tab)
             .with(
@@ -362,12 +369,17 @@ fn camera_control(
         transform.translation += Vec3::new(delta.x, delta.y, 0.0);
     }
 
-    let scale_factor = 5.0;
     if action_state.pressed(&CameraAction::ZoomIn) {
-        orthographic_projection.scale *= 1.0 - scale_factor * time.delta_secs();
+        orthographic_projection.scale *= 1.0 - CAMERA_ZOOM_RATE_MAX * 10.0 * time.delta_secs();
     }
     if action_state.pressed(&CameraAction::ZoomOut) {
-        orthographic_projection.scale *= 1.0 + scale_factor * time.delta_secs();
+        orthographic_projection.scale *= 1.0 + CAMERA_ZOOM_RATE_MAX * 10.0 * time.delta_secs();
+    }
+    if action_state.clamped_value(&CameraAction::Zoom) != 0.0 {
+        orthographic_projection.scale *= 1.0
+            + CAMERA_ZOOM_RATE_MAX
+                * -action_state.clamped_value(&CameraAction::Zoom)
+                * time.delta_secs();
     }
 
     if action_state.just_pressed(&CameraAction::NextViewMode) {
