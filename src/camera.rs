@@ -247,7 +247,6 @@ fn setup_camera(
         Projection::from(OrthographicProjection::default_2d()),
         InGameCamera::default(),
         FloatingOrigin,
-        HighPrecisionScale(1.0),
         CellCoord::default(),
         Autofollow {
             target: vessel_query
@@ -348,9 +347,6 @@ fn update_camera_position_for_autofollow(
     };
 }
 
-#[derive(Component)]
-pub struct HighPrecisionScale(pub f64);
-
 #[derive(QueryData)]
 #[query_data(mutable)]
 struct CameraQueryData {
@@ -358,7 +354,6 @@ struct CameraQueryData {
     transform: Write<Transform>,
     projection: Write<Projection>,
     grid_cell: Write<CellCoord>,
-    scale: Write<HighPrecisionScale>,
     in_game_camera: Write<InGameCamera>,
 }
 
@@ -405,14 +400,13 @@ fn camera_control(
         //     camera.transform.translation.x += camera.projection.scale * time.delta_secs() * 200.0;
         // }
 
-        let scale_factor: f64 = 5.0;
+        let scale_factor = 5.0;
         if action_state.pressed(&CameraAction::ZoomIn) {
-            orthographic_projection.scale *= (1.0 - scale_factor * time.delta_secs_f64()) as f32;
-            camera.scale.0 *= 1.0 - scale_factor * time.delta_secs_f64();
+            orthographic_projection.scale *= 1.0 - scale_factor * time.delta_secs();
         }
         if action_state.pressed(&CameraAction::ZoomOut) {
-            orthographic_projection.scale *= (1.0 + scale_factor * time.delta_secs_f64()) as f32;
-            camera.scale.0 *= 1.0 + scale_factor * time.delta_secs_f64();
+            orthographic_projection.scale *= 1.0 + scale_factor * time.delta_secs();
+        }
         }
 
         if action_state.just_pressed(&CameraAction::NextViewMode) {
