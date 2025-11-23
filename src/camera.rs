@@ -375,31 +375,6 @@ fn camera_control(
             camera.transform.translation += Vec3::new(delta.x, delta.y, 0.0);
         }
 
-        // let Some(reference_frame) = frames.parent_frame(camera.entity) else {
-        //     continue;
-        // };
-        // if keyboard_input.pressed(KeyCode::ArrowRight) {
-        //     // Example from https://github.com/aevyrie/big_space/blob/main/src/camera.rs
-        //     // Calculates a high precision translation using a f64 movement, and then
-        //     // converts it into a grid cell and low precision translation.
-        //     //
-        //     // let translation_next = DVec3 {
-        //     //     x: 2.0 * scale.0,
-        //     //     y: 0.0,
-        //     //     z: 0.0,
-        //     // };
-        //     // let (cell_offset, new_translation) =
-        //     //     reference_frame.translation_to_grid(translation_next);
-        //     // info!(
-        //     //     "Grid cell: {:?}, cell_offset: {:?}, next: {}, new_translation: {}",
-        //     //     grid_cell, cell_offset, translation_next, new_translation
-        //     // );
-        //     // *grid_cell += cell_offset;
-        //     // transform.translation += new_translation;
-        //     // info!("transform: {:?}", transform);
-        //     camera.transform.translation.x += camera.projection.scale * time.delta_secs() * 200.0;
-        // }
-
         let scale_factor = 5.0;
         if action_state.pressed(&CameraAction::ZoomIn) {
             orthographic_projection.scale *= 1.0 - scale_factor * time.delta_secs();
