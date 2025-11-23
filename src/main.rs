@@ -5,6 +5,7 @@ mod camera;
 mod diagnostics;
 mod gizmos;
 mod hud;
+mod input;
 mod lifetime;
 mod physics;
 mod scene;
@@ -13,26 +14,22 @@ mod trails;
 mod vessel;
 
 use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale, Volume};
-use bevy::input::InputSystems;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy::winit::WinitWindows;
 use bevy_egui::EguiPlugin;
-use bevy_egui::input::EguiWantsInput;
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use big_space::plugin::BigSpaceDefaultPlugins;
 use clap::Parser;
 use diagnostics::DiagnosticsPlugin;
-use leafwing_input_manager::plugin::InputManagerSystem;
-use leafwing_input_manager::user_input::updating::EnabledInput;
-use leafwing_input_manager::user_input::{MouseMove, MouseScroll};
 use winit::window::Icon;
 
 use crate::audio::SineAudio;
 use crate::camera::CameraPlugin;
 use crate::hud::HudPlugin;
+use crate::input::InputPlugin;
 use crate::lifetime::LifetimePlugin;
 use crate::physics::PhysicsPlugin;
 use crate::scene::{add_name_to_big_space, setup_scene, spawn_atmosphere_layers};
@@ -71,19 +68,6 @@ fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: MessageWrite
     if keyboard_input.pressed(KeyCode::KeyQ) {
         exit.write(AppExit::Success);
     }
-}
-
-fn disable_leafwing_input_when_egui_wants_input(
-    egui_wants_input: Res<EguiWantsInput>,
-    mut key_code: ResMut<EnabledInput<KeyCode>>,
-    mut mouse_button: ResMut<EnabledInput<MouseButton>>,
-    mut mouse_move: ResMut<EnabledInput<MouseMove>>,
-    mut mouse_scroll: ResMut<EnabledInput<MouseScroll>>,
-) {
-    key_code.is_enabled = !egui_wants_input.wants_any_keyboard_input();
-    mouse_button.is_enabled = !egui_wants_input.wants_any_pointer_input();
-    mouse_move.is_enabled = !egui_wants_input.wants_any_pointer_input();
-    mouse_scroll.is_enabled = !egui_wants_input.wants_any_pointer_input();
 }
 
 fn set_window_icon(windows: Option<NonSend<WinitWindows>>) {
@@ -125,6 +109,7 @@ fn main() {
             CameraPlugin,
             FramepacePlugin,
             DiagnosticsPlugin,
+            InputPlugin,
             MeshPickingPlugin,
             LifetimePlugin,
             TimeWarpPlugin,
@@ -154,12 +139,6 @@ fn main() {
                 spawn_atmosphere_layers,
             )
                 .chain(),
-        )
-        .add_systems(
-            PreUpdate,
-            disable_leafwing_input_when_egui_wants_input
-                .after(InputSystems)
-                .before(InputManagerSystem::Unify),
         )
         .add_systems(Update, app_control)
         .run();
