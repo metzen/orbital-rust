@@ -14,8 +14,8 @@ use crate::audio::SineAudio;
 use crate::physics::{Atmosphere, CelestialBody, RigidBody};
 use crate::vessel::Vessel;
 
-pub const TIME_WARPS: [f32; 14] = [
-    1.0, 2.0, 3.0, 4.0, 10.0, 50.0, 100.0, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
+pub const TIME_WARPS: [f32; 13] = [
+    1.0, 2.0, 4.0, 10.0, 50.0, 100.0, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
 ];
 const TIME_WARP_MAX: f32 = 1e9;
 
