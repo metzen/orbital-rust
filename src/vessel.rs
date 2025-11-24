@@ -369,14 +369,13 @@ fn vessel_control(
     }
 }
 
-fn vessel_engine_audio(query: Query<(&Vessel, Option<&SpatialAudioSink>)>) {
+fn vessel_engine_audio(query: Query<(&Vessel, &SpatialAudioSink)>) {
     for (vessel, audiosink) in &query {
-        if let Some(sink) = audiosink {
-            sink.set_speed(if vessel.throttle < 0.1 {
-                0.1
-            } else {
-                vessel.throttle
-            });
+        if vessel.throttle == 0.0 {
+            audiosink.pause();
+        } else {
+            audiosink.set_speed(vessel.throttle);
+            audiosink.play();
         }
     }
 }
