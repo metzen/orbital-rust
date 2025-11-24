@@ -357,9 +357,15 @@ pub fn spawn_atmosphere_layers(
     mut commands: Commands,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    bodies: Query<(Entity, &Atmosphere, &CelestialBody)>,
+    bodies: Query<(
+        Entity,
+        &Atmosphere,
+        &MeshMaterial2d<ColorMaterial>,
+        &CelestialBody,
+    )>,
 ) {
-    for (id, atmosphere, celestialbody) in &bodies {
+    for (id, atmosphere, mesh_material, celestialbody) in &bodies {
+        let color = materials.get(mesh_material).unwrap().color;
         commands.entity(id).insert(children![
             (
                 Transform::from_xyz(0.0, 0.0, -1.0),
@@ -367,7 +373,7 @@ pub fn spawn_atmosphere_layers(
                     celestialbody.radius + atmosphere.height,
                     2000,
                 )))),
-                MeshMaterial2d(materials.add(ColorMaterial::from(atmosphere.color.darker(0.025)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(color.mix(&Color::BLACK, 0.90)))),
             ),
             (
                 Transform::from_xyz(0.0, 0.0, -1.0),
@@ -375,7 +381,7 @@ pub fn spawn_atmosphere_layers(
                     celestialbody.radius + atmosphere.height / 2.0,
                     2000,
                 )))),
-                MeshMaterial2d(materials.add(ColorMaterial::from(atmosphere.color.darker(0.02)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(color.mix(&Color::BLACK, 0.75)))),
             ),
             (
                 Transform::from_xyz(0.0, 0.0, -1.0),
@@ -383,7 +389,7 @@ pub fn spawn_atmosphere_layers(
                     celestialbody.radius + atmosphere.height / 10.0,
                     2000,
                 )))),
-                MeshMaterial2d(materials.add(ColorMaterial::from(atmosphere.color.darker(0.01)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(color.mix(&Color::BLACK, 0.60)))),
             ),
         ]);
     }
