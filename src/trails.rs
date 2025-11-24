@@ -32,6 +32,7 @@ pub struct Trailable;
 pub struct TrailMarker;
 
 #[derive(Resource)]
+#[derive(Deref, DerefMut)]
 struct TrailTimer(Timer);
 
 #[derive(Resource, Reflect)]
@@ -88,7 +89,7 @@ fn trail_system(
 ) {
     // TODO: Prevent the system from scheduling when disabled instead.
     let mut disabled_trail_markers = disabled_trail_marker_query.iter_mut();
-    if timer.0.tick(time.delta()).just_finished() {
+    if timer.tick(time.delta()).just_finished() {
         for trailable in query.iter() {
             let color = materials.get(trailable.material).unwrap().color;
             if let Some(mut disabled_trail_marker) = disabled_trail_markers.next() {
