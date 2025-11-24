@@ -161,8 +161,7 @@ impl VesselCommands for Commands<'_, '_> {
             Drag,
             Focusable,
             Pickable::default(),
-            // TODO: Sound sometimes doesn't work when speed set to 0.0; why?
-            PlaybackSettings::ONCE.with_spatial(true).with_speed(0.01),
+            PlaybackSettings::ONCE.paused().with_spatial(true),
         ));
         commands
     }
