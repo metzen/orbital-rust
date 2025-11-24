@@ -137,7 +137,10 @@ pub fn setup_scene(
         root.spawn_body((
             Name::new("Venus"),
             Transform::from_xyz(0.0, -108.2e9, 0.0),
-            Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::VENUS.radius)))),
+            Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
+                Planet::VENUS.radius,
+                2000,
+            )))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::VENUS.color))),
             RigidBody {
                 mass: Planet::VENUS.mass,
@@ -147,6 +150,15 @@ pub fn setup_scene(
                     z: 0.0,
                 },
                 ..default()
+            },
+            CelestialBody {
+                radius: Planet::VENUS.radius,
+            },
+            Atmosphere {
+                height: 250_000.0,
+                scale_height: 15_900.0,
+                density_at_sea_level: 65.0,
+                color: Planet::VENUS.color.darker(0.3),
             },
         ));
         root.spawn_body((
