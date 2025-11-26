@@ -42,6 +42,9 @@ pub struct RigidBody {
     pub velocity: Vec3,
     pub force: Vec3,
     pub acceleration: Vec3,
+    pub torque: f32,               // Newton-meters.
+    pub angular_velocity: f32,     // Radians/sec.
+    pub angular_acceleration: f32, // Radians/sec^2.
     pub primary: Option<Entity>,
     pub primary_force_magnitude: f32,
 }
@@ -197,6 +200,14 @@ pub fn dynamics(mut query: Query<&mut RigidBody>, time: Res<Time>) {
         rigidbody.velocity += 0.5 * (old_acceleration + new_acceleration) * delta_time;
         rigidbody.velocity = rigidbody.velocity.clamp_length(0.0, SPEED_OF_LIGHT);
         rigidbody.force = Vec3::ZERO;
+
+        let old_angular_acceleration = rigidbody.angular_acceleration;
+        // TODO: Use shape to calculate moment of inertia instead of just mass.
+        let new_angular_acceleration = rigidbody.torque / rigidbody.mass;
+        rigidbody.angular_acceleration = new_angular_acceleration;
+        rigidbody.angular_velocity +=
+            0.5 * (old_angular_acceleration + new_angular_acceleration) * delta_time;
+        rigidbody.torque = 0.0;
     }
 }
 
@@ -208,6 +219,9 @@ fn kinematics(mut query: Query<(&mut Transform, &mut RigidBody)>, time: Res<Time
         // TODO: High precision f64 velocity and accel?
         // rigidbody.transform.translation += dt * (velocity + 0.5 * acceleration * dt);
         transform.translation += dt * (rigidbody.velocity + 0.5 * rigidbody.acceleration * dt);
+        transform.rotate(Quat::from_rotation_z(
+            dt * (rigidbody.angular_velocity + 0.5 * rigidbody.angular_acceleration * dt),
+        ));
     }
 }
 
