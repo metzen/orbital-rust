@@ -415,7 +415,11 @@ fn vessel_systems(
 ) {
     engine_particle_spawn_timer.0.tick(time.delta());
     let mut disabled_engine_particles = disabled_engine_particle_query.iter_mut();
-    for (mut transform, mut rigidbody, vessel, grid_cell, global_transform) in vessels.iter_mut() {
+    for (transform, mut rigidbody, vessel, grid_cell, global_transform) in vessels.iter_mut() {
+        if vessel.sas_enabled {
+            // TODO: Do this by applying torque and let physics solve for velocity.
+            rigidbody.angular_velocity = rigidbody.angular_velocity.lerp(0.0, 0.025);
+        }
         if vessel.sas_enabled
             && let Some(direction_lock) = &vessel.direction_lock
             && let Some(primary) = rigidbody.primary
@@ -424,7 +428,6 @@ fn vessel_systems(
             let relative_position =
                 global_transform.translation() - primary_global_transform.translation();
             let relative_velocity = rigidbody.velocity - primary_rigidbody.velocity;
-            let angle = Vec2::Y.angle_to(relative_velocity.xy());
             let modifier = match direction_lock {
                 Direction::Prograde => 0.0,
                 Direction::Retrograde => PI,
@@ -443,9 +446,25 @@ fn vessel_systems(
                             .signum()
                 }
             };
-            transform.rotation = Quat::from_axis_angle(Vec3::Z, angle + modifier);
+            let angle = Vec2::Y.angle_to(relative_velocity.xy());
+            let rel = (transform.rotation * Vec3::Y)
+                .truncate()
+                .angle_to(Rot2::radians(modifier) * relative_velocity.xy());
+            rigidbody.angular_velocity = if rigidbody.angular_velocity >= 2.0 {
+                rigidbody.angular_velocity.lerp(0.0, 0.01)
+            } else {
+                rigidbody.angular_velocity
+                // + 20.0
+                //         * time.delta_secs()
+                //         // + angle
+                //         * (rel/PI)
+            };
+            let desired_turn_rate = 20.0;
+            rigidbody.torque = rigidbody.mass * desired_turn_rate * (rel / PI);
+            // transform.rotation = Quat::from_axis_angle(Vec3::Z, angle + modifier);
         } else if vessel.rotate != 0.0 {
-            transform.rotate_z(vessel.rotate * time.delta_secs());
+            rigidbody.torque = rigidbody.mass * 60.0 * vessel.rotate * time.delta_secs();
+            // rigidbody.angular_velocity += vessel.rotate * time.delta_secs();
         }
         if vessel.throttle > 0.0 {
             // info!("Throttle: {}", vessel.throttle);
