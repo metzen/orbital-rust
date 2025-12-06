@@ -1,4 +1,3 @@
-use std::f64::INFINITY;
 use std::f64::consts::PI;
 use std::time::Duration;
 
@@ -349,11 +348,11 @@ impl Orbit {
         let period = Duration::try_from_secs_f64(2.0 * PI * (semi_major_axis.powi(3) / μ).sqrt())
             .unwrap_or(Duration::MAX);
         let apoapsis = match eccentricity {
-            1.0..INFINITY => -semi_major_axis * (eccentricity + 1.0),
+            1.0.. => -semi_major_axis * (eccentricity + 1.0),
             _ => semi_major_axis * (1.0 + eccentricity),
         };
         let periapsis = match eccentricity {
-            1.0..INFINITY => semi_major_axis * (eccentricity - 1.0),
+            1.0.. => semi_major_axis * (eccentricity - 1.0),
             _ => semi_major_axis * (1.0 - eccentricity),
         };
         let eccentricity_vector = (velocity_length_squared / μ - 1.0 / position_length) * position
@@ -377,7 +376,7 @@ impl Orbit {
             0.0 => OrbitShape::Circle,
             0.0..1.0 => OrbitShape::Ellipse,
             1.0 => OrbitShape::Parabola,
-            1.0..INFINITY => OrbitShape::Hyperbola,
+            1.0.. => OrbitShape::Hyperbola,
             _ => panic!("Unexpected eccentricity: {}", self.eccentricity),
         }
     }
