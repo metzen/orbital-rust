@@ -252,7 +252,7 @@ fn collision(
         let secondary_position =
             grid.grid_position_double(&secondary.grid_cell, &secondary.transform);
         let relative_position = (secondary_position - primary_position) * DVec3::new(1.0, 1.0, 0.0);
-        let relative_position_normalized = relative_position.normalize();
+        let relative_position_normalized = relative_position.normalize_or_zero();
 
         // TODO: Handle non square/circle shapes.
         let collision_distance =
