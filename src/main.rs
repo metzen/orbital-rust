@@ -11,6 +11,7 @@ mod physics;
 mod scene;
 mod timewarp;
 mod trails;
+mod util;
 mod vessel;
 
 use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale, Volume};
