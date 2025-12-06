@@ -14,10 +14,11 @@ mod trails;
 mod vessel;
 
 use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale, Volume};
+use bevy::ecs::system::NonSendMarker;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
-use bevy::winit::WinitWindows;
+use bevy::winit::WINIT_WINDOWS;
 use bevy_egui::EguiPlugin;
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -70,16 +71,18 @@ fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: MessageWrite
     }
 }
 
-fn set_window_icon(windows: Option<NonSend<WinitWindows>>) {
-    let image = image::open("icon.ico")
-        .expect("Failed to open icon path")
-        .into_rgba8();
-    let (width, height) = image.dimensions();
-    let icon = Icon::from_rgba(image.into_raw(), width, height).unwrap();
-    let Some(winit) = windows else { return };
-    for window in winit.windows.values() {
-        window.set_window_icon(Some(icon.clone()));
-    }
+fn set_window_icon(_non_send_marker: NonSendMarker) {
+    WINIT_WINDOWS.with_borrow(|winit| {
+        info!("iconj");
+        let image = image::open("icon.ico")
+            .expect("Failed to open icon path")
+            .into_rgba8();
+        let (width, height) = image.dimensions();
+        let icon = Icon::from_rgba(image.into_raw(), width, height).unwrap();
+        for window in winit.windows.values() {
+            window.set_window_icon(Some(icon.clone()));
+        }
+    })
 }
 
 fn main() {
