@@ -3,6 +3,9 @@ name = "orbital"
 version = "0.1.0"
 edition = "2024"
 
+[patch.crates-io]
+bevy_framepace = { path = "../bevy_framepace" }
+
 [dependencies]
 bevy = { version = "0.17.0" }
 bevy_egui = { version = "0.38.0" }
@@ -28,15 +31,11 @@ dev = ["bevy/dynamic_linking"]
 
 [profile.release]
 lto = true
-opt-level = 3
 codegen-units = 1
-incremental = false
-debug = false
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]
 opt-level = 1
-# debug = true
 
 # Enable max optimizations for dependencies, but not for our code:
 [profile.dev.package."*"]
