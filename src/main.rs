@@ -19,10 +19,7 @@ use bevy::input::common_conditions::input_toggle_active;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy::winit::WINIT_WINDOWS;
-use bevy_egui::EguiPlugin;
-use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use big_space::plugin::BigSpaceDefaultPlugins;
+use bevy_framepace::{FramepaceSettings, Limiter};
 use clap::Parser;
 use diagnostics::DiagnosticsPlugin;
 use winit::window::Icon;
@@ -108,21 +105,29 @@ fn main() {
                     global_volume: GlobalVolume::new(Volume::Linear(1.0)),
                     default_spatial_scale: SpatialScale::new_2d(AUDIO_SCALE),
                 }),
-            BigSpaceDefaultPlugins,
-            CameraPlugin,
-            FramepacePlugin,
-            DiagnosticsPlugin,
-            InputPlugin,
             MeshPickingPlugin,
-            LifetimePlugin,
-            TimeWarpPlugin,
-            PhysicsPlugin,
-            VesselPlugin,
-            TrailsPlugin,
-            HudPlugin,
-            EguiPlugin::default(),
-            WorldInspectorPlugin::new().run_if(input_toggle_active(false, KeyCode::F12)),
             // LogDiagnosticsPlugin::default(),
+        ))
+        // Third-party plugins.
+        .add_plugins((
+            bevy_egui::EguiPlugin::default(),
+            bevy_framepace::FramepacePlugin,
+            bevy_framepace::debug::DiagnosticsPlugin,
+            bevy_inspector_egui::quick::WorldInspectorPlugin::new()
+                .run_if(input_toggle_active(false, KeyCode::F12)),
+            big_space::plugin::BigSpaceDefaultPlugins,
+        ))
+        // Crate plugins.
+        .add_plugins((
+            CameraPlugin,
+            DiagnosticsPlugin,
+            HudPlugin,
+            InputPlugin,
+            LifetimePlugin,
+            PhysicsPlugin,
+            TimeWarpPlugin,
+            TrailsPlugin,
+            VesselPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(FramepaceSettings {
