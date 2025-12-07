@@ -86,6 +86,31 @@ pub struct NoGravity;
 #[derive(Component)]
 pub struct Drag;
 
+/// Stores the gravitational primary of which the entity with this component is a satellite.
+///
+/// This is the "source of truth" [`Relationship`](bevy::ecs::relationship::Relationship)
+/// component, and pairs with the [`Satellites`] [`RelationshipTarget`].
+#[derive(Component, Reflect)]
+#[relationship(relationship_target = Satellites)]
+pub struct SatelliteOf(pub Entity);
+
+impl SatelliteOf {
+    /// The gravitational primary of this satellite.
+    #[inline]
+    pub fn primary(&self) -> Entity {
+        self.0
+    }
+}
+
+/// Tracks which entities are satellites of this gravitational primary entity.
+///
+/// This is a [`RelationshipTarget`] collection component that is populated with entities that
+/// "target" this entity with the [`SatelliteOf`] [`Relationship`](bevy::ecs::relationship::Relationship)
+/// component.
+#[derive(Component, Reflect)]
+#[relationship_target(relationship = SatelliteOf, linked_spawn)]
+pub struct Satellites(Vec<Entity>);
+
 fn gravitation_force(m1: f64, m2: f64, distance: DVec3) -> Vec3 {
     let unit = distance.normalize() * DVec3::new(1.0, 1.0, 0.0);
     (unit * (G * m1 * m2 / distance.length_squared())).as_vec3()
