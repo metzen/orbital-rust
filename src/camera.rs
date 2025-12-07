@@ -20,7 +20,7 @@ use big_space::grid::cell::CellCoord;
 use either::Either;
 use leafwing_input_manager::prelude::*;
 
-use crate::physics::{CelestialBody, Orbit, RigidBody};
+use crate::physics::{CelestialBody, Orbit, RigidBody, SatelliteOf};
 use crate::vessel::Vessel;
 
 /// In-game resolution width.
@@ -289,6 +289,7 @@ fn update_camera_position_for_autofollow(
     position_query: Query<(&Transform, &CellCoord), Without<InGameCamera>>,
     rigidbody_query: Query<&RigidBody>,
     celestial_body_query: Query<&CelestialBody>,
+    satellite_of_query: Query<&SatelliteOf>,
 ) {
     let (mut camera_transform, mut camera_cell, autofollow, in_game_camera) = camera.into_inner();
     let Some(target_entity) = autofollow.target else {
@@ -304,8 +305,8 @@ fn update_camera_position_for_autofollow(
     camera_transform.rotation = match in_game_camera.view_mode {
         CameraViewMode::Orbital => Quat::default(),
         CameraViewMode::Free => {
-            if let Some(primary) = target_rigidbody.primary
-                && let Ok((primary_transform, primary_cell)) = position_query.get(primary)
+            if let Ok(satellite_of) = satellite_of_query.get(target_entity)                
+                && let Ok((primary_transform, primary_cell)) = position_query.get(satellite_of.primary())
             {
                 let target_position = grid.grid_position_double(target_cell, target_transform);
                 let primary_position = grid.grid_position_double(primary_cell, primary_transform);
@@ -320,8 +321,9 @@ fn update_camera_position_for_autofollow(
             .lerp(target_transform.rotation, 0.1),
         CameraViewMode::Chase => Quat::default(), // TODO
         CameraViewMode::Auto => {
-            if let Some(primary) = target_rigidbody.primary
-                && let Ok((primary_transform, primary_cell)) = position_query.get(primary)
+            if let Ok(satellite_of) = satellite_of_query.get(target_entity)
+                && let primary = satellite_of.primary()
+                && let Ok((primary_transform, primary_cell)) = position_query.get(satellite_of.primary())
                 && let Ok(primary_rigidbody) = rigidbody_query.get(primary)
                 && let Ok(primary_celestial_body) = celestial_body_query.get(primary)
             {
