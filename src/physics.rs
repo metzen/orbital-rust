@@ -10,6 +10,8 @@ use big_space::floating_origins::BigSpace;
 use big_space::grid::Grid;
 use big_space::grid::cell::CellCoord;
 
+use crate::math::Angle;
+
 /// Gravitational constant.
 const G: f64 = 6.67430e-11; // (N * m**2) / kg**2
 
@@ -292,16 +294,6 @@ fn collision(
     }
 }
 
-/// A 64-bit floating-point type representing an angle in radians.
-#[derive(Deref)]
-struct Rad64(f64);
-
-impl Rad64 {
-    fn to_f64(&self) -> f64 {
-        self.0
-    }
-}
-
 #[derive(Debug)]
 pub enum OrbitShape {
     Circle,
@@ -385,26 +377,28 @@ impl Orbit {
     // https://stackoverflow.com/questions/71863525/calculating-2d-orbital-paths-in-newtonian-gravity-simulation
     // but these might be a little off.
 
-    fn true_anomaly(&self) -> Rad64 {
+    fn true_anomaly(&self) -> Angle {
         // https://en.wikipedia.org/wiki/True_anomaly
         let value = (((self.eccentricity_vector.dot(self.position))
             / (self.eccentricity * self.position.length()))
         .clamp(-1.0, 1.0))
         .acos();
-        Rad64(if self.position.dot(self.velocity) < 0.0 {
+        Angle::from_radians(if self.position.dot(self.velocity) < 0.0 {
             2.0 * PI - value
         } else {
             value
         })
     }
 
-    fn mean_anomaly(&self) -> Rad64 {
+    fn mean_anomaly(&self) -> Angle {
         // https://en.wikipedia.org/wiki/Mean_anomaly
         let eccentric_anomaly = self.eccentric_anomaly();
-        Rad64(eccentric_anomaly.to_f64() - self.eccentricity * eccentric_anomaly.sin())
+        Angle::Radians(
+            eccentric_anomaly.as_radians_f64() - self.eccentricity * eccentric_anomaly.sin(),
+        )
     }
 
-    fn eccentric_anomaly(&self) -> Rad64 {
+    fn eccentric_anomaly(&self) -> Angle {
         // https://en.wikipedia.org/wiki/Eccentric_anomaly
         let true_anomaly = self.true_anomaly();
         let value = f64::atan2(
@@ -412,20 +406,21 @@ impl Orbit {
             self.eccentricity + (true_anomaly).cos(),
         );
         // Keep in range [0, 2pi] instead of [-pi, pi] radians.
-        Rad64(if value < 0.0 { 2.0 * PI + value } else { value })
+        Angle::Radians(if value < 0.0 { 2.0 * PI + value } else { value })
     }
 
-    fn orbital_time_at(&self, eccentric_anomaly: Rad64) -> Duration {
+    fn orbital_time_at(&self, eccentric_anomaly: Angle) -> Duration {
         Duration::try_from_secs_f64(
             (self.semi_major_axis.powi(3) / self.μ).sqrt()
-                * (eccentric_anomaly.to_f64() - self.eccentricity * eccentric_anomaly.sin()),
+                * (eccentric_anomaly.as_radians_f64()
+                    - self.eccentricity * eccentric_anomaly.sin()),
         )
         .unwrap_or(Duration::MAX)
     }
 
     fn time_since_periapsis(&self) -> Duration {
         Duration::try_from_secs_f64(
-            self.mean_anomaly().to_f64() * self.period.as_secs_f64() / (2.0 * PI),
+            self.mean_anomaly().as_radians_f64() * self.period.as_secs_f64() / (2.0 * PI),
         )
         .unwrap_or(Duration::MAX)
     }
@@ -435,7 +430,7 @@ impl Orbit {
             Duration::ZERO
         } else {
             let time_since_periapsis = self.time_since_periapsis();
-            let time_at_apoapsis = self.orbital_time_at(Rad64(PI));
+            let time_at_apoapsis = self.orbital_time_at(Angle::Radians(PI));
             if time_since_periapsis < time_at_apoapsis {
                 time_at_apoapsis - time_since_periapsis
             } else {
