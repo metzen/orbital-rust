@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_egui::input::EguiWantsInput;
 use leafwing_input_manager::plugin::InputManagerSystem;
 use leafwing_input_manager::prelude::updating::EnabledInput;
-use leafwing_input_manager::prelude::{MouseMove, MouseScroll};
+use leafwing_input_manager::prelude::{ClashStrategy, MouseMove, MouseScroll};
 
 fn configure_gamepads(mut gamepads: Query<&mut GamepadSettings, Added<GamepadSettings>>) {
     for mut settings in &mut gamepads {
@@ -30,6 +30,7 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_resource(ClashStrategy::PrioritizeLongest);
         app.add_systems(
             PreUpdate,
             disable_leafwing_input_when_egui_wants_input
