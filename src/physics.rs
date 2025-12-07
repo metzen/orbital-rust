@@ -2,6 +2,7 @@ use std::f64::consts::PI;
 use std::time::Duration;
 
 use bevy::camera::primitives::Aabb;
+use bevy::ecs::entity::EntityHashMap;
 use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::{Read, Write};
 use bevy::math::{DVec2, DVec3};
@@ -11,6 +12,7 @@ use big_space::grid::Grid;
 use big_space::grid::cell::CellCoord;
 
 use crate::math::Angle;
+use crate::util;
 
 /// Gravitational constant.
 const G: f64 = 6.67430e-11; // (N * m**2) / kg**2
@@ -47,7 +49,6 @@ pub struct RigidBody {
     pub angular_velocity: f32,     // Radians/sec.
     pub angular_acceleration: f32, // Radians/sec^2.
     pub primary: Option<Entity>,
-    pub primary_force_magnitude: f32,
 }
 
 #[derive(Component, Default, Reflect)]
@@ -130,34 +131,42 @@ struct GravityQuery {
     rigidbody: Write<RigidBody>,
 }
 
+struct PrimaryInfo {
+    old_primary: Option<Entity>,
+    new_primary: Entity,
+    force: f32,
+}
+
 fn gravity(
     mut query: Query<GravityQuery, Without<NoGravity>>,
     grid: Single<&Grid, With<BigSpace>>,
 ) {
-    let mut iter = query.iter_combinations_mut();
-    while let Some([mut a, mut b]) = iter.fetch_next() {
+    let mut combinations = query.iter_combinations_mut();
+    let mut primary_info_by_entity: EntityHashMap<PrimaryInfo> = EntityHashMap::new();
+    while let Some([mut a, mut b]) = combinations.fetch_next() {
         let distance = grid.grid_position_double(a.grid_cell, a.transform)
             - grid.grid_position_double(b.grid_cell, b.transform);
         let force = gravitation_force(a.rigidbody.mass.into(), b.rigidbody.mass.into(), distance);
         let tidal_force = tidal_force(a.rigidbody.mass.into(), b.rigidbody.mass.into(), distance);
         a.rigidbody.force -= force;
-        let tidal_force_magnitude = tidal_force.length();
-        if a.rigidbody.mass < b.rigidbody.mass
-            && tidal_force_magnitude > a.rigidbody.primary_force_magnitude
-        {
-            a.rigidbody.primary = Some(b.entity);
-            a.rigidbody.primary_force_magnitude = tidal_force_magnitude;
-        }
         b.rigidbody.force += force;
-        if b.rigidbody.mass < a.rigidbody.mass
-            && tidal_force_magnitude > b.rigidbody.primary_force_magnitude
-        {
-            b.rigidbody.primary = Some(a.entity);
-            b.rigidbody.primary_force_magnitude = tidal_force_magnitude;
+        let tidal_force_magnitude = tidal_force.length();
+        let [mut secondary, primary] = util::minmax_by_key(a, b, |x| x.rigidbody.mass);
+        let force_magnitude = match primary_info_by_entity.get(&secondary.entity) {
+            Some(primary_info) => primary_info.force,
+            None => 0.0,
+        };
+        if tidal_force_magnitude > force_magnitude {
+            secondary.rigidbody.primary = Some(primary.entity);
+            primary_info_by_entity.insert(
+                secondary.entity,
+                PrimaryInfo {
+                    old_primary: secondary.rigidbody.primary,
+                    new_primary: primary.entity,
+                    force: tidal_force_magnitude,
+                },
+            );
         }
-    }
-    for mut item in query.iter_mut() {
-        item.rigidbody.primary_force_magnitude = 0.0;
     }
 }
 
