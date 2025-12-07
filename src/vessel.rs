@@ -18,7 +18,9 @@ use crate::audio::SineAudio;
 use crate::camera::{Autoscale, Focusable};
 use crate::hud::HudSubject;
 use crate::lifetime::{Clock, Ephemeral, ExpirationAction};
-use crate::physics::{Collider, Drag, NoGravity, PhysicsMaterial, RigidBody, SPEED_OF_LIGHT};
+use crate::physics::{
+    Collider, Drag, NoGravity, PhysicsMaterial, RigidBody, SPEED_OF_LIGHT, SatelliteOf,
+};
 use crate::scene::Planet;
 use crate::timewarp::TimeWarp;
 
@@ -399,6 +401,7 @@ fn vessel_systems(
         &Vessel,
         &CellCoord,
         &GlobalTransform,
+        &SatelliteOf,
     )>,
     time: Res<Time>,
     primary_query: Query<(&GlobalTransform, &RigidBody), Without<Vessel>>,
@@ -415,15 +418,17 @@ fn vessel_systems(
 ) {
     engine_particle_spawn_timer.0.tick(time.delta());
     let mut disabled_engine_particles = disabled_engine_particle_query.iter_mut();
-    for (transform, mut rigidbody, vessel, grid_cell, global_transform) in vessels.iter_mut() {
+    for (transform, mut rigidbody, vessel, grid_cell, global_transform, satellite_of) in
+        vessels.iter_mut()
+    {
         if vessel.sas_enabled {
             // TODO: Do this by applying torque and let physics solve for velocity.
             rigidbody.angular_velocity = rigidbody.angular_velocity.lerp(0.0, 0.025);
         }
         if vessel.sas_enabled
             && let Some(direction_lock) = &vessel.direction_lock
-            && let Some(primary) = rigidbody.primary
-            && let Ok((primary_global_transform, primary_rigidbody)) = primary_query.get(primary)
+            && let Ok((primary_global_transform, primary_rigidbody)) =
+                primary_query.get(satellite_of.primary())
         {
             let relative_position =
                 global_transform.translation() - primary_global_transform.translation();
@@ -508,12 +513,12 @@ fn vessel_systems(
                     commands
                         .entity(particle.entity)
                         .remove::<Disabled>()
-                        .insert(ChildOf(*big_space));
+                        .insert(ChildOf(*big_space))
+                        .insert(SatelliteOf(satellite_of.primary()));
                     *particle.cell = *grid_cell;
                     particle.transform.translation = translation;
                     particle.ephemeral.ttl.reset();
                     particle.rigidbody.velocity = velocity;
-                    particle.rigidbody.primary = rigidbody.primary;
                     materials
                         .get_mut(particle.color_material_handle)
                         .unwrap()
@@ -540,7 +545,6 @@ fn vessel_systems(
                         RigidBody {
                             velocity,
                             mass: 50.0,
-                            primary: rigidbody.primary,
                             ..default()
                         },
                         PhysicsMaterial { restituion: 0.1 },
@@ -555,6 +559,7 @@ fn vessel_systems(
                         Drag,
                         Collider,
                         ChildOf(*big_space),
+                        SatelliteOf(satellite_of.primary()),
                     ));
                 }
             }

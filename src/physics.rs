@@ -48,7 +48,6 @@ pub struct RigidBody {
     pub torque: f32,               // Newton-meters.
     pub angular_velocity: f32,     // Radians/sec.
     pub angular_acceleration: f32, // Radians/sec^2.
-    pub primary: Option<Entity>,
 }
 
 #[derive(Component, Default, Reflect)]
@@ -153,13 +152,12 @@ fn gravity(
         a.rigidbody.force -= force;
         b.rigidbody.force += force;
         let tidal_force_magnitude = tidal_force.length();
-        let [mut secondary, primary] = util::minmax_by_key(a, b, |x| x.rigidbody.mass);
+        let [secondary, primary] = util::minmax_by_key(a, b, |x| x.rigidbody.mass);
         let force_magnitude = match primary_info_by_entity.get(&secondary.entity) {
             Some(primary_info) => primary_info.force,
             None => 0.0,
         };
         if tidal_force_magnitude > force_magnitude {
-            secondary.rigidbody.primary = Some(primary.entity);
             primary_info_by_entity.insert(
                 secondary.entity,
                 PrimaryInfo {
@@ -189,21 +187,19 @@ struct DragPrimaryQueryData {
 }
 
 fn drag(
-    mut query: Query<(&mut RigidBody, &Transform, &CellCoord, &Aabb), With<Drag>>,
+    mut query: Query<(&mut RigidBody, &Transform, &CellCoord, &Aabb, &SatelliteOf), With<Drag>>,
     primary_query: Query<DragPrimaryQueryData, Without<Drag>>,
     grid: Single<&Grid, With<BigSpace>>,
     time: Res<Time>,
 ) {
-    for (mut rigidbody, transform, cell, aabb) in query.iter_mut() {
+    for (mut rigidbody, transform, cell, aabb, satellite_of) in query.iter_mut() {
         // D = Cd * A * .5 * r * V^2
         // TODO: This is just currently hard coded for the vessel engine particles.
         let drag_coefficient = 0.5;
         let area: f32;
         let velocity: Vec3;
         let density: f32;
-        if let Some(primary_id) = rigidbody.primary
-            && let Ok(primary) = primary_query.get(primary_id)
-        {
+        if let Ok(primary) = primary_query.get(satellite_of.primary()) {
             velocity = rigidbody.velocity - primary.rigidbody.velocity;
             area = aabb.half_extents.y.lerp(
                 aabb.half_extents.x,

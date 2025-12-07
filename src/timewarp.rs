@@ -11,7 +11,7 @@ use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::audio::SineAudio;
-use crate::physics::{Atmosphere, CelestialBody, RigidBody};
+use crate::physics::{Atmosphere, CelestialBody, RigidBody, SatelliteOf};
 use crate::vessel::Vessel;
 
 pub const TIME_WARPS: [f32; 13] = [
@@ -125,57 +125,59 @@ fn setup_timewarp(mut virtual_time: ResMut<Time<Virtual>>) {
 /// Updates the maximum allowed warp factor based on the current game state.
 fn update_max_allowed_timewarp(
     mut timewarp: ResMut<TimeWarp>,
-    vessels: Query<(&Vessel, &CellCoord, &Transform, &RigidBody)>,
+    vessels: Query<(&Vessel, &CellCoord, &Transform, &RigidBody, &SatelliteOf)>,
     position_query: Query<(&CellCoord, &Transform, &CelestialBody, &Atmosphere)>,
     grid: Single<&Grid, With<BigSpace>>,
 ) {
     let (limit, reason) = vessels
         .iter()
-        .map(|(vessel, vessel_cell, vessel_transform, rigidbody)| {
-            if vessel.throttle > 0.0 {
-                (
-                    50.0,
-                    String::from("Time Warp limited to 50x while vessel burn active"),
-                )
-            } else if let Some(primary_id) = rigidbody.primary
-                && let Ok((
+        .map(
+            |(vessel, vessel_cell, vessel_transform, rigidbody, satellite_of)| {
+                if vessel.throttle > 0.0 {
+                    (
+                        50.0,
+                        String::from("Time Warp limited to 50x while vessel burn active"),
+                    )
+                } else if let Ok((
                     primary_cell,
                     primary_transform,
                     primary_celestial_body,
                     primary_atmosphere,
-                )) = position_query.get(primary_id)
-            {
-                let vessel_position = grid.grid_position_double(vessel_cell, vessel_transform);
-                let primary_position = grid.grid_position_double(primary_cell, primary_transform);
-                let distance = vessel_position.distance(primary_position) as f32;
-                let altitude = distance - primary_celestial_body.radius;
-                // TODO: This needs to work for bodies with no atmosphere.
-                let warp_limits_per_atmosphere_height_factor = [
-                    (f32::INFINITY, TIME_WARP_MAX),
-                    (8.0, 10_000.0),
-                    (6.0, 1_000.0),
-                    (4.0, 100.0),
-                    (2.0, 50.0),
-                    // (1.0, 4.0),
-                ];
-                let (boundary, limit) = warp_limits_per_atmosphere_height_factor
-                    .into_iter()
-                    .map(|(f, l)| (f * primary_atmosphere.height, l))
-                    .take_while(|(boundary, _)| altitude < *boundary)
-                    .last()
-                    .unwrap();
+                )) = position_query.get(satellite_of.primary())
+                {
+                    let vessel_position = grid.grid_position_double(vessel_cell, vessel_transform);
+                    let primary_position =
+                        grid.grid_position_double(primary_cell, primary_transform);
+                    let distance = vessel_position.distance(primary_position) as f32;
+                    let altitude = distance - primary_celestial_body.radius;
+                    // TODO: This needs to work for bodies with no atmosphere.
+                    let warp_limits_per_atmosphere_height_factor = [
+                        (f32::INFINITY, TIME_WARP_MAX),
+                        (8.0, 10_000.0),
+                        (6.0, 1_000.0),
+                        (4.0, 100.0),
+                        (2.0, 50.0),
+                        // (1.0, 4.0),
+                    ];
+                    let (boundary, limit) = warp_limits_per_atmosphere_height_factor
+                        .into_iter()
+                        .map(|(f, l)| (f * primary_atmosphere.height, l))
+                        .take_while(|(boundary, _)| altitude < *boundary)
+                        .last()
+                        .unwrap();
 
-                (
-                    limit,
-                    format!(
-                        "Time Warp limited to {:.0}x while vessel altitude below {:.0}m",
-                        limit, boundary
-                    ),
-                )
-            } else {
-                (TIME_WARP_MAX, String::new())
-            }
-        })
+                    (
+                        limit,
+                        format!(
+                            "Time Warp limited to {:.0}x while vessel altitude below {:.0}m",
+                            limit, boundary
+                        ),
+                    )
+                } else {
+                    (TIME_WARP_MAX, String::new())
+                }
+            },
+        )
         .fold((TIME_WARP_MAX, String::new()), |acc, value| {
             if acc.0 < value.0 { acc } else { value }
         });

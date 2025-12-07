@@ -17,7 +17,7 @@ use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera, InGamePointer};
-use crate::physics::{NoGravity, Orbit, OrbitShape, RigidBody};
+use crate::physics::{NoGravity, Orbit, OrbitShape, RigidBody, SatelliteOf};
 use crate::timewarp::{TIME_WARPS, TimeWarp};
 use crate::vessel::Vessel;
 
@@ -787,15 +787,13 @@ fn symlog_plot(value: f32, max_value: f32, linear_threshold: f32, linear_scale: 
 }
 
 fn update_vertical_speed(
-    subject: Single<(&RigidBody, &CellCoord, &Transform), With<HudSubject>>,
+    subject: Single<(&RigidBody, &CellCoord, &Transform, &SatelliteOf), With<HudSubject>>,
     rigidbody_query: Query<(&RigidBody, &CellCoord, &Transform), Without<HudSubject>>,
     mut vertical_speed_ui: Single<(&mut Node, &mut Text), With<VerticalSpeedText>>,
     grid: Single<&Grid, With<BigSpace>>,
 ) {
-    let (subject_rigidbody, subject_gridcell, subject_transform) = *subject;
-    if let Some(primary_id) = subject_rigidbody.primary
-        && let Ok(primary) = rigidbody_query.get(primary_id)
-    {
+    let (subject_rigidbody, subject_gridcell, subject_transform, subject_satellite_of) = *subject;
+    if let Ok(primary) = rigidbody_query.get(subject_satellite_of.primary()) {
         // TODO: direction from center to center.
         let (primary_rigidbody, primary_gridcell, primary_transform) = primary;
         let relative_velocity = subject_rigidbody.velocity - primary_rigidbody.velocity;
@@ -855,12 +853,11 @@ fn update_throttle(
 
 fn update_velocity(
     mut text: Single<&mut TextSpan, With<VelocityText>>,
-    subject_rigidbody: Query<&RigidBody, With<HudSubject>>,
+    subject_rigidbody: Query<(&RigidBody, &SatelliteOf), With<HudSubject>>,
     primary_body_query: Query<&RigidBody>,
 ) {
-    if let Ok(rigidbody) = subject_rigidbody.single()
-        && let Some(primary_body_entity) = rigidbody.primary
-        && let Ok(primary_body) = primary_body_query.get(primary_body_entity)
+    if let Ok((rigidbody, satellite_of)) = subject_rigidbody.single()
+        && let Ok(primary_body) = primary_body_query.get(satellite_of.primary())
     {
         let relative_velocity = (rigidbody.velocity - primary_body.velocity).length();
         text.0 = format!(
@@ -878,15 +875,14 @@ fn update_altitude(
     mut text: Single<&mut TextSpan, (With<AltitudeText>, Without<AltitudeUnitsText>)>,
     altitude_units_boxes: Single<&Children, (With<AltitudeUnitsText>, Without<AltitudeText>)>,
     grid: Single<&Grid, With<BigSpace>>,
-    subject_query: Query<(&Transform, &CellCoord, &RigidBody, &Aabb), With<HudSubject>>,
+    subject_query: Query<(&Transform, &CellCoord, &Aabb, &SatelliteOf), With<HudSubject>>,
     primary_body_query: Query<(&Transform, &CellCoord, &Aabb)>,
     mut text_query: Query<&mut Text>,
 ) {
-    if let Ok((subject_transform, subject_grid_cell, subject_rigidbody, subject_aabb)) =
+    if let Ok((subject_transform, subject_grid_cell, subject_aabb, subject_satellite_of)) =
         subject_query.single()
-        && let Some(primary_body) = subject_rigidbody.primary
         && let Ok((primary_transform, primary_grid_cell, primary_aabb)) =
-            primary_body_query.get(primary_body)
+            primary_body_query.get(subject_satellite_of.primary())
     {
         let primary_position = grid.grid_position_double(primary_grid_cell, primary_transform);
         let subject_position = grid.grid_position_double(subject_grid_cell, subject_transform);
@@ -938,16 +934,16 @@ fn update_hud_subject(
     mut camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
     subject_vessel_query: Query<Entity, With<HudSubject>>,
     mut hud_subject_text: Single<&mut Text, With<HubSubjectText>>,
-    name_query: Query<(&Name, &RigidBody)>,
+    name_query: Query<(&Name, Option<&SatelliteOf>)>,
 ) {
     if let Ok(entity) = subject_vessel_query.single() {
         let mut parent = Some(entity);
         let mut parts = Vec::new();
         while let Some(entity) = parent
-            && let Ok((name, rigidbody)) = name_query.get(entity)
+            && let Ok((name, satellite_of)) = name_query.get(entity)
         {
             parts.push(format!("{}", name));
-            parent = rigidbody.primary;
+            parent = satellite_of.map(|x| x.primary());
         }
         parts.reverse();
         hud_subject_text.0 = parts.join(" / ");
@@ -1015,16 +1011,15 @@ fn humanize_distance(altitude: f64) -> (f64, String) {
 fn update_orbital_info(
     ap_text: Single<Entity, With<ApoapsisText>>,
     pe_text: Single<Entity, With<PeriapsisText>>,
-    vessels: Query<(&Vessel, &CellCoord, &Transform, &RigidBody)>,
+    vessels: Query<(&Vessel, &CellCoord, &Transform, &RigidBody, &SatelliteOf)>,
     primary_query: Query<(&CellCoord, &Transform, &RigidBody, &Aabb)>,
     mut writer: TextUiWriter,
     grid: Single<&Grid, With<BigSpace>>,
 ) {
-    for (vessel, grid_cell, transform, rigidbody) in &vessels {
+    for (vessel, grid_cell, transform, rigidbody, satellite_of) in &vessels {
         if vessel.controlled
-            && let Some(primary) = rigidbody.primary
             && let Ok((primary_grid_cell, primary_transform, primary_rigidbody, primary_aabb)) =
-                primary_query.get(primary)
+                primary_query.get(satellite_of.primary())
         {
             let position = grid.grid_position_double(grid_cell, transform)
                 - grid.grid_position_double(primary_grid_cell, primary_transform);
@@ -1093,6 +1088,7 @@ fn draw_orbits(
             &RigidBody,
             &MeshMaterial2d<ColorMaterial>,
             Option<&Vessel>,
+            &SatelliteOf,
         ),
         Without<NoGravity>,
     >,
@@ -1105,9 +1101,11 @@ fn draw_orbits(
     let Projection::Orthographic(orthographic_projection) = *projection else {
         return;
     };
-    for (grid_cell, transform, rigidbody, mesh_material_2d, vessel) in &orbiting_entities {
-        if let Some(primary) = rigidbody.primary
-            && let Ok((p_cell, p_transform, p_rigidbody, p_gtransform)) = query.get(primary)
+    for (grid_cell, transform, rigidbody, mesh_material_2d, vessel, satellite_of) in
+        &orbiting_entities
+    {
+        if let Ok((p_cell, p_transform, p_rigidbody, p_gtransform)) =
+            query.get(satellite_of.primary())
         {
             let orbit = Orbit::new(
                 (grid.grid_position_double(grid_cell, transform)
