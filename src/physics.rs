@@ -398,6 +398,12 @@ impl Orbit {
         }
     }
 
+    /// Returns the local position of this orbit's center
+    /// (relative to the same origin as [`Orbit::position`]).
+    pub fn center(&self) -> DVec2 {
+        -self.eccentricity_vector * self.semi_major_axis
+    }
+
     // Some implementations taken from
     // https://stackoverflow.com/questions/71863525/calculating-2d-orbital-paths-in-newtonian-gravity-simulation
     // but these might be a little off.
