@@ -129,6 +129,7 @@ struct GravityQuery {
     grid_cell: Read<CellCoord>,
     transform: Read<Transform>,
     rigidbody: Write<RigidBody>,
+    satellite_of: Option<Read<SatelliteOf>>,
 }
 
 struct PrimaryInfo {
@@ -140,6 +141,7 @@ struct PrimaryInfo {
 fn gravity(
     mut query: Query<GravityQuery, Without<NoGravity>>,
     grid: Single<&Grid, With<BigSpace>>,
+    mut commands: Commands,
 ) {
     let mut combinations = query.iter_combinations_mut();
     let mut primary_info_by_entity: EntityHashMap<PrimaryInfo> = EntityHashMap::new();
@@ -161,11 +163,18 @@ fn gravity(
             primary_info_by_entity.insert(
                 secondary.entity,
                 PrimaryInfo {
-                    old_primary: secondary.rigidbody.primary,
+                    old_primary: secondary.satellite_of.map(|x| x.primary()),
                     new_primary: primary.entity,
                     force: tidal_force_magnitude,
                 },
             );
+        }
+    }
+    for (entity, primary_info) in primary_info_by_entity.drain() {
+        if primary_info.new_primary != primary_info.old_primary.unwrap_or(Entity::PLACEHOLDER) {
+            commands
+                .entity(primary_info.new_primary)
+                .add_one_related::<SatelliteOf>(entity);
         }
     }
 }
