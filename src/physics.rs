@@ -422,7 +422,7 @@ impl Orbit {
     // https://stackoverflow.com/questions/71863525/calculating-2d-orbital-paths-in-newtonian-gravity-simulation
     // but these might be a little off.
 
-    fn true_anomaly(&self) -> Angle {
+    pub fn true_anomaly(&self) -> Angle {
         // https://en.wikipedia.org/wiki/True_anomaly
         let value = (((self.eccentricity_vector.dot(self.position))
             / (self.eccentricity * self.position.length()))
@@ -435,7 +435,7 @@ impl Orbit {
         })
     }
 
-    fn mean_anomaly(&self) -> Angle {
+    pub fn mean_anomaly(&self) -> Angle {
         // https://en.wikipedia.org/wiki/Mean_anomaly
         let eccentric_anomaly = self.eccentric_anomaly();
         Angle::Radians(
@@ -443,7 +443,7 @@ impl Orbit {
         )
     }
 
-    fn eccentric_anomaly(&self) -> Angle {
+    pub fn eccentric_anomaly(&self) -> Angle {
         // https://en.wikipedia.org/wiki/Eccentric_anomaly
         let true_anomaly = self.true_anomaly();
         let value = f64::atan2(
