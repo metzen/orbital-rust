@@ -3,6 +3,8 @@ use std::f32::consts::FRAC_PI_2;
 use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::css::{BLACK, LIGHT_GRAY};
+use bevy::ecs::query::QueryData;
+use bevy::ecs::system::lifetimeless::Read;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::math::ops::log10;
 use bevy::math::{DVec2, DVec3};
@@ -1080,131 +1082,126 @@ fn update_hover_text(
     }
 }
 
+trait RenderOrbit {
+    fn render(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool);
+    fn render_ellipse(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool);
+    fn render_hyperbola(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool);
+}
+
+impl RenderOrbit for Orbit {
+    fn render(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool) {
+        match self.shape() {
+            OrbitShape::Circle => self.render_ellipse(gizmos, translation, color, fade),
+            OrbitShape::Ellipse => self.render_ellipse(gizmos, translation, color, fade),
+            OrbitShape::Parabola => self.render_hyperbola(gizmos, translation, color, fade),
+            OrbitShape::Hyperbola => self.render_hyperbola(gizmos, translation, color, fade),
+        }
+    }
+
+    fn render_ellipse(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool) {
+        let angle = DVec2::X.angle_to(-self.eccentricity_vector) as f32;
+        if fade {
+            use crate::gizmos::GizmosExt;
+            gizmos
+                .ellipse_gradient_2d(
+                    Isometry2d::new(translation + self.center().as_vec2(), Rot2::radians(angle)),
+                    DVec2::new(self.semi_major_axis, self.semi_minor_axis).as_vec2(),
+                    self.eccentric_anomaly().as_radians_f64() as f32,
+                    color.with_alpha(0.01),
+                    color.with_alpha(0.3),
+                )
+                .resolution(200);
+        } else {
+            gizmos
+                .ellipse_2d(
+                    Isometry2d::new(translation + self.center().as_vec2(), Rot2::radians(angle)),
+                    DVec2::new(self.semi_major_axis, self.semi_minor_axis).as_vec2(),
+                    color.with_alpha(0.3),
+                )
+                .resolution(200);
+        }
+    }
+
+    fn render_hyperbola(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, _fade: bool) {
+        use crate::gizmos::GizmosExt;
+        let angle = DVec2::X.angle_to(-self.eccentricity_vector) as f32;
+        gizmos
+            .hyperbola_2d(
+                Isometry2d::new(translation - self.center().as_vec2(), Rot2::radians(angle)),
+                DVec2::new(self.semi_major_axis, self.semi_minor_axis).as_vec2(),
+                color.with_alpha(0.2),
+            )
+            .resolution(2000);
+    }
+}
+
+#[derive(QueryData)]
+struct OrbitSatelliteQueryData {
+    cell: Read<CellCoord>,
+    transform: Read<Transform>,
+    global_transform: Read<GlobalTransform>,
+    rigidbody: Read<RigidBody>,
+    satellite_of: Read<SatelliteOf>,
+    mesh_material: Read<MeshMaterial2d<ColorMaterial>>,
+    vessel: Option<Read<Vessel>>,
+}
+
+#[derive(QueryData)]
+struct OrbitPrimaryQueryData {
+    cell: Read<CellCoord>,
+    transform: Read<Transform>,
+    global_transform: Read<GlobalTransform>,
+    rigidbody: Read<RigidBody>,
+}
+
 fn draw_orbits(
-    orbiting_entities: Query<
-        (
-            &CellCoord,
-            &Transform,
-            &RigidBody,
-            &MeshMaterial2d<ColorMaterial>,
-            Option<&Vessel>,
-            &SatelliteOf,
-        ),
-        Without<NoGravity>,
-    >,
-    query: Query<(&CellCoord, &Transform, &RigidBody, &GlobalTransform)>,
+    satellite_query: Query<OrbitSatelliteQueryData, Without<NoGravity>>,
+    primary_query: Query<OrbitPrimaryQueryData>,
     grid: Single<&Grid, With<BigSpace>>,
     projection: Single<&Projection, With<InGameCamera>>,
     mut gizmos: Gizmos,
     materials: Res<Assets<ColorMaterial>>,
 ) {
-    let Projection::Orthographic(orthographic_projection) = *projection else {
-        return;
+    let apsis_radius = if let Projection::Orthographic(orthographic) = projection.into_inner() {
+        orthographic.scale
+    } else {
+        1.0
     };
-    for (grid_cell, transform, rigidbody, mesh_material_2d, vessel, satellite_of) in
-        &orbiting_entities
-    {
-        if let Ok((p_cell, p_transform, p_rigidbody, p_gtransform)) =
-            query.get(satellite_of.primary())
+    for secondary in &satellite_query {
+        let primary = primary_query.get(secondary.satellite_of.primary()).unwrap();
+        let primary_position = grid.grid_position_double(primary.cell, primary.transform);
+        let secondary_position = grid.grid_position_double(secondary.cell, secondary.transform);
+        let orbit = Orbit::new(
+            (secondary_position - primary_position).xy(),
+            (secondary.rigidbody.velocity - primary.rigidbody.velocity)
+                .xy()
+                .as_dvec2(),
+            primary.rigidbody.mass,
+            secondary.rigidbody.mass,
+        );
+        let translation = primary.global_transform.translation().xy();
+        let color = match materials.get(secondary.mesh_material) {
+            Some(material) => material.color,
+            None => Color::from(LIGHT_GRAY),
+        };
+        orbit.render(&mut gizmos, &translation, color, secondary.vessel.is_none());
+        // AP and PE markers for controlled vessel.
+        let perifocal_unit_vec = orbit.eccentricity_vector / orbit.eccentricity;
+        let ap_vec = orbit.apoapsis * -perifocal_unit_vec;
+        let pe_vec = orbit.periapsis * perifocal_unit_vec;
+        if let Some(vessel) = secondary.vessel
+            && vessel.controlled
         {
-            let orbit = Orbit::new(
-                (grid.grid_position_double(grid_cell, transform)
-                    - grid.grid_position_double(p_cell, p_transform))
-                .xy(),
-                (rigidbody.velocity - p_rigidbody.velocity).xy().as_dvec2(),
-                p_rigidbody.mass,
-                rigidbody.mass,
+            gizmos.circle_2d(
+                Isometry2d::from_translation(translation + ap_vec.as_vec2()),
+                apsis_radius,
+                color.with_alpha(1.0),
             );
-            let perifocal_unit_vec = orbit.eccentricity_vector / orbit.eccentricity;
-            let ap_vec = orbit.apoapsis * -perifocal_unit_vec;
-            let pe_vec = orbit.periapsis * perifocal_unit_vec;
-            let (cell, translation) = grid.translation_to_grid(
-                grid.grid_position_double(p_cell, p_transform)
-                    + DVec3::new(ap_vec.x, ap_vec.y, 20.0),
+            gizmos.circle_2d(
+                Isometry2d::from_translation(translation + pe_vec.as_vec2()),
+                apsis_radius,
+                color.with_alpha(1.0),
             );
-
-            let orbit_transform =
-                grid.global_transform(&cell, &Transform::from_translation(translation));
-            let orbit_angle = DVec2::Y.angle_to(orbit.eccentricity_vector) as f32;
-            let orbit_color = match materials.get(mesh_material_2d) {
-                Some(material) => material.color,
-                None => Color::from(LIGHT_GRAY),
-            };
-            match orbit.shape() {
-                OrbitShape::Ellipse => {
-                    gizmos
-                        .ellipse(
-                            Isometry3d::new(
-                                Vec3::new(
-                                    orbit_transform.translation().x
-                                        - (orbit.semi_major_axis
-                                            * -perifocal_unit_vec.dot(DVec2::X))
-                                            as f32,
-                                    orbit_transform.translation().y
-                                        - (orbit.semi_major_axis
-                                            * -perifocal_unit_vec.dot(DVec2::Y))
-                                            as f32,
-                                    1.0,
-                                ),
-                                if orbit_angle.is_normal() {
-                                    Quat::from_rotation_z(orbit_angle)
-                                } else {
-                                    Quat::IDENTITY
-                                },
-                            ),
-                            DVec2::new(orbit.semi_minor_axis, orbit.semi_major_axis).as_vec2(),
-                            orbit_color.with_alpha(0.2),
-                        )
-                        .resolution(4000);
-                }
-                OrbitShape::Hyperbola | OrbitShape::Parabola => {
-                    use crate::gizmos::GizmosExt;
-                    gizmos
-                        .hyperbola(
-                            Isometry3d::new(
-                                Vec3::new(
-                                    orbit_transform.translation().x
-                                        + (orbit.semi_major_axis
-                                            * -perifocal_unit_vec.dot(DVec2::X))
-                                            as f32,
-                                    orbit_transform.translation().y
-                                        + (orbit.semi_major_axis
-                                            * -perifocal_unit_vec.dot(DVec2::Y))
-                                            as f32,
-                                    1.0,
-                                ),
-                                if orbit_angle.is_normal() {
-                                    Quat::from_rotation_z(orbit_angle - FRAC_PI_2)
-                                } else {
-                                    Quat::IDENTITY
-                                },
-                            ),
-                            DVec2::new(orbit.semi_major_axis, orbit.semi_minor_axis).as_vec2(),
-                            orbit_color.with_alpha(0.2),
-                        )
-                        .resolution(100);
-                }
-                o => todo!("Implement draw for other orbit shapes {:?}", o),
-            }
-            // AP and PE markers for controlled vessel.
-            if let Some(vessel) = vessel
-                && vessel.controlled
-            {
-                gizmos.circle_2d(
-                    Isometry2d::from_translation(
-                        p_gtransform.translation().xy() + ap_vec.as_vec2(),
-                    ),
-                    orthographic_projection.scale,
-                    orbit_color.with_alpha(1.0),
-                );
-                gizmos.circle_2d(
-                    Isometry2d::from_translation(
-                        p_gtransform.translation().xy() + pe_vec.as_vec2(),
-                    ),
-                    orthographic_projection.scale,
-                    orbit_color.with_alpha(1.0),
-                );
-            }
         }
     }
 }
