@@ -1,105 +1,78 @@
 {
-  description = "A devShell example";
+  description = "Orbital";
 
   inputs = {
-    rust-overlay.url = "github:oxalica/rust-overlay";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    #    nixpkgs.config.allowUnfree = true;
-    crane.url = "github:ipetkov/crane";
-    # crane.inputs.nixpkgs.follows = "nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
-    # flake-utils.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  # outputs = { self, nixpkgs, rust-overlay, flake-utils, ... }:
   outputs =
     {
       self,
       nixpkgs,
-      rust-overlay,
-      crane,
       flake-utils,
       ...
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        overlays = [ (import rust-overlay) ];
-        # overlays = [ ];
-        pkgs = import nixpkgs { inherit system overlays; };
-        craneLib = crane.mkLib pkgs;
+        pkgs = import nixpkgs { inherit system; };
         buildInputs = with pkgs; [
           alsa-lib
-          # cargo
-          clang
-          libxkbcommon
-          mold
-          nixfmt
-          # rustc
-          # rustfmt
           systemd
-          udev
-          # vscode
-          vulkan-loader
           xorg.libX11
           xorg.libXcursor
-          xorg.libXrandr
           xorg.libXi
-          #rust-bin.beta.latest.default
+          xorg.libXrandr
         ];
         nativeBuildInputs = with pkgs; [
-          clang
+          autoPatchelfHook
           binutils
+          cargo
+          clang
           llvmPackages.bintools
+          mold
           pkg-config
-          # TODO: How to override this with extensions in devShell?
-          # rust-bin.stable."1.90.0".default
+          rustc
         ];
-        rustWithExtensions =
-          with pkgs;
-          (rust-bin.stable."1.90.0".default.override {
-            extensions = [
-              "rust-src"
-              "rust-analyzer"
-            ];
-          });
+        runtimeDependencies = with pkgs; [
+          libxkbcommon
+          vulkan-loader
+        ];
       in
       {
-        devShells.default =
-          with pkgs;
-          mkShell {
-            nativeBuildInputs = nativeBuildInputs ++ [
-              rustWithExtensions
+        devShells.default = pkgs.mkShell {
+          packages =
+            with (import nixpkgs {
+              inherit system;
+              config.allowUnfree = true;
+            }); [
+              clippy
+              lldb # Debugger.
+              nil
+              nixfmt
+              rustfmt
+              vscode
             ];
-            buildInputs = buildInputs;
-            # RUST_SRC_PATH =
-            #   "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
-            RUST_SRC_PATH = "${rustWithExtensions}/lib/rustlib/src";
-            packages =
-              with (import nixpkgs {
-                inherit system;
-                config.allowUnfree = true;
-              }); [
-                vscode
-              ];
-            shellHook = "export LD_LIBRARY_PATH=${lib.makeLibraryPath buildInputs};";
-          };
-
-        # packages.default = pkgs.rustPlatform.buildRustPackage {
-        packages.default = craneLib.buildPackage {
+          buildInputs = buildInputs;
+          nativeBuildInputs = nativeBuildInputs;
+          LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath (buildInputs ++ runtimeDependencies)}";
+          RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+        };
+        packages.orbital = pkgs.rustPlatform.buildRustPackage {
           pname = "orbital";
           version = "0.1.0";
           src = ./.;
-          # cargoLock = { lockFile = ./Cargo.lock; };
-          cargoArtifacts = craneLib.buildDepsOnly {
-            src = ./.;
-            strictDeps = true;
-            buildInputs = buildInputs;
-            nativeBuildInputs = nativeBuildInputs;
-          };
           buildInputs = buildInputs;
           nativeBuildInputs = nativeBuildInputs;
+          runtimeDependencies = runtimeDependencies;
+          # cargoLock = {
+          #   lockFile = ./Cargo.lock;
+          # };
+          cargoHash = "sha256-/ugYSwTO95hEuG08/c5QtfbVBIsnQDfFzsAnFkJz5Xg=";
+          buildType = "debug";
         };
+        defaultPackage = self.packages.${system}.orbital;
       }
     );
 }
