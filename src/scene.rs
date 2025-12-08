@@ -230,7 +230,9 @@ pub fn setup_scene(
                 density_at_sea_level: 0.02,
                 color: Color::srgb(0.6, 0.23, 0.16),
             },
-            CelestialBody { radius: Planet::MARS.radius },
+            CelestialBody {
+                radius: Planet::MARS.radius,
+            },
         ));
         root.spawn_body((
             Name::new("Phobos"),
