@@ -72,7 +72,6 @@ fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: MessageWrite
 
 fn set_window_icon(_non_send_marker: NonSendMarker) {
     WINIT_WINDOWS.with_borrow(|winit| {
-        info!("iconj");
         let image = image::open("icon.ico")
             .expect("Failed to open icon path")
             .into_rgba8();
