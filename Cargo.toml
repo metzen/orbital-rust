@@ -12,7 +12,7 @@ big_space = { version = "0.11", features = ["bevy_camera"] }
 clap = { version = "4.5.37", features = ["derive"] }
 either = "1.15.0"
 image = "0.25.6"
-leafwing-input-manager = "0.18"
+leafwing-input-manager = "0.19"
 log = { version = "0.4", features = [
     "max_level_debug",
     "release_max_level_warn",
@@ -21,7 +21,7 @@ rand = "0.9.2"
 winit = "0.30.12"
 
 [build-dependencies]
-embed-resource = "1.6.3"
+embed-resource = "3.0.6"
 
 [features]
 dev = ["bevy/dynamic_linking"]
