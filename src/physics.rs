@@ -254,10 +254,6 @@ pub fn dynamics(mut query: Query<&mut RigidBody>, time: Res<Time>) {
 fn kinematics(mut query: Query<(&mut Transform, &mut RigidBody)>, time: Res<Time>) {
     for (mut transform, rigidbody) in query.iter_mut() {
         let dt = time.delta_secs();
-        // let velocity = rigidbody.velocity;
-        // let acceleration = rigidbody.acceleration;
-        // TODO: High precision f64 velocity and accel?
-        // rigidbody.transform.translation += dt * (velocity + 0.5 * acceleration * dt);
         transform.translation += dt * (rigidbody.velocity + 0.5 * rigidbody.acceleration * dt);
         transform.rotate(Quat::from_rotation_z(
             dt * (rigidbody.angular_velocity + 0.5 * rigidbody.angular_acceleration * dt),
