@@ -301,6 +301,77 @@ fn setup_vessel(
             ),
         ],
     ));
+    commands.spawn_vessel((
+        Name::new("Christmas Tree"),
+        Mesh2d(meshes.add(Mesh::from(Triangle2d::new(
+            Vec2::new(0.0, 20.0),
+            Vec2::new(-13.0, -15.0),
+            Vec2::new(13.0, -15.0),
+        )))),
+        Transform::from_translation(translation + Vec3::X * 275.0),
+        grid_cell,
+        MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(GREEN)))),
+        RigidBody {
+            velocity: Vec3 {
+                x: 0.0,
+                y: 30.29e3,
+                z: 0.0,
+            },
+            mass: 100_000.0,
+            ..default()
+        },
+        Vessel {
+            engine_translation: -Vec3::Y * 25.0,
+            sas_enabled: true,
+            ..default()
+        },
+        AudioPlayer(assets.add(SineAudio::new(150.0))),
+        ChildOf(big_space),
+        children![
+            (
+                Name::new("Tree section"),
+                Transform::from_xyz(0.0, 10.0, 1.0),
+                Mesh2d(meshes.add(Mesh::from(Triangle2d::new(
+                    Vec2::new(0.0, 10.0),
+                    Vec2::new(-10.0, -10.0),
+                    Vec2::new(10.0, -10.0),
+                )))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(GREEN)))),
+            ),
+            (
+                Name::new("ornament"),
+                Transform::from_xyz(-2.0, -2.0, 1.0),
+                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
+            ),
+            (
+                Name::new("ornament"),
+                Transform::from_xyz(3.0, -8.0, 1.0),
+                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
+            ),
+            (
+                Name::new("ornament"),
+                Transform::from_xyz(1.0, 5.0, 1.0),
+                Mesh2d(meshes.add(Mesh::from(Circle::new(2.0)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(RED))),
+            ),
+            (
+                Name::new("trunk"),
+                Transform::from_xyz(0.0, -15.0, -1.0),
+                Mesh2d(meshes.add(Mesh::from(Rectangle::new(2.0, 10.0)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(BROWN))),
+            ),
+            // (
+            //     Name::new("crust"),
+            //     Transform::from_xyz(0.0, -15.0, 1.0).with_rotation(Quat::from_rotation_z(PI / 2.0)),
+            //     Mesh2d(meshes.add(Mesh::from(Capsule2d::new(3.0, 20.0)))),
+            //     MeshMaterial2d(
+            //         materials.add(ColorMaterial::from(Color::srgba(0.96, 0.69, 0.24, 1.0))),
+            //     ),
+            // )
+        ],
+    ));
 }
 
 fn vessel_control(
