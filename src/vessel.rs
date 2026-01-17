@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 use std::time::Duration;
 
-use bevy::color::palettes::css::{RED, TEAL};
+use bevy::color::palettes::css::{BROWN, GREEN, RED, TEAL};
 use bevy::ecs::entity_disabling::Disabled;
 use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::{Read, Write};
@@ -522,7 +522,6 @@ fn vessel_systems(
                             .signum()
                 }
             };
-            let angle = Vec2::Y.angle_to(relative_velocity.xy());
             let rel = (transform.rotation * Vec3::Y)
                 .truncate()
                 .angle_to(Rot2::radians(modifier) * relative_velocity.xy());

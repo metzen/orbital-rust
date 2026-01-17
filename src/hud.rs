@@ -1,13 +1,11 @@
-use std::f32::consts::FRAC_PI_2;
-
 use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::css::{BLACK, LIGHT_GRAY};
 use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::Read;
 use bevy::input::common_conditions::input_toggle_active;
+use bevy::math::DVec2;
 use bevy::math::ops::log10;
-use bevy::math::{DVec2, DVec3};
 use bevy::picking::pointer::PointerInteraction;
 use bevy::prelude::*;
 use bevy::text::LineHeight;
@@ -784,9 +782,10 @@ fn setup_hud(mut commands: Commands) {
     setup_sas_indicator_widget(&mut commands);
 }
 
-fn symlog_plot(value: f32, max_value: f32, linear_threshold: f32, linear_scale: f32) {
-    let max_plot = log10(max_value);
-}
+// TODO: Use this.
+// fn symlog_plot(value: f32, max_value: f32, linear_threshold: f32, linear_scale: f32) {
+//     let max_plot = log10(max_value);
+// }
 
 fn update_vertical_speed(
     subject: Single<(&RigidBody, &CellCoord, &Transform, &SatelliteOf), With<HudSubject>>,
@@ -1023,9 +1022,6 @@ fn update_orbital_info(
             && let Ok((primary_grid_cell, primary_transform, primary_rigidbody, primary_aabb)) =
                 primary_query.get(satellite_of.primary())
         {
-            let position = grid.grid_position_double(grid_cell, transform)
-                - grid.grid_position_double(primary_grid_cell, primary_transform);
-            // info!("{:.0} {:.0}", position.x, position.y);
             let orbit = Orbit::new(
                 (grid.grid_position_double(grid_cell, transform)
                     - grid.grid_position_double(primary_grid_cell, primary_transform))
