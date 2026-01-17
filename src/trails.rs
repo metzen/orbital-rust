@@ -31,8 +31,7 @@ pub struct Trailable;
 #[derive(Component)]
 pub struct TrailMarker;
 
-#[derive(Resource)]
-#[derive(Deref, DerefMut)]
+#[derive(Resource, Deref, DerefMut)]
 struct TrailTimer(Timer);
 
 #[derive(Resource, Reflect)]
