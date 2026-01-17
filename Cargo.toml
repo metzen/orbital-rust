@@ -30,6 +30,11 @@ dev = ["bevy/dynamic_linking"]
 lto = true
 codegen-units = 1
 
+[profile.web-release]
+inherits = "release"
+opt-level = "s"
+strip = "debuginfo"
+
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]
 opt-level = 1
@@ -37,3 +42,13 @@ opt-level = 1
 # Enable max optimizations for dependencies, but not for our code:
 [profile.dev.package."*"]
 opt-level = 3
+
+# Optimize for build time in CI.
+[profile.ci]
+inherits = "dev"
+opt-level = 0
+debug = "line-tables-only"
+codegen-units = 4
+
+[profile.ci.package."*"]
+opt-level = 0
