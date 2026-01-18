@@ -70,6 +70,7 @@ fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: MessageWrite
     }
 }
 
+#[cfg(any(windows, unix))]
 fn set_window_icon(_non_send_marker: NonSendMarker) {
     WINIT_WINDOWS.with_borrow(|winit| {
         let image = image::open("icon.ico")
@@ -142,6 +143,7 @@ fn main() {
         .add_systems(
             PreStartup,
             (
+                #[cfg(any(unix, windows))]
                 set_window_icon,
                 setup_scene,
                 add_name_to_big_space,
