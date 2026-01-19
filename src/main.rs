@@ -17,9 +17,9 @@ mod vessel;
 
 use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale, Volume};
 use bevy::ecs::system::NonSendMarker;
-use bevy::input::common_conditions::input_toggle_active;
+use bevy::input::common_conditions::{input_just_pressed, input_toggle_active};
 use bevy::prelude::*;
-use bevy::window::WindowResolution;
+use bevy::window::PrimaryWindow;
 use bevy::winit::WINIT_WINDOWS;
 use bevy_framepace::{FramepaceSettings, Limiter};
 use clap::Parser;
@@ -84,6 +84,18 @@ fn set_window_icon(_non_send_marker: NonSendMarker) {
     })
 }
 
+fn toggle_fullscreen(mut window: Single<&mut Window, With<PrimaryWindow>>) {
+    window.mode = match window.mode {
+        bevy::window::WindowMode::BorderlessFullscreen(MonitorSelection::Primary) => {
+            bevy::window::WindowMode::Windowed
+        }
+        bevy::window::WindowMode::Windowed => {
+            bevy::window::WindowMode::BorderlessFullscreen(MonitorSelection::Primary)
+        }
+        _ => panic!("Unexpected window mode"),
+    }
+}
+
 fn main() {
     let args = Args::parse();
     App::new()
@@ -98,6 +110,7 @@ fn main() {
                         present_mode: bevy::window::PresentMode::AutoNoVsync,
                         resolution: WindowResolution::new(1280, 800)
                             .with_scale_factor_override(1.0),
+                        fit_canvas_to_parent: true,
                         ..default()
                     }),
                     ..default()
@@ -152,5 +165,9 @@ fn main() {
                 .chain(),
         )
         .add_systems(Update, app_control)
+        .add_systems(
+            Update,
+            toggle_fullscreen.run_if(input_just_pressed(KeyCode::F11)),
+        )
         .run();
 }
