@@ -30,20 +30,15 @@ impl Plugin for DiagnosticsPlugin {
 fn setup(mut commands: Commands) {
     commands.spawn((
         Node {
-            // fill the entire window
-            width: Val::Percent(100.0),
-            height: Val::Percent(100.0),
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::Start,
-            // padding: UiRect::all(MARGIN),
-            // row_gap: Val::Px(),
-            margin: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(50.0), Val::Px(0.0)),
+            position_type: PositionType::Absolute,
+            top: px(0.0),
+            right: px(0.0),
+            column_gap: px(6.0),
             ..default()
         },
-        // background_color: BackgroundColor(Color::BLACK),
         children![
             (
-                Text::new("FPS: "),
+                Text::new("FPS:"),
                 TextFont::from_font_size(FONT_SIZE),
                 RenderLayers::layer(HIGH_RES_LAYER),
             ),
@@ -54,7 +49,7 @@ fn setup(mut commands: Commands) {
                 RenderLayers::layer(HIGH_RES_LAYER),
             ),
             (
-                Text::new("Entities: "),
+                Text::new("Entities:"),
                 TextFont::from_font_size(FONT_SIZE),
                 RenderLayers::layer(HIGH_RES_LAYER),
             ),
