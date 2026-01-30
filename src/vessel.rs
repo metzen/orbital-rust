@@ -11,6 +11,7 @@ use bevy::sprite_render::AlphaMode2d;
 use big_space::floating_origins::BigSpace;
 use big_space::grid::Grid;
 use big_space::grid::cell::CellCoord;
+use leafwing_input_manager::common_conditions::action_just_pressed;
 use leafwing_input_manager::prelude::*;
 use rand::{Rng, rng};
 
@@ -35,7 +36,7 @@ impl Plugin for VesselPlugin {
                 vessel_control,
                 vessel_engine_audio,
                 animate_engine_particles,
-                photon_gun,
+                fire_photon.run_if(action_just_pressed(VesselAction::FirePhoton)),
             ),
         );
         // Must run after final changes have been applied to vessel translation in FixedUpdate.
@@ -660,33 +661,30 @@ fn animate_engine_particles(
     }
 }
 
-fn photon_gun(
+fn fire_photon(
     query: Query<(&Vessel, &CellCoord, &Transform)>,
     mut commands: Commands,
-    action_state: Res<ActionState<VesselAction>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     big_space: Single<Entity, With<BigSpace>>,
 ) {
-    if action_state.just_pressed(&VesselAction::FirePhoton) {
-        for (vessel, grid_cell, transform) in query {
-            if vessel.controlled {
-                commands.spawn((
-                    Name::new("photon"),
-                    *transform,
-                    *grid_cell,
-                    Mesh2d(meshes.add(Mesh::from(Circle::new(10.0)))),
-                    MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(3.0, 3.0, 3.0)))),
-                    RigidBody {
-                        mass: 1.0, // TODO: Why doesn't 0.0 work here?
-                        velocity: transform.rotation * Vec3::new(0.0, SPEED_OF_LIGHT, 0.0),
-                        ..default()
-                    },
-                    NoGravity,
-                    Autoscale::default(),
-                    ChildOf(*big_space),
-                ));
-            }
+    for (vessel, grid_cell, transform) in query {
+        if vessel.controlled {
+            commands.spawn((
+                Name::new("photon"),
+                *transform,
+                *grid_cell,
+                Mesh2d(meshes.add(Mesh::from(Circle::new(10.0)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(3.0, 3.0, 3.0)))),
+                RigidBody {
+                    mass: 1.0, // TODO: Why doesn't 0.0 work here?
+                    velocity: transform.rotation * Vec3::new(0.0, SPEED_OF_LIGHT, 0.0),
+                    ..default()
+                },
+                NoGravity,
+                Autoscale::default(),
+                ChildOf(*big_space),
+            ));
         }
     }
 }
