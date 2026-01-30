@@ -1106,7 +1106,7 @@ impl RenderOrbit for Orbit {
                     color.with_alpha(0.01),
                     color.with_alpha(0.3),
                 )
-                .resolution(200);
+                .resolution(2000);
         } else {
             gizmos
                 .ellipse_2d(
@@ -1114,7 +1114,7 @@ impl RenderOrbit for Orbit {
                     DVec2::new(self.semi_major_axis, self.semi_minor_axis).as_vec2(),
                     color.with_alpha(0.3),
                 )
-                .resolution(200);
+                .resolution(2000);
         }
     }
 
