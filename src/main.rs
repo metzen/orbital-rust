@@ -17,7 +17,7 @@ mod vessel;
 
 use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale, Volume};
 use bevy::ecs::system::NonSendMarker;
-use bevy::input::common_conditions::{input_just_pressed, input_toggle_active};
+use bevy::input::common_conditions::{input_just_pressed, input_pressed, input_toggle_active};
 use bevy::prelude::*;
 use bevy::window::{PresentMode, PrimaryWindow, WindowMode, WindowResolution};
 use bevy::winit::WINIT_WINDOWS;
@@ -64,12 +64,6 @@ struct Args {
     framerate_limit: Option<f64>,
 }
 
-fn app_control(keyboard_input: Res<ButtonInput<KeyCode>>, mut exit: MessageWriter<AppExit>) {
-    if keyboard_input.pressed(KeyCode::KeyQ) {
-        exit.write(AppExit::Success);
-    }
-}
-
 #[cfg(any(windows, unix))]
 fn set_window_icon(_non_send_marker: NonSendMarker) {
     WINIT_WINDOWS.with_borrow(|winit| {
@@ -90,6 +84,10 @@ fn toggle_fullscreen(mut window: Single<&mut Window, With<PrimaryWindow>>) {
         WindowMode::Windowed => WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
         _ => panic!("Unexpected window mode"),
     }
+}
+
+fn exit(mut writer: MessageWriter<AppExit>) {
+    writer.write(AppExit::Success);
 }
 
 fn main() {
@@ -160,7 +158,11 @@ fn main() {
             )
                 .chain(),
         )
-        .add_systems(Update, app_control)
+        .add_systems(
+            Update,
+            exit.run_if(input_just_pressed(KeyCode::F4))
+                .run_if(input_pressed(KeyCode::AltLeft)),
+        )
         .add_systems(
             Update,
             toggle_fullscreen.run_if(input_just_pressed(KeyCode::F11)),
