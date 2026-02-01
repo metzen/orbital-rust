@@ -62,6 +62,9 @@ struct Args {
 
     #[arg(long)]
     framerate_limit: Option<f64>,
+
+    #[arg(long, default_value_t = false)]
+    windowed: bool,
 }
 
 #[cfg(any(windows, unix))]
@@ -102,6 +105,11 @@ fn main() {
                     primary_window: Some(Window {
                         title: String::from("Orbital"),
                         present_mode: PresentMode::AutoNoVsync,
+                        mode: if args.windowed {
+                            WindowMode::Windowed
+                        } else {
+                            WindowMode::BorderlessFullscreen(MonitorSelection::Primary)
+                        },
                         resolution: WindowResolution::new(1280, 800)
                             .with_scale_factor_override(1.0),
                         fit_canvas_to_parent: true,
