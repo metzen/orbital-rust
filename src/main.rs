@@ -160,8 +160,8 @@ fn main() {
         )
         .add_systems(
             Update,
-            exit.run_if(input_just_pressed(KeyCode::F4))
-                .run_if(input_pressed(KeyCode::AltLeft)),
+            exit.run_if(input_just_pressed(KeyCode::KeyQ))
+                .run_if(input_pressed(KeyCode::ControlLeft)),
         )
         .add_systems(
             Update,
