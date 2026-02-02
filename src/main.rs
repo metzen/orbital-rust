@@ -169,12 +169,14 @@ fn main() {
         .add_systems(
             Update,
             (
-                exit.run_if(input_just_pressed(KeyCode::KeyQ))
-                    .run_if(input_pressed(KeyCode::ControlLeft)),
-                toggle_fullscreen
-                    .run_if(input_just_pressed(KeyCode::Enter))
-                    .run_if(input_pressed(KeyCode::AltRight)),
-                toggle_fullscreen.run_if(input_just_pressed(KeyCode::F11)),
+                exit.run_if(
+                    input_just_pressed(KeyCode::KeyQ).and(input_pressed(KeyCode::ControlLeft)),
+                ),
+                toggle_fullscreen.run_if(
+                    input_just_pressed(KeyCode::F11)
+                        .or(input_just_pressed(KeyCode::Enter)
+                            .and(input_pressed(KeyCode::AltRight))),
+                ),
             ),
         )
         .run();
