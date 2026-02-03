@@ -1,7 +1,9 @@
 use std::f32::consts::PI;
 use std::time::Duration;
 
+use bevy::camera::primitives::Aabb;
 use bevy::color::palettes::css::{BROWN, GREEN, RED, TEAL};
+use bevy::color::palettes::tailwind::BLUE_600;
 use bevy::ecs::entity_disabling::Disabled;
 use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::{Read, Write};
@@ -371,6 +373,58 @@ fn setup_vessel(
             //         materials.add(ColorMaterial::from(Color::srgba(0.96, 0.69, 0.24, 1.0))),
             //     ),
             // )
+        ],
+    ));
+    commands.spawn_vessel((
+        Name::new("Flotilla Ship"),
+        Transform::from_translation(translation + Vec3::X * 210.0),
+        grid_cell,
+        Aabb {
+            center: Vec3A::ZERO,
+            half_extents: Vec3A::new(13.0, 12.5, 0.0),
+        },
+        MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(BLUE_600)))),
+        RigidBody {
+            velocity: Vec3 {
+                x: 0.0,
+                y: 30.29e3,
+                z: 0.0,
+            },
+            mass: 200_000.0,
+            ..default()
+        },
+        Vessel {
+            engine_translation: -Vec3::Y * 12.5,
+            sas_enabled: true,
+            ..default()
+        },
+        AudioPlayer(assets.add(SineAudio::new(120.0))),
+        ChildOf(big_space),
+        children![
+            (
+                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(5.0, 20.0)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(BLUE_600)))),
+            ),
+            (
+                Mesh2d(meshes.add(Mesh::from(Triangle2d::new(
+                    Vec2::new(0.0, 8.0),
+                    Vec2::new(13.0, -13.0),
+                    Vec2::new(-13.0, -13.0),
+                )))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(Color::from(BLUE_600)))),
+            ),
+            (
+                Mesh2d(meshes.add(Mesh::from(Segment2d::new(
+                    Vec2::new(0.0, -12.0),
+                    Vec2::new(0.0, -8.0)
+                )))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(Color::WHITE))),
+            ),
+            (
+                Transform::from_xyz(0.0, 8.0, 0.0),
+                Mesh2d(meshes.add(Mesh::from(CircularSegment::new(5.0, PI / 4.0)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(Color::WHITE))),
+            ),
         ],
     ));
 }
