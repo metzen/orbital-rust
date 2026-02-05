@@ -118,7 +118,6 @@ impl TextFontExt for TextFont {
     fn ui_default() -> Self {
         Self {
             font_size: 12.0,
-            line_height: LineHeight::RelativeToFont(1.0),
             ..default()
         }
     }
@@ -142,11 +141,11 @@ fn setup_throttle_widget(commands: &mut Commands) {
             flex_direction: FlexDirection::ColumnReverse,
             align_items: AlignItems::FlexEnd,
             border: BORDER,
+            border_radius: BorderRadius::all(Val::Px(3.0)),
             padding: UiRect::all(Val::Px(5.0)),
             ..default()
         },
         BORDER_COLOR,
-        BorderRadius::all(Val::Px(3.0)),
         BackgroundColor::from(BLACK),
         Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
         children![
@@ -175,6 +174,7 @@ fn setup_time_widget(commands: &mut Commands) {
                 top: Val::Auto,
             },
             border: BORDER,
+            border_radius: BorderRadius::all(Val::Px(3.0)),
             padding: UiRect {
                 top: Val::Px(8.0),
                 right: Val::Px(8.0),
@@ -186,7 +186,6 @@ fn setup_time_widget(commands: &mut Commands) {
             ..default()
         },
         BORDER_COLOR,
-        BorderRadius::all(Val::Px(3.0)),
         BackgroundColor::from(BLACK),
         Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
         children![
@@ -286,6 +285,7 @@ fn setup_velocity_widget(commands: &mut Commands) {
             left: Val::Px(70.0),
             bottom: Val::Px(130.0),
             border: UiRect::px(1.0, 1.0, 1.0, 3.0),
+            border_radius: BorderRadius::all(Val::Px(3.0)),
             padding: UiRect::all(Val::Px(5.0)),
             flex_direction: FlexDirection::Column,
             width: Val::Px(80.0),
@@ -294,7 +294,6 @@ fn setup_velocity_widget(commands: &mut Commands) {
         },
         BorderColor::from(widget_color),
         BackgroundColor::from(BLACK),
-        BorderRadius::all(Val::Px(3.0)),
         Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
         children![
             (
@@ -312,6 +311,7 @@ fn setup_velocity_widget(commands: &mut Commands) {
                                 TextColor::from(widget_color),
                                 BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
                                 TextFont::ui_default().with_font_size(11.0),
+                                LineHeight::RelativeToFont(1.0),
                             )
                         })
                         .collect::<Vec<_>>()
@@ -324,6 +324,7 @@ fn setup_velocity_widget(commands: &mut Commands) {
                 children![(
                     TextSpan::default(),
                     TextFont::ui_default().with_font_size(18.0),
+                    LineHeight::RelativeToFont(1.0),
                     VelocityText,
                 )]
             ),
@@ -343,6 +344,7 @@ fn setup_velocity_widget(commands: &mut Commands) {
                                 TextColor::from(widget_color),
                                 BackgroundColor::from(Color::srgb(44.0 / 255.0, 35.0 / 255.0, 0.0)),
                                 TextFont::ui_default(),
+                                LineHeight::RelativeToFont(1.0),
                             )
                         })
                         .collect::<Vec<_>>()
@@ -363,17 +365,20 @@ fn setup_velocity_widget(commands: &mut Commands) {
                     (
                         Text::new("V"),
                         TextColor::from(widget_color),
-                        TextFont::ui_default()
+                        TextFont::ui_default(),
+                        LineHeight::RelativeToFont(1.0),
                     ),
                     (
                         Text::new("E"),
                         TextColor::from(widget_color),
-                        TextFont::ui_default()
+                        TextFont::ui_default(),
+                        LineHeight::RelativeToFont(1.0),
                     ),
                     (
                         Text::new("L"),
                         TextColor::from(widget_color),
-                        TextFont::ui_default()
+                        TextFont::ui_default(),
+                        LineHeight::RelativeToFont(1.0),
                     ),
                 ],
             ),
@@ -391,6 +396,7 @@ fn setup_altitude_widget(commands: &mut Commands) {
             bottom: Val::Px(130.0),
             width: Val::Px(80.0),
             border: UiRect::px(1.0, 1.0, 1.0, 3.0),
+            border_radius: BorderRadius::all(Val::Px(3.0)),
             padding: UiRect::all(Val::Px(5.0)),
             flex_direction: FlexDirection::Column,
             row_gap: Val::Px(6.0),
@@ -398,7 +404,6 @@ fn setup_altitude_widget(commands: &mut Commands) {
         },
         BackgroundColor::from(BLACK),
         BorderColor::from(widget_color),
-        BorderRadius::all(Val::Px(3.0)),
         Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
         children![
             (
@@ -415,6 +420,7 @@ fn setup_altitude_widget(commands: &mut Commands) {
                                 TextColor::from(widget_color),
                                 BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
                                 TextFont::ui_default().with_font_size(11.0),
+                                LineHeight::RelativeToFont(1.0),
                             )
                         })
                         .collect::<Vec<_>>()
@@ -426,6 +432,7 @@ fn setup_altitude_widget(commands: &mut Commands) {
                 children![(
                     TextSpan::default(),
                     TextFont::ui_default().with_font_size(18.0),
+                    LineHeight::RelativeToFont(1.0),
                     AltitudeText,
                 ),]
             ),
@@ -444,6 +451,7 @@ fn setup_altitude_widget(commands: &mut Commands) {
                                 Text::default(),
                                 TextColor::from(widget_color),
                                 TextFont::ui_default().with_font_size(12.0),
+                                LineHeight::RelativeToFont(1.0),
                                 BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
                             )
                         })
@@ -465,17 +473,20 @@ fn setup_altitude_widget(commands: &mut Commands) {
                     (
                         Text::new("A"),
                         TextColor::from(widget_color),
-                        TextFont::ui_default()
+                        TextFont::ui_default(),
+                        LineHeight::RelativeToFont(1.0),
                     ),
                     (
                         Text::new("L"),
                         TextColor::from(widget_color),
-                        TextFont::ui_default()
+                        TextFont::ui_default(),
+                        LineHeight::RelativeToFont(1.0),
                     ),
                     (
                         Text::new("T"),
                         TextColor::from(widget_color),
-                        TextFont::ui_default()
+                        TextFont::ui_default(),
+                        LineHeight::RelativeToFont(1.0),
                     ),
                 ],
             ),
@@ -491,12 +502,12 @@ fn setup_orbital_info_widget(commands: &mut Commands) {
             left: Val::Px(145.0),
             bottom: Val::Px(20.0),
             border: BORDER,
+            border_radius: BorderRadius::all(Val::Px(3.0)),
             padding: UiRect::axes(Val::Px(10.0), Val::Px(6.0)),
             flex_direction: FlexDirection::Column,
             ..default()
         },
         BORDER_COLOR,
-        BorderRadius::all(Val::Px(3.0)),
         BackgroundColor::from(BLACK),
         Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
         children![
@@ -596,22 +607,22 @@ fn setup_staging_widget(commands: &mut Commands) {
                 top: Val::Auto,
             },
             border: BORDER,
+            border_radius: BorderRadius::all(Val::Px(3.0)),
             padding: UiRect::all(Val::Px(5.0)),
             flex_direction: FlexDirection::Column,
             ..default()
         },
         BORDER_COLOR,
-        BorderRadius::all(Val::Px(3.0)),
         BackgroundColor::from(BLACK),
         Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
         children![(
             Node {
                 width: Val::Px(200.0),
                 height: Val::Px(50.0),
+                border_radius: BorderRadius::all(Val::Px(3.0)),
                 ..default()
             },
             BackgroundColor::from(Color::srgb(0.0, 0.8, 0.32)),
-            BorderRadius::all(Val::Px(3.0)),
         ),],
     ));
 }
@@ -625,6 +636,7 @@ fn setup_vertical_speed_widget(commands: &mut Commands) {
             left: Val::Px(448.0),
             width: Val::Px(50.0),
             border: BORDER,
+            border_radius: BorderRadius::all(Val::Px(3.0)),
             padding: UiRect::all(Val::Px(5.0)),
             flex_direction: FlexDirection::Column,
             align_items: AlignItems::End,
@@ -632,7 +644,6 @@ fn setup_vertical_speed_widget(commands: &mut Commands) {
             ..default()
         },
         BORDER_COLOR,
-        BorderRadius::all(Val::Px(3.0)),
         BackgroundColor::from(BLACK),
         Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
         children![
@@ -686,6 +697,7 @@ fn setup_rotation_widget(commands: &mut Commands) {
             width: Val::Px(184.0),
             height: Val::Px(184.0),
             border: BORDER,
+            border_radius: BorderRadius::all(Val::Percent(50.0)),
             padding: UiRect::all(Val::Px(5.0)),
             flex_direction: FlexDirection::Column,
             align_items: AlignItems::End,
@@ -693,7 +705,6 @@ fn setup_rotation_widget(commands: &mut Commands) {
             ..default()
         },
         BORDER_COLOR,
-        BorderRadius::all(Val::Percent(50.0)),
         BackgroundColor::from(BLACK),
         Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
     ));

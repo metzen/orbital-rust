@@ -3,16 +3,18 @@ name = "orbital"
 version = "0.1.5"
 edition = "2024"
 
+[patch]
+
 [dependencies]
-bevy = { version = "0.17.0" }
-bevy_egui = { version = "0.38.0" }
-bevy_framepace = "0.20.0"
-bevy-inspector-egui = "0.35.0"
-big_space = { version = "0.11", features = ["bevy_camera"] }
+bevy = { version = "0.18" }
+bevy_egui = { version = "0.39" }
+bevy_framepace = "0.21"
+bevy-inspector-egui = "0.36"
+big_space = { version = "0.12", features = ["bevy_camera"] }
 clap = { version = "4.5.37", features = ["derive"] }
 either = "1.15.0"
 image = "0.25.6"
-leafwing-input-manager = "0.19"
+leafwing-input-manager = "0.20"
 log = { version = "0.4", features = [
     "max_level_debug",
     "release_max_level_warn",

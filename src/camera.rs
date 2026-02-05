@@ -243,11 +243,11 @@ fn setup_camera(
         Camera {
             // render before the "main pass" camera
             order: -1,
-            target: RenderTarget::from(image_handle.clone()),
             // hdr: true,
             ..default()
         },
         Camera2d,
+        RenderTarget::from(image_handle.clone()),
         Msaa::Off,
         Projection::from(OrthographicProjection::default_2d()),
         InGameCamera::default(),
@@ -479,7 +479,7 @@ fn setup_pointer(mut commands: Commands) {
 fn relay_pointer_input_messages(
     mut message_reader: Local<MessageCursor<PointerInput>>,
     mut messages: ResMut<Messages<PointerInput>>,
-    camera: Single<&Camera, With<InGameCamera>>,
+    render_target: Single<&RenderTarget, With<InGameCamera>>,
     window: Single<&Window, With<PrimaryWindow>>,
 ) {
     let messages_to_resend: Vec<PointerInput> = message_reader
@@ -490,8 +490,8 @@ fn relay_pointer_input_messages(
                 pointer_id: PIXEL_CAM_POINTER_ID,
                 location: Location {
                     target: bevy::camera::NormalizedRenderTarget::Image(ImageRenderTarget {
-                        handle: camera.target.as_image().unwrap().clone(),
-                        scale_factor: bevy::math::FloatOrd(1.0),
+                        handle: render_target.as_image().unwrap().clone(),
+                        scale_factor: 1.0,
                     }),
                     // TODO: This isn't quite correct; need to account for cases where the canvas
                     // does not fill the whole window.
