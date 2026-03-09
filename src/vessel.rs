@@ -269,9 +269,12 @@ fn setup_vessel(
     ));
     commands.spawn_vessel((
         Name::new("Hotdog"),
-        Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
         Transform::from_translation(translation),
         grid_cell,
+        Aabb {
+            center: Vec3A::ZERO,
+            half_extents: Vec3A::new(20.0, 30.0, 0.0),
+        },
         MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16)))),
         RigidBody {
             velocity: Vec3 {
@@ -290,6 +293,11 @@ fn setup_vessel(
         AudioPlayer(assets.add(SineAudio::new(150.0))),
         ChildOf(big_space),
         children![
+            (
+                Name::new("dog"),
+                Mesh2d(meshes.add(Mesh::from(Capsule2d::new(10.0, 40.0)))),
+                MeshMaterial2d(materials.add(ColorMaterial::from(Color::srgb(0.78, 0.29, 0.16)))),
+            ),
             (
                 Name::new("Hot dog bun 1"),
                 Transform::from_xyz(-10.0, 0.0, -1.0),
