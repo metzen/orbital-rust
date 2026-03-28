@@ -61,7 +61,7 @@ enum ControlMode {
 }
 
 #[derive(Reflect)]
-enum Direction {
+pub enum Direction {
     Prograde,
     Retrograde,
     Radial,
@@ -140,7 +140,7 @@ pub struct Vessel {
     pub throttle: f32, // [0, 1]
     pub engine_translation: Vec3,
     rotate: f32,
-    direction_lock: Option<Direction>,
+    pub direction_lock: Option<Direction>,
     // # TODO: Maybe initialize to FINE if ecodes.LED_CAPSL in KEYBOARD.leds()
     control_mode: ControlMode,
     pub sas_enabled: bool,
