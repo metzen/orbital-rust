@@ -1,3 +1,6 @@
+[workspace]
+members = ["run-wasm"]
+
 [package]
 name = "orbital"
 version = "0.1.6"
