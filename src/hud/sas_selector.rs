@@ -90,7 +90,6 @@ pub(super) fn update(
     vessel: Single<&Vessel, With<HudSubject>>,
 ) {
     // TODO: Refactor duplicated code.
-    // TODO: Dim all when SAS disabled.
     set.p0().background.0 = Color::from(if vessel.sas_enabled {
         match vessel.direction_lock {
             Some(ref direction) => match direction {
