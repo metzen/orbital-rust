@@ -8,12 +8,12 @@ use crate::vessel::{Direction, Vessel};
 use super::HudSubject;
 use super::TextFontExt;
 
-const BG_COLOR: Color = Color::srgb(0.0, 0.1, 0.0);
-const BG_COLOR_SELECTED: Color = Color::srgb(0.0, 0.8, 0.32);
-const BG_COLOR_DISABLED: Color = Color::srgb(0.0, 0.02, 0.0);
-const TEXT_COLOR: Color = Color::srgb(0.0, 0.3, 0.0);
+const BG_COLOR: Color = Color::srgb(0.439, 0.451, 0.525);
+const BG_COLOR_SELECTED: Color = Color::srgb(0.027, 0.69, 0.286);
+const BG_COLOR_DISABLED: Color = Color::srgb(0.14, 0.13, 0.16);
+const TEXT_COLOR: Color = Color::srgb(0.0, 0.0, 0.0);
 const TEXT_COLOR_SELECTED: Color = Color::srgb(0.0, 0.0, 0.0);
-const TEXT_COLOR_DISABLED: Color = Color::srgb(0.0, 0.15, 0.0);
+const TEXT_COLOR_DISABLED: Color = Color::srgb(0.0, 0.0, 0.0);
 
 #[derive(Component)]
 pub(super) struct StabilizeWidget;
