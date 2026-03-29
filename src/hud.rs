@@ -19,6 +19,7 @@ use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera, InGamePointer};
+use crate::hud::sas_selector::SasSelectorPlugin;
 use crate::physics::{NoGravity, Orbit, OrbitShape, RigidBody, SatelliteOf};
 use crate::timewarp::{TIME_WARPS, TimeWarp};
 use crate::vessel::Vessel;
@@ -27,7 +28,7 @@ pub struct HudPlugin;
 
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (setup_hud, setup_gizmos, sas_selector::setup));
+        app.add_systems(Startup, (setup_hud, setup_gizmos));
         app.add_systems(
             FixedUpdate,
             (
@@ -41,7 +42,6 @@ impl Plugin for HudPlugin {
                 update_hover_text,
                 update_orbital_info,
                 update_sas_indicator_widget,
-                sas_selector::update,
             ),
         );
         app.add_systems(
@@ -50,7 +50,10 @@ impl Plugin for HudPlugin {
                 .after(TransformSystems::Propagate)
                 .run_if(input_toggle_active(true, KeyCode::F8)),
         );
-        app.add_plugins(InputManagerPlugin::<HudAction>::default());
+        app.add_plugins((
+            InputManagerPlugin::<HudAction>::default(),
+            SasSelectorPlugin,
+        ));
         app.init_resource::<ActionState<HudAction>>();
         app.insert_resource(HudAction::default_input_map());
     }

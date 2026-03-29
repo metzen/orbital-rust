@@ -15,20 +15,29 @@ const TEXT_COLOR: Color = Color::srgb(0.0, 0.0, 0.0);
 const TEXT_COLOR_SELECTED: Color = Color::srgb(0.0, 0.0, 0.0);
 const TEXT_COLOR_DISABLED: Color = Color::srgb(0.0, 0.0, 0.0);
 
-#[derive(Component)]
-pub(super) struct StabilizeWidget;
+pub struct SasSelectorPlugin;
+
+impl Plugin for SasSelectorPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, setup);
+        app.add_systems(Update, update);
+    }
+}
 
 #[derive(Component)]
-pub(super) struct ProgradeWidget;
+struct StabilizeWidget;
 
 #[derive(Component)]
-pub(super) struct RetrogradeWidget;
+struct ProgradeWidget;
 
 #[derive(Component)]
-pub(super) struct RadialWidget;
+struct RetrogradeWidget;
 
 #[derive(Component)]
-pub(super) struct AntiRadialWidget;
+struct RadialWidget;
+
+#[derive(Component)]
+struct AntiRadialWidget;
 
 fn widget(marker: impl Component, label: impl Into<String>) -> impl Bundle {
     (
@@ -46,7 +55,7 @@ fn widget(marker: impl Component, label: impl Into<String>) -> impl Bundle {
     )
 }
 
-pub(super) fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands) {
     commands.spawn((
         Name::new("SAS Controls"),
         Node {
@@ -74,12 +83,12 @@ pub(super) fn setup(mut commands: Commands) {
 
 #[derive(QueryData)]
 #[query_data(mutable)]
-pub(super) struct Colors {
+struct Colors {
     background: Write<BackgroundColor>,
     text: Write<TextColor>,
 }
 
-pub(super) fn update(
+fn update(
     mut set: ParamSet<(
         Single<Colors, With<ProgradeWidget>>,
         Single<Colors, With<RetrogradeWidget>>,
