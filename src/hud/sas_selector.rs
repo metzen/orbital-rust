@@ -8,12 +8,12 @@ use crate::vessel::{Direction, Vessel};
 use super::HudSubject;
 use super::TextFontExt;
 
-const BG_COLOR: Srgba = Srgba::new(0.0, 0.1, 0.0, 1.0);
-const BG_COLOR_SELECTED: Srgba = Srgba::new(0.0, 0.9, 0.0, 1.0);
-const BG_COLOR_DISABLED: Srgba = Srgba::new(0.0, 0.02, 0.0, 1.0);
-const TEXT_COLOR: Srgba = Srgba::new(0.0, 0.3, 0.0, 1.0);
-const TEXT_COLOR_SELECTED: Srgba = Srgba::new(0.0, 0.0, 0.0, 1.0);
-const TEXT_COLOR_DISABLED: Srgba = Srgba::new(0.0, 0.15, 0.0, 1.0);
+const BG_COLOR: Color = Color::srgb(0.0, 0.1, 0.0);
+const BG_COLOR_SELECTED: Color = Color::srgb(0.0, 0.8, 0.32);
+const BG_COLOR_DISABLED: Color = Color::srgb(0.0, 0.02, 0.0);
+const TEXT_COLOR: Color = Color::srgb(0.0, 0.3, 0.0);
+const TEXT_COLOR_SELECTED: Color = Color::srgb(0.0, 0.0, 0.0);
+const TEXT_COLOR_DISABLED: Color = Color::srgb(0.0, 0.15, 0.0);
 
 #[derive(Component)]
 pub(super) struct StabilizeWidget;
@@ -30,9 +30,9 @@ pub(super) struct RadialWidget;
 #[derive(Component)]
 pub(super) struct AntiRadialWidget;
 
-fn widget(component: impl Component, label: impl Into<String>) -> impl Bundle {
+fn widget(marker: impl Component, label: impl Into<String>) -> impl Bundle {
     (
-        component,
+        marker,
         Node {
             margin: UiRect::vertical(px(4.0)),
             padding: UiRect::horizontal(px(4.0)),
@@ -89,113 +89,49 @@ pub(super) fn update(
     )>,
     vessel: Single<&Vessel, With<HudSubject>>,
 ) {
-    // TODO: Refactor duplicated code.
-    set.p0().background.0 = Color::from(if vessel.sas_enabled {
+    if vessel.sas_enabled {
+        set.p0().text.0 = TEXT_COLOR;
+        set.p1().text.0 = TEXT_COLOR;
+        set.p2().text.0 = TEXT_COLOR;
+        set.p3().text.0 = TEXT_COLOR;
+        set.p4().text.0 = TEXT_COLOR;
+        set.p0().background.0 = BG_COLOR;
+        set.p1().background.0 = BG_COLOR;
+        set.p2().background.0 = BG_COLOR;
+        set.p3().background.0 = BG_COLOR;
+        set.p4().background.0 = BG_COLOR;
         match vessel.direction_lock {
-            Some(ref direction) => match direction {
-                Direction::Prograde => BG_COLOR_SELECTED,
-                _ => BG_COLOR,
-            },
-            None => BG_COLOR,
+            Some(Direction::Prograde) => {
+                set.p0().text.0 = TEXT_COLOR_SELECTED;
+                set.p0().background.0 = BG_COLOR_SELECTED;
+            }
+            Some(Direction::Retrograde) => {
+                set.p1().text.0 = TEXT_COLOR_SELECTED;
+                set.p1().background.0 = BG_COLOR_SELECTED;
+            }
+            Some(Direction::Radial) => {
+                set.p2().text.0 = TEXT_COLOR_SELECTED;
+                set.p2().background.0 = BG_COLOR_SELECTED;
+            }
+            Some(Direction::AntiRadial) => {
+                set.p3().text.0 = TEXT_COLOR_SELECTED;
+                set.p3().background.0 = BG_COLOR_SELECTED;
+            }
+            None => {
+                set.p4().text.0 = TEXT_COLOR_SELECTED;
+                set.p4().background.0 = BG_COLOR_SELECTED;
+            }
         }
     } else {
-        BG_COLOR_DISABLED
-    });
-    set.p0().text.0 = Color::from(if vessel.sas_enabled {
-        match vessel.direction_lock {
-            Some(ref direction) => match direction {
-                Direction::Prograde => TEXT_COLOR_SELECTED,
-                _ => TEXT_COLOR,
-            },
-            None => TEXT_COLOR,
-        }
-    } else {
-        TEXT_COLOR_DISABLED
-    });
-
-    set.p1().background.0 = Color::from(if vessel.sas_enabled {
-        match vessel.direction_lock {
-            Some(ref direction) => match direction {
-                Direction::Retrograde => BG_COLOR_SELECTED,
-                _ => BG_COLOR,
-            },
-            None => BG_COLOR,
-        }
-    } else {
-        BG_COLOR_DISABLED
-    });
-    set.p1().text.0 = Color::from(if vessel.sas_enabled {
-        match vessel.direction_lock {
-            Some(ref direction) => match direction {
-                Direction::Retrograde => TEXT_COLOR_SELECTED,
-                _ => TEXT_COLOR,
-            },
-            None => TEXT_COLOR,
-        }
-    } else {
-        TEXT_COLOR_DISABLED
-    });
-
-    set.p2().background.0 = Color::from(if vessel.sas_enabled {
-        match vessel.direction_lock {
-            Some(ref direction) => match direction {
-                Direction::Radial => BG_COLOR_SELECTED,
-                _ => BG_COLOR,
-            },
-            None => BG_COLOR,
-        }
-    } else {
-        BG_COLOR_DISABLED
-    });
-    set.p2().text.0 = Color::from(if vessel.sas_enabled {
-        match vessel.direction_lock {
-            Some(ref direction) => match direction {
-                Direction::Radial => TEXT_COLOR_SELECTED,
-                _ => TEXT_COLOR,
-            },
-            None => TEXT_COLOR,
-        }
-    } else {
-        TEXT_COLOR_DISABLED
-    });
-
-    set.p3().background.0 = Color::from(if vessel.sas_enabled {
-        match vessel.direction_lock {
-            Some(ref direction) => match direction {
-                Direction::AntiRadial => BG_COLOR_SELECTED,
-                _ => BG_COLOR,
-            },
-            None => BG_COLOR,
-        }
-    } else {
-        BG_COLOR_DISABLED
-    });
-    set.p3().text.0 = Color::from(if vessel.sas_enabled {
-        match vessel.direction_lock {
-            Some(ref direction) => match direction {
-                Direction::AntiRadial => TEXT_COLOR_SELECTED,
-                _ => TEXT_COLOR,
-            },
-            None => TEXT_COLOR,
-        }
-    } else {
-        TEXT_COLOR_DISABLED
-    });
-
-    set.p4().background.0 = Color::from(if vessel.sas_enabled {
-        match vessel.direction_lock {
-            Some(ref _direction) => BG_COLOR,
-            None => BG_COLOR_SELECTED,
-        }
-    } else {
-        BG_COLOR_DISABLED
-    });
-    set.p4().text.0 = Color::from(if vessel.sas_enabled {
-        match vessel.direction_lock {
-            Some(ref _direction) => TEXT_COLOR,
-            None => TEXT_COLOR_SELECTED,
-        }
-    } else {
-        TEXT_COLOR_DISABLED
-    });
+        set.p0().text.0 = TEXT_COLOR_DISABLED;
+        set.p1().text.0 = TEXT_COLOR_DISABLED;
+        set.p2().text.0 = TEXT_COLOR_DISABLED;
+        set.p3().text.0 = TEXT_COLOR_DISABLED;
+        set.p4().text.0 = TEXT_COLOR_DISABLED;
+        set.p0().background.0 = BG_COLOR_DISABLED;
+        set.p1().background.0 = BG_COLOR_DISABLED;
+        set.p2().background.0 = BG_COLOR_DISABLED;
+        set.p3().background.0 = BG_COLOR_DISABLED;
+        set.p4().background.0 = BG_COLOR_DISABLED;
+    }
 }
