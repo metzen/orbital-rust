@@ -29,6 +29,7 @@ impl Plugin for DiagnosticsPlugin {
 
 fn setup(mut commands: Commands) {
     commands.spawn((
+        Name::new("Diagnostics"),
         Node {
             position_type: PositionType::Absolute,
             top: px(0.0),
