@@ -1,4 +1,5 @@
 mod sas_selector;
+mod time;
 
 use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::RenderLayers;
@@ -20,8 +21,8 @@ use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera, InGamePointer};
 use crate::hud::sas_selector::SasSelectorPlugin;
+use crate::hud::time::TimePlugin;
 use crate::physics::{NoGravity, Orbit, OrbitShape, RigidBody, SatelliteOf};
-use crate::timewarp::{TIME_WARPS, TimeWarp};
 use crate::vessel::Vessel;
 
 pub struct HudPlugin;
@@ -32,12 +33,10 @@ impl Plugin for HudPlugin {
         app.add_systems(
             FixedUpdate,
             (
-                update_time_warp,
                 update_throttle,
                 update_velocity,
                 update_altitude,
                 update_hud_subject,
-                update_time,
                 update_vertical_speed,
                 update_hover_text,
                 update_orbital_info,
@@ -53,14 +52,12 @@ impl Plugin for HudPlugin {
         app.add_plugins((
             InputManagerPlugin::<HudAction>::default(),
             SasSelectorPlugin,
+            TimePlugin,
         ));
         app.init_resource::<ActionState<HudAction>>();
         app.insert_resource(HudAction::default_input_map());
     }
 }
-
-#[derive(Component)]
-struct TimeWarpText;
 
 #[derive(Component)]
 struct ThrottleText;
@@ -82,12 +79,6 @@ pub struct HudSubject;
 
 #[derive(Component)]
 pub struct HubSubjectText;
-
-#[derive(Component)]
-pub struct TimeText;
-
-#[derive(Component)]
-pub struct TimeWarpBoxes;
 
 #[derive(Component)]
 pub struct ThrottleBar;
@@ -165,119 +156,6 @@ fn setup_throttle_widget(commands: &mut Commands) {
                 BackgroundColor::from(Color::srgb(0.0, 0.8, 0.32)),
             ),
             (Text::default(), ThrottleText, TextFont::ui_default()),
-        ],
-    ));
-}
-
-fn setup_time_widget(commands: &mut Commands) {
-    commands.spawn((
-        Name::new("Time widget"),
-        Node {
-            margin: UiRect {
-                left: Val::Auto,
-                right: Val::Auto,
-                bottom: Val::Px(20.0),
-                top: Val::Auto,
-            },
-            border: BORDER,
-            border_radius: BorderRadius::all(Val::Px(3.0)),
-            padding: UiRect {
-                top: Val::Px(8.0),
-                right: Val::Px(8.0),
-                bottom: Val::Px(2.0),
-                left: Val::Px(8.0),
-            },
-            flex_direction: FlexDirection::Column,
-            row_gap: Val::Px(4.0),
-            ..default()
-        },
-        BORDER_COLOR,
-        BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        children![
-            (
-                Text::default(),
-                TimeText,
-                children![
-                    (
-                        TextSpan::new("T+"),
-                        TextFont::ui_default(),
-                        TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
-                    ),
-                    (TextSpan::new("000"), TextFont::ui_default()),
-                    (
-                        TextSpan::new("y "),
-                        TextFont::ui_default(),
-                        TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
-                    ),
-                    (TextSpan::new("000"), TextFont::ui_default()),
-                    (
-                        TextSpan::new("d "),
-                        TextFont::ui_default(),
-                        TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
-                    ),
-                    (TextSpan::new("00"), TextFont::ui_default()),
-                    (
-                        TextSpan::new(":"),
-                        TextFont::ui_default(),
-                        TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
-                    ),
-                    (TextSpan::new("00"), TextFont::ui_default()),
-                    (
-                        TextSpan::new(":"),
-                        TextFont::ui_default(),
-                        TextColor::from(Color::srgb(4.0 / 255.0, 152.0 / 255.0, 255.0)),
-                    ),
-                    (TextSpan::new("00"), TextFont::ui_default()),
-                ]
-            ),
-            (
-                Node {
-                    column_gap: Val::Px(2.0),
-                    ..default()
-                },
-                TimeWarpBoxes,
-                Children::spawn(SpawnWith(move |parent: &mut ChildSpawner| {
-                    for _ in TIME_WARPS.into_iter() {
-                        parent.spawn((
-                            Node {
-                                width: Val::Px(20.0),
-                                height: Val::Px(16.0),
-                                justify_content: JustifyContent::Center,
-                                ..default()
-                            },
-                            BackgroundColor::from(Color::srgb(0.446, 0.471, 0.525)),
-                            Children::spawn_one((
-                                Text::new(">"),
-                                TextColor::BLACK,
-                                TextFont::ui_default(),
-                            )),
-                        ));
-                    }
-                })),
-            ),
-            (
-                Text::default(),
-                TextLayout::new_with_justify(Justify::Center),
-                children![
-                    (
-                        TextSpan::new("TIME.WARP= "),
-                        TextFont::ui_default(),
-                        TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-                    ),
-                    (
-                        TextSpan::default(),
-                        TimeWarpText,
-                        TextFont::ui_default(),
-                        TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-                    ),
-                    (
-                        TextSpan::new("x"),
-                        TextFont::ui_default(),
-                        TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-                    ),
-                ],
-            ),
         ],
     ));
 }
@@ -792,7 +670,6 @@ fn setup_hud(mut commands: Commands) {
     setup_throttle_widget(&mut commands);
     setup_staging_widget(&mut commands);
     setup_orbital_info_widget(&mut commands);
-    setup_time_widget(&mut commands);
     setup_velocity_widget(&mut commands);
     setup_altitude_widget(&mut commands);
     setup_vertical_speed_widget(&mut commands);
@@ -835,28 +712,6 @@ fn update_vertical_speed(
             (vertical_speed.abs() / 10.0) * 25.0
         } * vertical_speed.signum();
         vertical_speed_ui.0.bottom = Val::Percent((50.0 + position).clamp(0.0, 100.0));
-    }
-}
-
-fn update_time_warp(
-    time_warp: Res<TimeWarp>,
-    mut text: Single<&mut TextSpan, With<TimeWarpText>>,
-    boxes: Single<&Children, With<TimeWarpBoxes>>,
-    mut background_color_query: Query<&mut BackgroundColor>,
-) {
-    text.0 = format!("{:.0}", time_warp.value);
-    if let Some(timewarp_index) = TIME_WARPS.iter().position(|val| *val == time_warp.value) {
-        for (i, timewarp_box_id) in boxes.iter().enumerate() {
-            if let Ok(mut bg_color) = background_color_query.get_mut(timewarp_box_id) {
-                bg_color.0 = if i <= timewarp_index {
-                    Color::srgb(0.027, 0.69, 0.286)
-                } else if i <= time_warp.max_allowed_index {
-                    Color::srgb(0.439, 0.451, 0.525)
-                } else {
-                    Color::srgb(0.14, 0.13, 0.16)
-                }
-            }
-        }
     }
 }
 
@@ -1000,19 +855,6 @@ fn update_hud_subject(
             camera_autofollow.target = Some(entity);
         }
     }
-}
-
-fn update_time(
-    text: Single<Entity, With<TimeText>>,
-    time: Res<Time<Virtual>>,
-    mut writer: TextUiWriter,
-) {
-    let elapsed_seconds = time.elapsed().as_secs();
-    *writer.text(*text, 2) = format!("{:03}", elapsed_seconds / 60 / 60 / 24 / 365);
-    *writer.text(*text, 4) = format!("{:03}", elapsed_seconds / 60 / 60 / 24 % 365);
-    *writer.text(*text, 6) = format!("{:02}", elapsed_seconds / 60 / 60 % 24);
-    *writer.text(*text, 8) = format!("{:02}", elapsed_seconds / 60 % 60);
-    *writer.text(*text, 10) = format!("{:02}", elapsed_seconds % 60);
 }
 
 fn humanize_distance(altitude: f64) -> (f64, String) {
