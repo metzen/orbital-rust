@@ -1,4 +1,4 @@
-use bevy::color::palettes::css::{BLACK, LIGHT_GRAY};
+use bevy::color::palettes::css::BLACK;
 use bevy::prelude::*;
 
 use crate::hud::{TextFontExt, BORDER, BORDER_COLOR};

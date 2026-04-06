@@ -66,9 +66,6 @@ struct ThrottleText;
 struct VelocityText;
 
 #[derive(Component)]
-struct AccelerationText;
-
-#[derive(Component)]
 struct AltitudeText;
 
 #[derive(Component)]

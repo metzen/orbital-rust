@@ -11,7 +11,7 @@ use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::audio::SineAudio;
-use crate::physics::{Atmosphere, CelestialBody, RigidBody, SatelliteOf};
+use crate::physics::{Atmosphere, CelestialBody, SatelliteOf};
 use crate::vessel::Vessel;
 
 pub const TIME_WARPS: [f32; 13] = [
