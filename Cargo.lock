@@ -4651,9 +4651,14 @@ dependencies = [
  "image",
  "leafwing-input-manager",
  "log",
+ "orbital_math",
  "rand",
  "winit",
 ]
+
+[[package]]
+name = "orbital_math"
+version = "0.1.0"
 
 [[package]]
 name = "ordered-float"

@@ -1,4 +1,4 @@
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Angle {
     Radians(f64),
     Degrees(f64),
@@ -47,3 +47,6 @@ impl Angle {
         }
     }
 }
+
+#[cfg(test)]
+mod test;

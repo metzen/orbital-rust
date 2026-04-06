@@ -10,8 +10,8 @@ use bevy::prelude::*;
 use big_space::floating_origins::BigSpace;
 use big_space::grid::Grid;
 use big_space::grid::cell::CellCoord;
+use orbital_math::Angle;
 
-use crate::math::Angle;
 use crate::util;
 
 /// Gravitational constant.

@@ -7,7 +7,6 @@ mod gizmos;
 mod hud;
 mod input;
 mod lifetime;
-mod math;
 mod physics;
 mod scene;
 mod timewarp;
