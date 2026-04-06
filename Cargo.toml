@@ -12,6 +12,7 @@ edition = "2024"
 bevy = { version = "0.18" }
 bevy_egui = { version = "0.39" }
 bevy_framepace = "0.21"
+bevy_gizmos_ext = { path = "bevy_gizmos_ext" }
 bevy-inspector-egui = "0.36"
 big_space = { version = "0.12", features = ["bevy_camera"] }
 clap = { version = "4.5.37", features = ["derive"] }

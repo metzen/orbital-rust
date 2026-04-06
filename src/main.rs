@@ -3,7 +3,6 @@
 mod audio;
 mod camera;
 mod diagnostics;
-mod gizmos;
 mod hud;
 mod input;
 mod lifetime;

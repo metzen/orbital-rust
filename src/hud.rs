@@ -956,7 +956,7 @@ impl RenderOrbit for Orbit {
     fn render_ellipse(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool) {
         let angle = DVec2::X.angle_to(-self.eccentricity_vector) as f32;
         if fade {
-            use crate::gizmos::GizmosExt;
+            use bevy_gizmos_ext::GizmosExt;
             gizmos
                 .ellipse_gradient_2d(
                     Isometry2d::new(translation + self.center().as_vec2(), Rot2::radians(angle)),
@@ -978,7 +978,7 @@ impl RenderOrbit for Orbit {
     }
 
     fn render_hyperbola(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, _fade: bool) {
-        use crate::gizmos::GizmosExt;
+        use bevy_gizmos_ext::GizmosExt;
         let angle = DVec2::X.angle_to(-self.eccentricity_vector) as f32;
         gizmos
             .hyperbola_2d(

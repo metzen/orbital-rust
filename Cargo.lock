@@ -1017,6 +1017,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_gizmos_ext"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_gizmos_macros"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4644,6 +4651,7 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy_egui",
  "bevy_framepace",
+ "bevy_gizmos_ext",
  "big_space",
  "clap",
  "either",
