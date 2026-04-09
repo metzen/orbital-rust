@@ -1,9 +1,9 @@
 mod altitude;
+mod orbit_info;
 mod sas_selector;
 mod time;
 mod velocity;
 
-use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::css::{BLACK, LIGHT_GRAY};
 use bevy::ecs::query::QueryData;
@@ -22,6 +22,7 @@ use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera, InGamePointer};
 use crate::hud::altitude::AltitudePlugin;
+use crate::hud::orbit_info::OrbitInfoPlugin;
 use crate::hud::sas_selector::SasSelectorPlugin;
 use crate::hud::time::TimePlugin;
 use crate::hud::velocity::VelocityPlugin;
@@ -40,7 +41,6 @@ impl Plugin for HudPlugin {
                 update_hud_subject,
                 update_vertical_speed,
                 update_hover_text,
-                update_orbital_info,
                 update_sas_indicator_widget,
             ),
         );
@@ -53,6 +53,7 @@ impl Plugin for HudPlugin {
         app.add_plugins((
             AltitudePlugin,
             InputManagerPlugin::<HudAction>::default(),
+            OrbitInfoPlugin,
             SasSelectorPlugin,
             TimePlugin,
             VelocityPlugin,
@@ -79,12 +80,6 @@ pub struct HoverText;
 
 #[derive(Component)]
 pub struct VerticalSpeedText;
-
-#[derive(Component)]
-pub struct ApoapsisText;
-
-#[derive(Component)]
-pub struct PeriapsisText;
 
 #[derive(Component)]
 struct SasIndicator;
@@ -147,109 +142,6 @@ fn setup_throttle_widget(commands: &mut Commands) {
                 BackgroundColor::from(Color::srgb(0.0, 0.8, 0.32)),
             ),
             (Text::default(), ThrottleText, TextFont::ui_default()),
-        ],
-    ));
-}
-
-fn setup_orbital_info_widget(commands: &mut Commands) {
-    commands.spawn((
-        Name::new("Orbit info"),
-        Node {
-            position_type: PositionType::Absolute,
-            left: Val::Px(145.0),
-            bottom: Val::Px(20.0),
-            border: BORDER,
-            border_radius: BorderRadius::all(Val::Px(3.0)),
-            padding: UiRect::axes(Val::Px(10.0), Val::Px(6.0)),
-            flex_direction: FlexDirection::Column,
-            ..default()
-        },
-        BORDER_COLOR,
-        BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        children![
-            (
-                ApoapsisText,
-                Node {
-                    column_gap: Val::Px(5.0),
-                    ..default()
-                },
-                Text::default(),
-                children![
-                    (
-                        TextSpan::new("AP "),
-                        TextColor::from(Color::srgb(0.643, 0.427, 0.518)),
-                        TextFont::ui_default(),
-                    ),
-                    (TextSpan::new("000,000"), TextFont::ui_default()),
-                    (TextSpan::new(" "), TextFont::ui_default()),
-                    (
-                        TextSpan::new("m"),
-                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        TextFont::ui_default(),
-                    ),
-                    (TextSpan::new(" in "), TextFont::ui_default()),
-                    (
-                        TextSpan::new("T-"),
-                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        TextFont::ui_default(),
-                    ),
-                    (TextSpan::new("00"), TextFont::ui_default()),
-                    (
-                        TextSpan::new(":"),
-                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        TextFont::ui_default(),
-                    ),
-                    (TextSpan::new("00"), TextFont::ui_default()),
-                    (
-                        TextSpan::new(":"),
-                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        TextFont::ui_default(),
-                    ),
-                    (TextSpan::new("00"), TextFont::ui_default()),
-                ],
-            ),
-            (
-                PeriapsisText,
-                Node {
-                    column_gap: Val::Px(5.0),
-                    ..default()
-                },
-                Text::default(),
-                children![
-                    (
-                        TextSpan::new("PE "),
-                        TextColor::from(Color::srgb(0.125, 0.506, 0.63)),
-                        TextFont::ui_default(),
-                    ),
-                    (TextSpan::new("000000"), TextFont::ui_default()),
-                    (TextSpan::new(" "), TextFont::ui_default()),
-                    (
-                        TextSpan::new("m"),
-                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        TextFont::ui_default(),
-                    ),
-                    (TextSpan::new(" in "), TextFont::ui_default()),
-                    (
-                        TextSpan::new("T-"),
-                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        TextFont::ui_default(),
-                    ),
-                    (TextSpan::new("00"), TextFont::ui_default()),
-                    (
-                        TextSpan::new(":"),
-                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        TextFont::ui_default(),
-                    ),
-                    (TextSpan::new("00"), TextFont::ui_default()),
-                    (
-                        TextSpan::new(":"),
-                        TextColor::from(Color::srgb(0.718, 0.588, 0.376)),
-                        TextFont::ui_default(),
-                    ),
-                    (TextSpan::new("00"), TextFont::ui_default()),
-                ]
-            ),
         ],
     ));
 }
@@ -442,7 +334,6 @@ fn setup_hud(mut commands: Commands) {
     setup_hover_text(&mut commands);
     setup_throttle_widget(&mut commands);
     setup_staging_widget(&mut commands);
-    setup_orbital_info_widget(&mut commands);
     setup_vertical_speed_widget(&mut commands);
     setup_sas_indicator_widget(&mut commands);
 }
@@ -577,57 +468,6 @@ fn humanize_distance(altitude: f64) -> (f64, String) {
         _ => (altitude / 1e9, "Gm"),
     };
     (value, units.into())
-}
-
-fn update_orbital_info(
-    ap_text: Single<Entity, With<ApoapsisText>>,
-    pe_text: Single<Entity, With<PeriapsisText>>,
-    vessels: Query<(&Vessel, &CellCoord, &Transform, &RigidBody, &SatelliteOf)>,
-    primary_query: Query<(&CellCoord, &Transform, &RigidBody, &Aabb)>,
-    mut writer: TextUiWriter,
-    grid: Single<&Grid, With<BigSpace>>,
-) {
-    for (vessel, grid_cell, transform, rigidbody, satellite_of) in &vessels {
-        if vessel.controlled
-            && let Ok((primary_grid_cell, primary_transform, primary_rigidbody, primary_aabb)) =
-                primary_query.get(satellite_of.primary())
-        {
-            let orbit = Orbit::new(
-                (grid.grid_position_double(grid_cell, transform)
-                    - grid.grid_position_double(primary_grid_cell, primary_transform))
-                .xy(),
-                (rigidbody.velocity - primary_rigidbody.velocity)
-                    .xy()
-                    .as_dvec2(),
-                primary_rigidbody.mass,
-                rigidbody.mass,
-            );
-
-            let ap = orbit.apoapsis - primary_aabb.half_extents.y as f64;
-            let (humanized_ap, ap_units) = humanize_distance(ap);
-            *writer.text(*ap_text, 2) = format!("{:>7.0}", humanized_ap);
-            // *writer.text(*ap_text, 2) = format!(
-            //     "{:>7.*}",
-            //     usize::saturating_sub(4, humanized_ap.log10() as usize),
-            //     humanized_ap
-            // );
-            *writer.text(*ap_text, 4) = ap_units;
-            let time_to_ap = orbit.time_until_apoapsis().as_secs();
-            *writer.text(*ap_text, 7) = format!("{:02}", time_to_ap / 60 / 60);
-            *writer.text(*ap_text, 9) = format!("{:02}", time_to_ap / 60 % 60);
-            *writer.text(*ap_text, 11) = format!("{:02}", time_to_ap % 60);
-
-            let pe = orbit.periapsis - primary_aabb.half_extents.y as f64;
-            let (humanized_pe, pe_units) = humanize_distance(pe);
-            *writer.text(*pe_text, 2) = format!("{:>7.0}", humanized_pe);
-            *writer.text(*pe_text, 4) = pe_units;
-            let time_to_pe = orbit.time_to_periapsis().as_secs();
-            *writer.text(*pe_text, 7) = format!("{:02}", time_to_pe / 60 / 60);
-            *writer.text(*pe_text, 9) = format!("{:02}", time_to_pe / 60 % 60);
-            *writer.text(*pe_text, 11) = format!("{:02}", time_to_pe % 60);
-            break;
-        }
-    }
 }
 
 fn update_hover_text(
