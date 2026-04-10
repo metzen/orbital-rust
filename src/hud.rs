@@ -1,6 +1,7 @@
 mod altitude;
 mod orbit_info;
 mod sas_selector;
+mod throttle;
 mod time;
 mod velocity;
 
@@ -24,6 +25,7 @@ use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera, InGamePointer};
 use crate::hud::altitude::AltitudePlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
 use crate::hud::sas_selector::SasSelectorPlugin;
+use crate::hud::throttle::ThrottlePlugin;
 use crate::hud::time::TimePlugin;
 use crate::hud::velocity::VelocityPlugin;
 use crate::physics::{NoGravity, Orbit, OrbitShape, RigidBody, SatelliteOf};
@@ -37,7 +39,6 @@ impl Plugin for HudPlugin {
         app.add_systems(
             FixedUpdate,
             (
-                update_throttle,
                 update_hud_subject,
                 update_vertical_speed,
                 update_hover_text,
@@ -55,6 +56,7 @@ impl Plugin for HudPlugin {
             InputManagerPlugin::<HudAction>::default(),
             OrbitInfoPlugin,
             SasSelectorPlugin,
+            ThrottlePlugin,
             TimePlugin,
             VelocityPlugin,
         ));
@@ -64,16 +66,10 @@ impl Plugin for HudPlugin {
 }
 
 #[derive(Component)]
-struct ThrottleText;
-
-#[derive(Component)]
 pub struct HudSubject;
 
 #[derive(Component)]
 pub struct HubSubjectText;
-
-#[derive(Component)]
-pub struct ThrottleBar;
 
 #[derive(Component)]
 pub struct HoverText;
@@ -110,40 +106,6 @@ fn setup_gizmos(mut config_store: ResMut<GizmoConfigStore>) {
     let (config, _config_group) = config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line.width = 1.0;
     // config.render_layers = RenderLayers::layer(1);
-}
-
-fn setup_throttle_widget(commands: &mut Commands) {
-    commands.spawn((
-        Name::new("Throttle Widget"),
-        Node {
-            left: Val::Px(20.0),
-            bottom: Val::Px(20.0),
-            height: Val::Px(140.0),
-            width: Val::Px(30.0),
-            position_type: PositionType::Absolute,
-            flex_direction: FlexDirection::ColumnReverse,
-            align_items: AlignItems::FlexEnd,
-            border: BORDER,
-            border_radius: BorderRadius::all(Val::Px(3.0)),
-            padding: UiRect::all(Val::Px(5.0)),
-            ..default()
-        },
-        BORDER_COLOR,
-        BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        children![
-            (
-                Node {
-                    height: Val::Percent(0.0),
-                    width: Val::Percent(100.0),
-                    ..default()
-                },
-                ThrottleBar,
-                BackgroundColor::from(Color::srgb(0.0, 0.8, 0.32)),
-            ),
-            (Text::default(), ThrottleText, TextFont::ui_default()),
-        ],
-    ));
 }
 
 fn setup_staging_widget(commands: &mut Commands) {
@@ -332,7 +294,6 @@ fn setup_hud(mut commands: Commands) {
     setup_subject_widget(&mut commands);
     setup_rotation_widget(&mut commands);
     setup_hover_text(&mut commands);
-    setup_throttle_widget(&mut commands);
     setup_staging_widget(&mut commands);
     setup_vertical_speed_widget(&mut commands);
     setup_sas_indicator_widget(&mut commands);
@@ -375,15 +336,6 @@ fn update_vertical_speed(
         } * vertical_speed.signum();
         vertical_speed_ui.0.bottom = Val::Percent((50.0 + position).clamp(0.0, 100.0));
     }
-}
-
-fn update_throttle(
-    vessel: Single<&Vessel, With<HudSubject>>,
-    mut throttle_bar_node: Single<&mut Node, With<ThrottleBar>>,
-    mut throttle_text: Single<&mut Text, With<ThrottleText>>,
-) {
-    throttle_bar_node.height = Val::Percent(vessel.throttle * 100.0);
-    throttle_text.0 = format!("{:.0}", vessel.throttle * 100.0);
 }
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
