@@ -1,5 +1,6 @@
 mod altitude;
 mod attitude;
+mod heading;
 mod hovered;
 mod orbit_info;
 mod orbits;
@@ -21,6 +22,7 @@ use leafwing_input_manager::prelude::{ActionState, InputMap};
 use crate::camera::{Autofollow, InGameCamera};
 use crate::hud::altitude::AltitudePlugin;
 use crate::hud::attitude::AttitudePlugin;
+use crate::hud::heading::HeadingPlugin;
 use crate::hud::hovered::HoveredPlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
 use crate::hud::orbits::OrbitsPlugin;
@@ -48,6 +50,7 @@ impl Plugin for HudPlugin {
         app.add_plugins((
             AltitudePlugin,
             AttitudePlugin,
+            HeadingPlugin,
             HoveredPlugin,
             InputManagerPlugin::<HudAction>::default(),
             OrbitInfoPlugin,
