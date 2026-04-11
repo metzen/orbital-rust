@@ -1,7 +1,8 @@
-//! Additional [`GizmoBuffer`] Functions
+//! Additional [`GizmoBuffer`] functions
 //!
-//! Includes the implementation of [`GizmoBuffer::hyperbola`] and [`GizmoBuffer::hyperbola_2d`],
-//! and assorted support items.
+//! Includes the implementation of [`GizmosExt::ellipse_gradient_2d`],
+//! [`GizmosExt::hyperbola`], [`GizmosExt::hyperbola_2d`], and assorted
+//! support items.
 
 use core::f32::consts::TAU;
 use std::f32::consts::{FRAC_PI_2, PI};
