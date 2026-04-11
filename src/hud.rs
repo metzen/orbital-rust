@@ -3,6 +3,7 @@ mod hovered;
 mod orbit_info;
 mod sas_indicator;
 mod sas_selector;
+mod staging;
 mod subject;
 mod throttle;
 mod time;
@@ -29,6 +30,7 @@ use crate::hud::hovered::HoveredPlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
 use crate::hud::sas_indicator::SasIndicatorPlugin;
 use crate::hud::sas_selector::SasSelectorPlugin;
+use crate::hud::staging::StagingPlugin;
 use crate::hud::subject::SubjectPlugin;
 use crate::hud::throttle::ThrottlePlugin;
 use crate::hud::time::TimePlugin;
@@ -62,6 +64,7 @@ impl Plugin for HudPlugin {
             OrbitInfoPlugin,
             SasIndicatorPlugin,
             SasSelectorPlugin,
+            StagingPlugin,
             SubjectPlugin,
             ThrottlePlugin,
             TimePlugin,
@@ -104,36 +107,6 @@ fn setup_gizmos(mut config_store: ResMut<GizmoConfigStore>) {
     // config.render_layers = RenderLayers::layer(1);
 }
 
-fn setup_staging_widget(commands: &mut Commands) {
-    commands.spawn((
-        Node {
-            margin: UiRect {
-                left: Val::Auto,
-                right: Val::Px(20.0),
-                bottom: Val::Px(20.0),
-                top: Val::Auto,
-            },
-            border: BORDER,
-            border_radius: BorderRadius::all(Val::Px(3.0)),
-            padding: UiRect::all(Val::Px(5.0)),
-            flex_direction: FlexDirection::Column,
-            ..default()
-        },
-        BORDER_COLOR,
-        BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-        children![(
-            Node {
-                width: Val::Px(200.0),
-                height: Val::Px(50.0),
-                border_radius: BorderRadius::all(Val::Px(3.0)),
-                ..default()
-            },
-            BackgroundColor::from(Color::srgb(0.0, 0.8, 0.32)),
-        ),],
-    ));
-}
-
 fn setup_rotation_widget(commands: &mut Commands) {
     commands.spawn((
         Name::new("Rotation widget"),
@@ -159,7 +132,6 @@ fn setup_rotation_widget(commands: &mut Commands) {
 
 fn setup_hud(mut commands: Commands) {
     setup_rotation_widget(&mut commands);
-    setup_staging_widget(&mut commands);
 }
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
