@@ -1,6 +1,7 @@
 mod altitude;
 mod hovered;
 mod orbit_info;
+mod sas_indicator;
 mod sas_selector;
 mod subject;
 mod throttle;
@@ -26,6 +27,7 @@ use crate::camera::{Autofollow, InGameCamera};
 use crate::hud::altitude::AltitudePlugin;
 use crate::hud::hovered::HoveredPlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
+use crate::hud::sas_indicator::SasIndicatorPlugin;
 use crate::hud::sas_selector::SasSelectorPlugin;
 use crate::hud::subject::SubjectPlugin;
 use crate::hud::throttle::ThrottlePlugin;
@@ -40,7 +42,6 @@ pub struct HudPlugin;
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (setup_hud, setup_gizmos));
-        app.add_systems(FixedUpdate, update_sas_indicator_widget);
         app.add_systems(
             Update,
             (
@@ -59,6 +60,7 @@ impl Plugin for HudPlugin {
             HoveredPlugin,
             InputManagerPlugin::<HudAction>::default(),
             OrbitInfoPlugin,
+            SasIndicatorPlugin,
             SasSelectorPlugin,
             SubjectPlugin,
             ThrottlePlugin,
@@ -73,9 +75,6 @@ impl Plugin for HudPlugin {
 
 #[derive(Component)]
 pub struct HudSubject;
-
-#[derive(Component)]
-struct SasIndicator;
 
 const BORDER: UiRect = UiRect::new(Val::Px(1.0), Val::Px(1.0), Val::Px(1.0), Val::Px(1.0));
 // TODO: Use old value? BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0))
@@ -158,41 +157,9 @@ fn setup_rotation_widget(commands: &mut Commands) {
     ));
 }
 
-fn setup_sas_indicator_widget(commands: &mut Commands) {
-    commands.spawn((
-        Node {
-            position_type: PositionType::Absolute,
-            left: px(250.0),
-            bottom: px(100.0),
-            ..default()
-        },
-        Text::new("SAS"),
-        TextFont::ui_default().with_font_size(14.0),
-        BackgroundColor::from(Srgba::new(0.0, 0.1, 0.0, 1.0)),
-        TextColor::from(Srgba::new(0.0, 0.9, 0.0, 1.0)),
-        SasIndicator,
-        ZIndex(2),
-    ));
-}
-
-fn update_sas_indicator_widget(
-    mut widget: Single<(&mut BackgroundColor, &mut TextColor), With<SasIndicator>>,
-    vessel: Single<&Vessel, With<HudSubject>>,
-) {
-    widget.0.0 = Color::from(match vessel.sas_enabled {
-        true => Srgba::new(0.0, 0.9, 0.0, 1.0),
-        false => Srgba::new(0.0, 0.1, 0.0, 1.0),
-    });
-    widget.1.0 = Color::from(match vessel.sas_enabled {
-        true => Srgba::new(0.0, 0.0, 0.0, 1.0),
-        false => Srgba::new(0.0, 0.3, 0.0, 1.0),
-    });
-}
-
 fn setup_hud(mut commands: Commands) {
     setup_rotation_widget(&mut commands);
     setup_staging_widget(&mut commands);
-    setup_sas_indicator_widget(&mut commands);
 }
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
