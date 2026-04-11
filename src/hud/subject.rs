@@ -49,7 +49,7 @@ fn update(
         while let Some(entity) = parent
             && let Ok((name, satellite_of)) = name_query.get(entity)
         {
-            parts.push(format!("{}", name));
+            parts.push(format!("{name}"));
             parent = satellite_of.map(|x| x.primary());
         }
         parts.reverse();

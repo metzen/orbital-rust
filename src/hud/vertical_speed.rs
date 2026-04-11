@@ -103,11 +103,11 @@ fn update(
         let vertical_speed = relative_velocity.dot(relative_position.normalize().as_vec3());
 
         let vertical_speed_text = if (-10.0..10.0).contains(&vertical_speed) {
-            format!("{:+.2}", vertical_speed)
+            format!("{vertical_speed:+.2}")
         } else if (-100.0..100.0).contains(&vertical_speed) {
-            format!("{:+.1}", vertical_speed)
+            format!("{vertical_speed:+.1}")
         } else {
-            format!("{:+.0}", vertical_speed)
+            format!("{vertical_speed:+.0}")
         };
         vertical_speed_ui.1.0 = vertical_speed_text;
         let position = if vertical_speed.abs() > 10.0 {

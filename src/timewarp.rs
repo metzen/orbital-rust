@@ -167,8 +167,7 @@ fn update_max_allowed_timewarp(
                 (
                     limit,
                     format!(
-                        "Time Warp limited to {:.0}x while vessel altitude below {:.0}m",
-                        limit, boundary
+                        "Time Warp limited to {limit:.0}x while vessel altitude below {boundary:.0}m"
                     ),
                 )
             } else {

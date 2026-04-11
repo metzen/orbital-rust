@@ -154,7 +154,7 @@ fn update(
 
             let ap = orbit.apoapsis - primary_aabb.half_extents.y as f64;
             let (humanized_ap, ap_units) = hud::humanize_distance(ap);
-            *writer.text(*ap_text, 2) = format!("{:>7.0}", humanized_ap);
+            *writer.text(*ap_text, 2) = format!("{humanized_ap:>7.0}");
             // *writer.text(*ap_text, 2) = format!(
             //     "{:>7.*}",
             //     usize::saturating_sub(4, humanized_ap.log10() as usize),
@@ -168,7 +168,7 @@ fn update(
 
             let pe = orbit.periapsis - primary_aabb.half_extents.y as f64;
             let (humanized_pe, pe_units) = hud::humanize_distance(pe);
-            *writer.text(*pe_text, 2) = format!("{:>7.0}", humanized_pe);
+            *writer.text(*pe_text, 2) = format!("{humanized_pe:>7.0}");
             *writer.text(*pe_text, 4) = pe_units;
             let time_to_pe = orbit.time_to_periapsis().as_secs();
             *writer.text(*pe_text, 7) = format!("{:02}", time_to_pe / 60 / 60);

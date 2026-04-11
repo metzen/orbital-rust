@@ -154,7 +154,7 @@ fn update(
         let altitude =
             distance - primary_aabb.half_extents.y as f64 - subject_aabb.half_extents.y as f64;
         let (humanized_altitude, units) = super::humanize_distance(altitude);
-        text.0 = format!("{:.0}", humanized_altitude);
+        text.0 = format!("{humanized_altitude:.0}");
         // TODO: This is super hacky; clean it up.
         let units_chars = units.chars().collect::<Vec<char>>();
         for (i, char_box) in altitude_units_boxes.into_iter().enumerate() {
