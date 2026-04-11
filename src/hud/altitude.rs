@@ -55,7 +55,7 @@ fn setup(mut commands: Commands) {
                         .chars()
                         .map(|char| {
                             (
-                                Text::new(char as char),
+                                Text::new(char),
                                 TextColor::from(widget_color),
                                 BackgroundColor::from(Color::srgb(0.153, 0.055, 0.149)),
                                 TextFont::ui_default().with_font_size(11.0),
