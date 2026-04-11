@@ -1,8 +1,8 @@
 use bevy::color::palettes::css::BLACK;
 use bevy::prelude::*;
 
-use crate::hud::{TextFontExt, BORDER, BORDER_COLOR};
-use crate::timewarp::{TimeWarp, TIME_WARPS};
+use crate::hud::{BORDER, BORDER_COLOR, TextFontExt};
+use crate::timewarp::{TIME_WARPS, TimeWarp};
 
 pub struct TimePlugin;
 
