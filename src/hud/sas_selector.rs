@@ -88,6 +88,7 @@ struct Colors {
     text: Write<TextColor>,
 }
 
+#[allow(clippy::type_complexity)]
 fn update(
     mut set: ParamSet<(
         Single<Colors, With<ProgradeWidget>>,
