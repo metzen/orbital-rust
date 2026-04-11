@@ -14,14 +14,17 @@ mod util;
 mod vessel;
 
 use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale, Volume};
+#[cfg(any(windows, unix))]
 use bevy::ecs::system::NonSendMarker;
 use bevy::input::common_conditions::{input_just_pressed, input_pressed, input_toggle_active};
 use bevy::prelude::*;
 use bevy::window::{PresentMode, PrimaryWindow, WindowMode, WindowResolution};
+#[cfg(any(windows, unix))]
 use bevy::winit::WINIT_WINDOWS;
 use bevy_framepace::{FramepaceSettings, Limiter};
 use clap::Parser;
 use diagnostics::DiagnosticsPlugin;
+#[cfg(any(windows, unix))]
 use winit::window::Icon;
 
 use crate::audio::SineAudio;
