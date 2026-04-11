@@ -1,3 +1,6 @@
+use std::f64::consts::FRAC_PI_2;
+use std::f64::consts::PI;
+
 use super::*;
 
 #[test]
@@ -15,11 +18,11 @@ fn test_angle_from_degrees() {
 #[test]
 fn test_angle_from_degrees_as_radians_f64() {
     let result = Angle::from_degrees(90.0).as_radians_f64();
-    assert_eq!(result, 1.5707963267948966);
+    assert_eq!(result, FRAC_PI_2);
 }
 
 #[test]
 fn test_angle_from_radians_as_degrees_f64() {
     let result = Angle::from_radians(1.0).as_degrees_f64();
-    assert_eq!(result, 57.29577951308232);
+    assert_eq!(result, 180.0 / PI);
 }
