@@ -59,11 +59,17 @@ pub struct PhysicsMaterial {
 
 #[derive(Component, Default)]
 pub struct Atmosphere {
+    /// The altitude at which the atmosphere density reaches zero.
     pub height: f32,
+
     /// The height increase (in meters) required for the atmospheric pressure to decrease by a factor of 1/e (about 37%).
+    #[expect(unused)]
     pub scale_height: f32,
+
     /// Density at sea level (in kg/m³).
     pub density_at_sea_level: f32,
+
+    #[expect(unused)]
     pub color: Color,
 }
 
