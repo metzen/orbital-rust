@@ -1,4 +1,5 @@
 mod altitude;
+mod attitude;
 mod hovered;
 mod orbit_info;
 mod sas_indicator;
@@ -10,7 +11,7 @@ mod time;
 mod velocity;
 mod vertical_speed;
 
-use bevy::color::palettes::css::{BLACK, LIGHT_GRAY};
+use bevy::color::palettes::css::LIGHT_GRAY;
 use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::Read;
 use bevy::input::common_conditions::input_toggle_active;
@@ -26,6 +27,7 @@ use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::camera::{Autofollow, InGameCamera};
 use crate::hud::altitude::AltitudePlugin;
+use crate::hud::attitude::AttitudePlugin;
 use crate::hud::hovered::HoveredPlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
 use crate::hud::sas_indicator::SasIndicatorPlugin;
@@ -43,7 +45,7 @@ pub struct HudPlugin;
 
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (setup_hud, setup_gizmos));
+        app.add_systems(Startup, setup_gizmos);
         app.add_systems(
             Update,
             (
@@ -59,6 +61,7 @@ impl Plugin for HudPlugin {
         );
         app.add_plugins((
             AltitudePlugin,
+            AttitudePlugin,
             HoveredPlugin,
             InputManagerPlugin::<HudAction>::default(),
             OrbitInfoPlugin,
@@ -105,33 +108,6 @@ fn setup_gizmos(mut config_store: ResMut<GizmoConfigStore>) {
     let (config, _config_group) = config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line.width = 1.0;
     // config.render_layers = RenderLayers::layer(1);
-}
-
-fn setup_rotation_widget(commands: &mut Commands) {
-    commands.spawn((
-        Name::new("Rotation widget"),
-        Node {
-            position_type: PositionType::Absolute,
-            bottom: Val::Px(80.0),
-            left: Val::Px(156.0),
-            width: Val::Px(184.0),
-            height: Val::Px(184.0),
-            border: BORDER,
-            border_radius: BorderRadius::all(Val::Percent(50.0)),
-            padding: UiRect::all(Val::Px(5.0)),
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::End,
-            row_gap: Val::Px(14.0),
-            ..default()
-        },
-        BORDER_COLOR,
-        BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
-    ));
-}
-
-fn setup_hud(mut commands: Commands) {
-    setup_rotation_widget(&mut commands);
 }
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
