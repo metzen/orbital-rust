@@ -109,7 +109,6 @@ fn main() {
                             WindowMode::BorderlessFullscreen(MonitorSelection::Primary)
                         },
                         resolution: WindowResolution::new(1280, 800),
-                            // .with_scale_factor_override(1.0),
                         fit_canvas_to_parent: true,
                         ..default()
                     }),
