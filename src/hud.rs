@@ -1,12 +1,12 @@
 mod altitude;
 mod orbit_info;
 mod sas_selector;
+mod subject;
 mod throttle;
 mod time;
 mod velocity;
 mod vertical_speed;
 
-use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::css::{BLACK, LIGHT_GRAY};
 use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::Read;
@@ -18,13 +18,15 @@ use big_space::floating_origins::BigSpace;
 use big_space::grid::Grid;
 use big_space::grid::cell::CellCoord;
 use leafwing_input_manager::Actionlike;
+use leafwing_input_manager::common_conditions::action_just_pressed;
 use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
-use crate::camera::{Autofollow, HIGH_RES_LAYER, InGameCamera, InGamePointer};
+use crate::camera::{Autofollow, InGameCamera, InGamePointer};
 use crate::hud::altitude::AltitudePlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
 use crate::hud::sas_selector::SasSelectorPlugin;
+use crate::hud::subject::SubjectPlugin;
 use crate::hud::throttle::ThrottlePlugin;
 use crate::hud::time::TimePlugin;
 use crate::hud::velocity::VelocityPlugin;
@@ -39,10 +41,13 @@ impl Plugin for HudPlugin {
         app.add_systems(Startup, (setup_hud, setup_gizmos));
         app.add_systems(
             FixedUpdate,
+            (update_hover_text, update_sas_indicator_widget),
+        );
+        app.add_systems(
+            Update,
             (
-                update_hud_subject,
-                update_hover_text,
-                update_sas_indicator_widget,
+                next_vessel.run_if(action_just_pressed(HudAction::NextVessel)),
+                previous_vessel.run_if(action_just_pressed(HudAction::PreviousVessel)),
             ),
         );
         app.add_systems(
@@ -56,6 +61,7 @@ impl Plugin for HudPlugin {
             InputManagerPlugin::<HudAction>::default(),
             OrbitInfoPlugin,
             SasSelectorPlugin,
+            SubjectPlugin,
             ThrottlePlugin,
             TimePlugin,
             VelocityPlugin,
@@ -68,9 +74,6 @@ impl Plugin for HudPlugin {
 
 #[derive(Component)]
 pub struct HudSubject;
-
-#[derive(Component)]
-pub struct HubSubjectText;
 
 #[derive(Component)]
 pub struct HoverText;
@@ -177,26 +180,6 @@ fn setup_hover_text(commands: &mut Commands) {
     ));
 }
 
-fn setup_subject_widget(commands: &mut Commands) {
-    commands.spawn((
-        Name::new("Subject text"),
-        Node {
-            top: px(20.0),
-            left: px(20.0),
-            padding: px(10.0).into(),
-            ..default()
-        },
-        RenderLayers::layer(HIGH_RES_LAYER),
-        BackgroundColor::from(Srgba::new(0.05, 0.11, 0.15, 1.0)),
-        children![(
-            Text::default(),
-            TextLayout::new_with_justify(Justify::Center),
-            HubSubjectText,
-            TextFont::ui_default(),
-        ),],
-    ));
-}
-
 fn setup_sas_indicator_widget(commands: &mut Commands) {
     commands.spawn((
         Node {
@@ -229,7 +212,6 @@ fn update_sas_indicator_widget(
 }
 
 fn setup_hud(mut commands: Commands) {
-    setup_subject_widget(&mut commands);
     setup_rotation_widget(&mut commands);
     setup_hover_text(&mut commands);
     setup_staging_widget(&mut commands);
@@ -252,61 +234,50 @@ impl HudAction {
     }
 }
 
-fn update_hud_subject(
+fn change_hud_subject(
     mut commands: Commands,
-    action_state: Res<ActionState<HudAction>>,
     mut vessels_query: Query<(Entity, &mut Vessel, Option<&HudSubject>), With<Vessel>>,
     mut camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
-    subject_vessel_query: Query<Entity, With<HudSubject>>,
-    mut hud_subject_text: Single<&mut Text, With<HubSubjectText>>,
-    name_query: Query<(&Name, Option<&SatelliteOf>)>,
+    modifier: i32,
 ) {
-    if let Ok(entity) = subject_vessel_query.single() {
-        let mut parent = Some(entity);
-        let mut parts = Vec::new();
-        while let Some(entity) = parent
-            && let Ok((name, satellite_of)) = name_query.get(entity)
-        {
-            parts.push(format!("{}", name));
-            parent = satellite_of.map(|x| x.primary());
+    let mut current_subject_index: i32 = -1;
+    let mut i = 0;
+    let mut entities = Vec::new();
+    for (entity, mut vessel, hud_subject) in vessels_query.iter_mut().sort::<Entity>() {
+        entities.push(entity);
+        info!("hud subj vessel");
+        if hud_subject.is_some() {
+            info!("vessel is subject");
+            current_subject_index = i;
+            commands.entity(entity).remove::<HudSubject>();
+            vessel.controlled = false;
         }
-        parts.reverse();
-        hud_subject_text.0 = parts.join(" / ");
-    } else {
-        hud_subject_text.0 = String::from("none");
+        i += 1;
     }
-    if action_state.just_pressed(&HudAction::NextVessel)
-        || action_state.just_pressed(&HudAction::PreviousVessel)
-    {
-        let mut current_subject_index: i32 = -1;
-        let mut i = 0;
-        let mut entities = Vec::new();
-        for (entity, mut vessel, hud_subject) in vessels_query.iter_mut().sort::<Entity>() {
-            entities.push(entity);
-            info!("hud subj vessel");
-            if hud_subject.is_some() {
-                info!("vessel is subject");
-                current_subject_index = i;
-                commands.entity(entity).remove::<HudSubject>();
-                vessel.controlled = false;
-            }
-            i += 1;
-        }
-        let modifier = if action_state.just_pressed(&HudAction::NextVessel) {
-            1
-        } else if action_state.just_pressed(&HudAction::PreviousVessel) {
-            -1
-        } else {
-            0
-        };
-        let new_subject_index = (current_subject_index + modifier).rem_euclid(i);
-        let new_subject = entities[new_subject_index as usize];
-        commands.entity(new_subject).insert(HudSubject);
-        if let Ok((entity, mut vessel, _hud_subject)) = vessels_query.get_mut(new_subject) {
-            vessel.controlled = true;
-            camera_autofollow.target = Some(entity);
-        }
+
+    let new_subject_index = (current_subject_index + modifier).rem_euclid(i);
+    let new_subject = entities[new_subject_index as usize];
+    commands.entity(new_subject).insert(HudSubject);
+    if let Ok((entity, mut vessel, _hud_subject)) = vessels_query.get_mut(new_subject) {
+        vessel.controlled = true;
+        camera_autofollow.target = Some(entity);
     }
+}
+
+fn next_vessel(
+    commands: Commands,
+    vessels_query: Query<(Entity, &mut Vessel, Option<&HudSubject>), With<Vessel>>,
+    camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
+) {
+    change_hud_subject(commands, vessels_query, camera_autofollow, 1);
+}
+
+fn previous_vessel(
+    commands: Commands,
+    vessels_query: Query<(Entity, &mut Vessel, Option<&HudSubject>), With<Vessel>>,
+    camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
+) {
+    change_hud_subject(commands, vessels_query, camera_autofollow, -1);
 }
 
 fn humanize_distance(altitude: f64) -> (f64, String) {
