@@ -1,4 +1,5 @@
 mod altitude;
+mod hovered;
 mod orbit_info;
 mod sas_selector;
 mod subject;
@@ -12,7 +13,6 @@ use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::Read;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::math::DVec2;
-use bevy::picking::pointer::PointerInteraction;
 use bevy::prelude::*;
 use big_space::floating_origins::BigSpace;
 use big_space::grid::Grid;
@@ -22,8 +22,9 @@ use leafwing_input_manager::common_conditions::action_just_pressed;
 use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
-use crate::camera::{Autofollow, InGameCamera, InGamePointer};
+use crate::camera::{Autofollow, InGameCamera};
 use crate::hud::altitude::AltitudePlugin;
+use crate::hud::hovered::HoveredPlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
 use crate::hud::sas_selector::SasSelectorPlugin;
 use crate::hud::subject::SubjectPlugin;
@@ -39,10 +40,7 @@ pub struct HudPlugin;
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (setup_hud, setup_gizmos));
-        app.add_systems(
-            FixedUpdate,
-            (update_hover_text, update_sas_indicator_widget),
-        );
+        app.add_systems(FixedUpdate, update_sas_indicator_widget);
         app.add_systems(
             Update,
             (
@@ -58,6 +56,7 @@ impl Plugin for HudPlugin {
         );
         app.add_plugins((
             AltitudePlugin,
+            HoveredPlugin,
             InputManagerPlugin::<HudAction>::default(),
             OrbitInfoPlugin,
             SasSelectorPlugin,
@@ -74,9 +73,6 @@ impl Plugin for HudPlugin {
 
 #[derive(Component)]
 pub struct HudSubject;
-
-#[derive(Component)]
-pub struct HoverText;
 
 #[derive(Component)]
 struct SasIndicator;
@@ -162,24 +158,6 @@ fn setup_rotation_widget(commands: &mut Commands) {
     ));
 }
 
-fn setup_hover_text(commands: &mut Commands) {
-    commands.spawn((
-        Name::new("hover text"),
-        Node {
-            margin: UiRect {
-                left: Val::Auto,
-                right: Val::Auto,
-                top: Val::Px(100.0),
-                bottom: Val::Auto,
-            },
-            ..default()
-        },
-        Text::default(),
-        TextFont::ui_default(),
-        HoverText,
-    ));
-}
-
 fn setup_sas_indicator_widget(commands: &mut Commands) {
     commands.spawn((
         Node {
@@ -213,7 +191,6 @@ fn update_sas_indicator_widget(
 
 fn setup_hud(mut commands: Commands) {
     setup_rotation_widget(&mut commands);
-    setup_hover_text(&mut commands);
     setup_staging_widget(&mut commands);
     setup_sas_indicator_widget(&mut commands);
 }
@@ -289,24 +266,6 @@ fn humanize_distance(altitude: f64) -> (f64, String) {
         _ => (altitude / 1e9, "Gm"),
     };
     (value, units.into())
-}
-
-fn update_hover_text(
-    interactions: Query<&PointerInteraction, With<InGamePointer>>,
-    names: Query<&Name>,
-    mut text: Single<&mut Text, With<HoverText>>,
-) {
-    for interaction in interactions.iter() {
-        if let Some((entity, _hit)) = interaction.get_nearest_hit() {
-            if let Ok(name) = names.get(*entity) {
-                text.0 = name.to_string();
-            } else {
-                text.0.clear();
-            }
-        } else {
-            text.0.clear();
-        }
-    }
 }
 
 trait RenderOrbit {
