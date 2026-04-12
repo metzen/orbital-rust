@@ -58,17 +58,17 @@ fn setup(mut commands: Commands) {
         Name::new("SAS Controls"),
         Node {
             position_type: PositionType::Absolute,
-            left: Val::Px(545.0),
-            bottom: Val::Px(20.0),
+            left: px(545.0),
+            bottom: px(20.0),
             border: super::BORDER,
-            border_radius: BorderRadius::all(Val::Px(3.0)),
-            padding: UiRect::axes(Val::Px(10.0), Val::Px(6.0)),
+            border_radius: BorderRadius::all(px(3.0)),
+            padding: UiRect::axes(px(10.0), px(6.0)),
             flex_direction: FlexDirection::Column,
             ..default()
         },
         super::BORDER_COLOR,
         BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
         children![
             widget(StabilizeWidget, "Stabilize"),
             widget(ProgradeWidget, "Prograde"),

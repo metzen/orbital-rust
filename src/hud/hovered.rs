@@ -21,10 +21,10 @@ fn setup(mut commands: Commands) {
         Name::new("hover text"),
         Node {
             margin: UiRect {
-                left: Val::Auto,
-                right: Val::Auto,
-                top: Val::Px(100.0),
-                bottom: Val::Auto,
+                left: auto(),
+                right: auto(),
+                top: px(100.0),
+                bottom: auto(),
             },
             ..default()
         },

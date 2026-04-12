@@ -27,26 +27,26 @@ fn setup(mut commands: Commands) {
         Name::new("Time widget"),
         Node {
             margin: UiRect {
-                left: Val::Auto,
-                right: Val::Auto,
-                bottom: Val::Px(20.0),
-                top: Val::Auto,
+                left: auto(),
+                right: auto(),
+                bottom: px(20.0),
+                top: auto(),
             },
             border: BORDER,
-            border_radius: BorderRadius::all(Val::Px(3.0)),
+            border_radius: BorderRadius::all(px(3.0)),
             padding: UiRect {
-                top: Val::Px(8.0),
-                right: Val::Px(8.0),
-                bottom: Val::Px(2.0),
-                left: Val::Px(8.0),
+                top: px(8.0),
+                right: px(8.0),
+                bottom: px(2.0),
+                left: px(8.0),
             },
             flex_direction: FlexDirection::Column,
-            row_gap: Val::Px(4.0),
+            row_gap: px(4.0),
             ..default()
         },
         BORDER_COLOR,
         BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
         children![
             (
                 Text::default(),
@@ -86,7 +86,7 @@ fn setup(mut commands: Commands) {
             ),
             (
                 Node {
-                    column_gap: Val::Px(2.0),
+                    column_gap: px(2.0),
                     ..default()
                 },
                 TimeWarpBoxes,
@@ -94,8 +94,8 @@ fn setup(mut commands: Commands) {
                     for _ in TIME_WARPS.into_iter() {
                         parent.spawn((
                             Node {
-                                width: Val::Px(20.0),
-                                height: Val::Px(16.0),
+                                width: px(20.0),
+                                height: px(16.0),
                                 justify_content: JustifyContent::Center,
                                 ..default()
                             },

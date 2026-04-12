@@ -31,19 +31,19 @@ fn setup(mut commands: Commands) {
         Name::new("Altitude widget"),
         Node {
             position_type: PositionType::Absolute,
-            left: Val::Px(350.0),
-            bottom: Val::Px(130.0),
-            width: Val::Px(80.0),
+            left: px(350.0),
+            bottom: px(130.0),
+            width: px(80.0),
             border: UiRect::px(1.0, 1.0, 1.0, 3.0),
-            border_radius: BorderRadius::all(Val::Px(3.0)),
-            padding: UiRect::all(Val::Px(5.0)),
+            border_radius: BorderRadius::all(px(3.0)),
+            padding: UiRect::all(px(5.0)),
             flex_direction: FlexDirection::Column,
-            row_gap: Val::Px(6.0),
+            row_gap: px(6.0),
             ..default()
         },
         BackgroundColor::from(BLACK),
         BorderColor::from(widget_color),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
         children![
             (
                 Node {

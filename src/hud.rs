@@ -72,7 +72,7 @@ impl Plugin for HudPlugin {
 #[derive(Component)]
 pub struct HudSubject;
 
-const BORDER: UiRect = UiRect::new(Val::Px(1.0), Val::Px(1.0), Val::Px(1.0), Val::Px(1.0));
+const BORDER: UiRect = UiRect::px(1.0, 1.0, 1.0, 1.0);
 // TODO: Use old value? BorderColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0))
 const BORDER_COLOR: BorderColor = BorderColor {
     top: Color::srgb(0.184, 0.188, 0.251),

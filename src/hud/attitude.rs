@@ -16,20 +16,20 @@ fn setup(mut commands: Commands) {
         Name::new("Attitude widget"),
         Node {
             position_type: PositionType::Absolute,
-            bottom: Val::Px(80.0),
-            left: Val::Px(156.0),
-            width: Val::Px(184.0),
-            height: Val::Px(184.0),
+            bottom: px(80.0),
+            left: px(156.0),
+            width: px(184.0),
+            height: px(184.0),
             border: BORDER,
             border_radius: BorderRadius::all(Val::Percent(50.0)),
-            padding: UiRect::all(Val::Px(5.0)),
+            padding: UiRect::all(px(5.0)),
             flex_direction: FlexDirection::Column,
             align_items: AlignItems::End,
-            row_gap: Val::Px(14.0),
+            row_gap: px(14.0),
             ..default()
         },
         BORDER_COLOR,
         BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
     ));
 }

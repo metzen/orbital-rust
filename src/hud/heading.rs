@@ -23,17 +23,17 @@ fn setup(mut commands: Commands) {
         Name::new("Heading widget"),
         Node {
             position_type: PositionType::Absolute,
-            left: Val::Px(156.0 + 92.0 - 27.0),
-            bottom: Val::Px(270.0),
+            left: px(156.0 + 92.0 - 27.0),
+            bottom: px(270.0),
             border: BORDER,
-            border_radius: BorderRadius::all(Val::Px(3.0)),
-            padding: UiRect::axes(Val::Px(10.0), Val::Px(6.0)),
+            border_radius: BorderRadius::all(px(3.0)),
+            padding: UiRect::axes(px(10.0), px(6.0)),
             justify_content: JustifyContent::End,
             ..default()
         },
         BORDER_COLOR,
         BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
         children![(
             HeadingText,
             Text::default(),

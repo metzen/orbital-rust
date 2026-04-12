@@ -27,20 +27,20 @@ fn setup(mut commands: Commands) {
         Name::new("Vertical speed"),
         Node {
             position_type: PositionType::Absolute,
-            bottom: Val::Px(20.0),
-            left: Val::Px(448.0),
-            width: Val::Px(50.0),
+            bottom: px(20.0),
+            left: px(448.0),
+            width: px(50.0),
             border: hud::BORDER,
-            border_radius: BorderRadius::all(Val::Px(3.0)),
-            padding: UiRect::all(Val::Px(5.0)),
+            border_radius: BorderRadius::all(px(3.0)),
+            padding: UiRect::all(px(5.0)),
             flex_direction: FlexDirection::Column,
             align_items: AlignItems::End,
-            row_gap: Val::Px(14.0),
+            row_gap: px(14.0),
             ..default()
         },
         hud::BORDER_COLOR,
         BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
         children![
             (
                 Text::new("+100"),
@@ -71,7 +71,7 @@ fn setup(mut commands: Commands) {
                 Name::new("vertical speed indicator"),
                 Node {
                     position_type: PositionType::Absolute,
-                    height: Val::Px(20.0),
+                    height: px(20.0),
                     ..default()
                 },
                 Text::default(),

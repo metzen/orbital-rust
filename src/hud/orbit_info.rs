@@ -30,22 +30,22 @@ fn setup(mut commands: Commands) {
         Name::new("Orbit info"),
         Node {
             position_type: PositionType::Absolute,
-            left: Val::Px(145.0),
-            bottom: Val::Px(20.0),
+            left: px(145.0),
+            bottom: px(20.0),
             border: hud::BORDER,
-            border_radius: BorderRadius::all(Val::Px(3.0)),
-            padding: UiRect::axes(Val::Px(10.0), Val::Px(6.0)),
+            border_radius: BorderRadius::all(px(3.0)),
+            padding: UiRect::axes(px(10.0), px(6.0)),
             flex_direction: FlexDirection::Column,
             ..default()
         },
         hud::BORDER_COLOR,
         BackgroundColor::from(BLACK),
-        Outline::new(Val::Px(1.0), Val::Px(0.0), Color::from(BLACK)),
+        Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
         children![
             (
                 ApoapsisText,
                 Node {
-                    column_gap: Val::Px(5.0),
+                    column_gap: px(5.0),
                     ..default()
                 },
                 Text::default(),
@@ -86,7 +86,7 @@ fn setup(mut commands: Commands) {
             (
                 PeriapsisText,
                 Node {
-                    column_gap: Val::Px(5.0),
+                    column_gap: px(5.0),
                     ..default()
                 },
                 Text::default(),
