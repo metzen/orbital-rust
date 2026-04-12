@@ -605,23 +605,9 @@ fn vessel_systems(
             // rigidbody.angular_velocity += vessel.rotate * time.delta_secs();
         }
         if vessel.throttle > 0.0 {
-            // info!("Throttle: {}", vessel.throttle);
             let acceleration = 9.8 * 3.0; // m/s**2
             let force_magnitude = rigidbody.mass * acceleration * vessel.throttle;
-            // direction = Vector2D(
-            //     math.cos(transform.rotation), math.sin(transform.rotation)
-            // )
-
-            // info!("{}, {}", transform.rotation, transform.rotation.xyz());
-            let engine_force = transform.rotation * Vec3::Y * force_magnitude;
-
-            // rigidbody.force += Vec3 {
-            //     x: 0.0,
-            //     y: force_magnitude,
-            //     z: 0.0,
-            // };
-            // info!("engforce {}", engine_force);
-            rigidbody.force += engine_force;
+            rigidbody.force += transform.rotation * Vec3::Y * force_magnitude;
             // TODO: Refactor to a better particle system.
             // TODO: Do this with an api that clones from entity.
             if engine_particle_spawn_timer.0.just_finished() {
