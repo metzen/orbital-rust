@@ -1,7 +1,7 @@
-use crate::camera::HIGH_RES_LAYER;
 use bevy::camera::visibility::RenderLayers;
 use bevy::prelude::*;
 
+use crate::camera::HIGH_RES_LAYER;
 use crate::hud::HudSubject;
 use crate::physics::SatelliteOf;
 

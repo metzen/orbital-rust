@@ -3,10 +3,8 @@ use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::Write;
 use bevy::prelude::*;
 
+use super::{HudSubject, TextFontExt};
 use crate::vessel::{Direction, Vessel};
-
-use super::HudSubject;
-use super::TextFontExt;
 
 const BG_COLOR: Color = Color::srgb(0.439, 0.451, 0.525);
 const BG_COLOR_SELECTED: Color = Color::srgb(0.027, 0.69, 0.286);
