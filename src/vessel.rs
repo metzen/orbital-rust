@@ -623,7 +623,7 @@ fn vessel_systems(
                             y: -1.0,
                             z: 0.0,
                         })
-                        * (force_magnitude
+                        * (force_magnitude * rng().random_range(0.9..1.0)
                             / (rigidbody.mass
                                         * 0.004 // engine mass ejection rate as fraction of total vessel mass 
                                         * engine_particle_spawn_timer.0.duration().as_secs_f32()))
