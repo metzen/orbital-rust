@@ -4,6 +4,7 @@ mod heading;
 mod hovered;
 mod orbit_info;
 mod orbits;
+mod primary_flight_display;
 mod sas_indicator;
 mod sas_selector;
 mod staging;
@@ -21,11 +22,11 @@ use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::camera::{Autofollow, InGameCamera};
 use crate::hud::altitude::AltitudePlugin;
-use crate::hud::attitude::AttitudePlugin;
 use crate::hud::heading::HeadingPlugin;
 use crate::hud::hovered::HoveredPlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
 use crate::hud::orbits::OrbitsPlugin;
+use crate::hud::primary_flight_display::PrimaryFlightDisplayPlugin;
 use crate::hud::sas_indicator::SasIndicatorPlugin;
 use crate::hud::sas_selector::SasSelectorPlugin;
 use crate::hud::staging::StagingPlugin;
@@ -48,20 +49,18 @@ impl Plugin for HudPlugin {
             ),
         );
         app.add_plugins((
-            AltitudePlugin,
-            AttitudePlugin,
             HeadingPlugin,
             HoveredPlugin,
             InputManagerPlugin::<HudAction>::default(),
             OrbitInfoPlugin,
             OrbitsPlugin,
+            PrimaryFlightDisplayPlugin,
             SasIndicatorPlugin,
             SasSelectorPlugin,
             StagingPlugin,
             SubjectPlugin,
             ThrottlePlugin,
             TimePlugin,
-            VelocityPlugin,
             VerticalSpeedPlugin,
         ));
         app.init_resource::<ActionState<HudAction>>();

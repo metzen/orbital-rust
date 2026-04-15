@@ -9,11 +9,12 @@ use big_space::grid::cell::CellCoord;
 use crate::hud::HudSubject;
 use crate::physics::SatelliteOf;
 
+const ALTITUDE_TAPE_COLOR: Color = Color::srgb(0.44, 0.2, 0.44);
+
 pub(super) struct AltitudePlugin;
 
 impl Plugin for AltitudePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup);
         app.add_systems(FixedUpdate, update);
     }
 }
@@ -24,15 +25,16 @@ struct AltitudeText;
 #[derive(Component)]
 struct AltitudeUnitsText;
 
-fn setup(mut commands: Commands) {
+fn altitude_indicator() -> impl Bundle {
     use crate::hud::TextFontExt;
     let widget_color = Color::srgb(199.0 / 255.0, 70.0 / 255.0, 198.0 / 255.0);
-    commands.spawn((
+    (
         Name::new("Altitude widget"),
         Node {
             position_type: PositionType::Absolute,
-            left: px(350.0),
-            bottom: px(130.0),
+            left: px(10.0),
+            top: auto(),
+            bottom: auto(),
             width: px(80.0),
             border: UiRect::px(1.0, 1.0, 1.0, 3.0),
             border_radius: BorderRadius::all(px(3.0)),
@@ -44,6 +46,7 @@ fn setup(mut commands: Commands) {
         BackgroundColor::from(BLACK),
         BorderColor::from(widget_color),
         Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
+        ZIndex(1),
         children![
             (
                 Node {
@@ -130,7 +133,44 @@ fn setup(mut commands: Commands) {
                 ],
             ),
         ],
-    ));
+    )
+}
+
+fn tape_graduation(label: impl Into<String>) -> impl Bundle {
+    (
+        Text::new(label),
+        TextColor::from(ALTITUDE_TAPE_COLOR),
+        TextFont::from_font_size(12.0),
+    )
+}
+
+pub(super) fn altitude_tape() -> impl Bundle {
+    (
+        Name::new("Altitude tape"),
+        Node {
+            width: px(50.0),
+            height: px(172.0),
+            border: UiRect::px(1.0, 0.0, 1.0, 1.0),
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Start,
+            justify_content: JustifyContent::SpaceEvenly,
+            ..default()
+        },
+        BackgroundColor::from(Color::srgb(0.1, 0.05, 0.11)),
+        BorderColor::from(ALTITUDE_TAPE_COLOR),
+        children![
+            altitude_indicator(),
+            tape_graduation("--  20"),
+            tape_graduation("--    "),
+            tape_graduation("--  10"),
+            tape_graduation("--    "),
+            tape_graduation("--   0"),
+            tape_graduation("--    "),
+            tape_graduation("-- -10"),
+            tape_graduation("--    "),
+            tape_graduation("-- -20"),
+        ],
+    )
 }
 
 fn update(

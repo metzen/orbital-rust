@@ -5,11 +5,12 @@ use bevy::text::LineHeight;
 use crate::hud::HudSubject;
 use crate::physics::{RigidBody, SatelliteOf};
 
+const VELOCITY_TAPE_COLOR: Color = Color::srgb(0.44, 0.44, 0.2);
+
 pub(super) struct VelocityPlugin;
 
 impl Plugin for VelocityPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup);
         app.add_systems(FixedUpdate, update);
     }
 }
@@ -17,15 +18,16 @@ impl Plugin for VelocityPlugin {
 #[derive(Component)]
 struct VelocityText;
 
-fn setup(mut commands: Commands) {
+fn velocity_indicator() -> impl Bundle {
     use crate::hud::TextFontExt;
     let widget_color = Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0);
-    commands.spawn((
+    (
         Name::new("Velocity widget"),
         Node {
             position_type: PositionType::Absolute,
-            left: px(70.0),
-            bottom: px(130.0),
+            right: px(10.0),
+            top: auto(),
+            bottom: auto(),
             border: UiRect::px(1.0, 1.0, 1.0, 3.0),
             border_radius: BorderRadius::all(px(3.0)),
             padding: UiRect::all(px(5.0)),
@@ -37,6 +39,7 @@ fn setup(mut commands: Commands) {
         BorderColor::from(widget_color),
         BackgroundColor::from(BLACK),
         Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
+        ZIndex(1),
         children![
             (
                 Node {
@@ -125,7 +128,44 @@ fn setup(mut commands: Commands) {
                 ],
             ),
         ],
-    ));
+    )
+}
+
+fn tape_graduation(label: impl Into<String>) -> impl Bundle {
+    (
+        Text::new(label),
+        TextColor::from(VELOCITY_TAPE_COLOR),
+        TextFont::from_font_size(12.0),
+    )
+}
+
+pub(super) fn velocity_tape() -> impl Bundle {
+    (
+        Name::new("Velocity tape"),
+        Node {
+            width: px(50.0),
+            height: px(172.0),
+            border: UiRect::px(0.0, 1.0, 1.0, 1.0),
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::End,
+            justify_content: JustifyContent::SpaceEvenly,
+            ..default()
+        },
+        BackgroundColor::from(Color::srgb(0.09, 0.09, 0.09)),
+        BorderColor::from(VELOCITY_TAPE_COLOR),
+        children![
+            velocity_indicator(),
+            tape_graduation(" 20 --"),
+            tape_graduation("    --"),
+            tape_graduation(" 10 --"),
+            tape_graduation("    --"),
+            tape_graduation("  0 --"),
+            tape_graduation("    --"),
+            tape_graduation("-10 --"),
+            tape_graduation("    --"),
+            tape_graduation("-20 --"),
+        ],
+    )
 }
 
 fn update(
