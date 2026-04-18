@@ -18,7 +18,7 @@ pub(super) fn attitude_indicator() -> impl Bundle {
                     border_radius: BorderRadius::px(16.0, 16.0, 0.0, 0.0),
                     ..default()
                 },
-                BackgroundColor::from(Color::srgb(0.03, 0.32, 0.56)),
+                BackgroundColor::from(Color::srgb(0.02, 0.59, 1.0)),
             ),
             (
                 Node {
@@ -27,7 +27,7 @@ pub(super) fn attitude_indicator() -> impl Bundle {
                     border_radius: BorderRadius::px(0.0, 0.0, 16.0, 16.0),
                     ..default()
                 },
-                BackgroundColor::from(Color::srgb(0.29, 0.22, 0.09)),
+                BackgroundColor::from(Color::srgb(0.6, 0.28, 0.06)),
             ),
         ],
     )
