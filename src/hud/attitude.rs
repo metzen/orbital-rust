@@ -1,7 +1,17 @@
 use bevy::prelude::*;
 
+#[derive(Component)]
+struct AttitudeIndicator;
+
+#[derive(Component)]
+struct Sky;
+
+#[derive(Component)]
+struct Ground;
+
 pub(super) fn attitude_indicator() -> impl Bundle {
     (
+        AttitudeIndicator,
         Name::new("Attitude indicator"),
         Node {
             width: px(172.0),
@@ -12,6 +22,7 @@ pub(super) fn attitude_indicator() -> impl Bundle {
         ZIndex(2),
         children![
             (
+                Sky,
                 Node {
                     width: percent(100.0),
                     height: percent(50.0),
@@ -21,6 +32,7 @@ pub(super) fn attitude_indicator() -> impl Bundle {
                 BackgroundColor::from(Color::srgb(0.02, 0.59, 1.0)),
             ),
             (
+                Ground,
                 Node {
                     width: percent(100.0),
                     height: percent(50.0),
