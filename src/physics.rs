@@ -1,3 +1,4 @@
+use std::f32::consts::TAU;
 use std::f64::consts::PI;
 use std::time::Duration;
 
@@ -261,9 +262,13 @@ fn kinematics(mut query: Query<(&mut Transform, &mut RigidBody)>, time: Res<Time
     for (mut transform, rigidbody) in query.iter_mut() {
         let dt = time.delta_secs();
         transform.translation += dt * (rigidbody.velocity + 0.5 * rigidbody.acceleration * dt);
-        transform.rotate(Quat::from_rotation_z(
+        transform.rotate_z(
             dt * (rigidbody.angular_velocity + 0.5 * rigidbody.angular_acceleration * dt),
-        ));
+        );
+        // Force positive z-axis orientation.
+        if transform.rotation.z < 0.0 {
+            transform.rotate_z(TAU);
+        }
     }
 }
 
