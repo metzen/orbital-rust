@@ -9,6 +9,8 @@ use crate::hud;
 use crate::hud::HudSubject;
 use crate::physics::{RigidBody, SatelliteOf};
 
+const WIDGET_PADDING: UiRect = UiRect::axes(Val::Px(1.0), Val::Px(5.0));
+
 pub(super) struct VerticalSpeedPlugin;
 
 impl Plugin for VerticalSpeedPlugin {
@@ -18,13 +20,19 @@ impl Plugin for VerticalSpeedPlugin {
     }
 }
 
+/// Marker for Vertical Speed UI Node entity.
 #[derive(Component)]
-pub struct VerticalSpeedText;
+#[require(Name::new("VerticalSpeed"))]
+struct VerticalSpeed;
+
+#[derive(Component)]
+#[require(Name::new("VerticalSpeedNeedle"))]
+pub struct VerticalSpeedNeedle;
 
 fn setup(mut commands: Commands) {
     use crate::hud::TextFontExt;
     commands.spawn((
-        Name::new("Vertical speed"),
+        VerticalSpeed,
         Node {
             position_type: PositionType::Absolute,
             bottom: px(20.0),
@@ -32,53 +40,56 @@ fn setup(mut commands: Commands) {
             width: px(50.0),
             border: hud::BORDER,
             border_radius: BorderRadius::all(px(3.0)),
-            padding: UiRect::all(px(5.0)),
+            padding: WIDGET_PADDING,
             flex_direction: FlexDirection::Column,
             align_items: AlignItems::End,
-            row_gap: px(14.0),
+            // row_gap: px(14.0),
             ..default()
         },
         hud::BORDER_COLOR,
         BackgroundColor::from(BLACK),
         Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
-        children![
-            (
-                Text::new("+100"),
-                TextFont::ui_default(),
-                TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
+        Children::spawn((
+            SpawnIter(
+                [
+                    ("+100", BorderColor::from(Color::BLACK)),
+                    ("    ", BorderColor::from(Color::BLACK)),
+                    (" +10", BorderColor::from(Color::BLACK)),
+                    ("    ", BorderColor::from(Color::BLACK)),
+                    ("   0", BorderColor::from(Color::srgb(0.33, 0.76, 0.47))),
+                    ("    ", BorderColor::from(Color::srgb(0.9, 0.86, 0.6))),
+                    (" -10", BorderColor::from(Color::srgb(0.9, 0.86, 0.6))),
+                    ("    ", BorderColor::from(Color::srgb(0.78, 0.3, 0.31))),
+                    ("-100", BorderColor::from(Color::srgb(0.78, 0.3, 0.31))),
+                ]
+                .into_iter()
+                .map(|(label, border_color)| {
+                    (
+                        Node {
+                            border: UiRect::right(px(3.0)),
+                            padding: UiRect::horizontal(px(5.0)),
+                            ..default()
+                        },
+                        border_color,
+                        children![(
+                            Text::new(label),
+                            TextFont::ui_default(),
+                            TextColor::from(Color::srgb(0.41, 0.43, 1.0)),
+                        )],
+                    )
+                }),
             ),
-            (
-                Text::new("+10"),
-                TextFont::ui_default(),
-                TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-            ),
-            (
-                Text::new("0"),
-                TextFont::ui_default(),
-                TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-            ),
-            (
-                Text::new("-10"),
-                TextFont::ui_default(),
-                TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-            ),
-            (
-                Text::new("-100"),
-                TextFont::ui_default(),
-                TextColor::from(Color::srgb(105.0 / 255.0, 109.0 / 255.0, 255.0)),
-            ),
-            (
-                Name::new("vertical speed indicator"),
+            Spawn((
+                VerticalSpeedNeedle,
                 Node {
                     position_type: PositionType::Absolute,
-                    height: px(20.0),
+                    padding: UiRect::right(px(8.0)),
                     ..default()
                 },
                 Text::default(),
                 TextFont::ui_default(),
-                VerticalSpeedText,
-            ),
-        ],
+            )),
+        )),
     ));
 }
 
@@ -90,8 +101,9 @@ fn setup(mut commands: Commands) {
 fn update(
     subject: Single<(&RigidBody, &CellCoord, &Transform, &SatelliteOf), With<HudSubject>>,
     rigidbody_query: Query<(&RigidBody, &CellCoord, &Transform), Without<HudSubject>>,
-    mut vertical_speed_ui: Single<(&mut Node, &mut Text), With<VerticalSpeedText>>,
     grid: Single<&Grid, With<BigSpace>>,
+    widget_node: Single<&ComputedNode, With<VerticalSpeed>>,
+    needle: Single<(&mut Node, &ComputedNode, &mut Text), With<VerticalSpeedNeedle>>,
 ) {
     let (subject_rigidbody, subject_gridcell, subject_transform, subject_satellite_of) = *subject;
     if let Ok(primary) = rigidbody_query.get(subject_satellite_of.primary()) {
@@ -109,15 +121,22 @@ fn update(
         } else {
             format!("{vertical_speed:+.0}")
         };
-        vertical_speed_ui.1.0 = vertical_speed_text;
-        let position = if vertical_speed.abs() > 10.0 {
+        let (mut needle_node, needle_computed_node, mut needle_text) = needle.into_inner();
+        let offset = if vertical_speed.abs() > 10.0 {
             // Log scale.
-            (log10(vertical_speed.abs()) / 2.0) * 50.0
+            ((log10(vertical_speed.abs()) / 2.0) * 0.5).clamp(0.0, 0.5)
         } else {
             // Linear scale.
-            (vertical_speed.abs() / 10.0) * 25.0
+            (vertical_speed.abs() / 10.0) * 0.25
         } * vertical_speed.signum();
-        // TODO: Fix this hacky positioning math.
-        vertical_speed_ui.0.bottom = px(57.0 + position.clamp(-50.0, 50.0) * 0.01 * 114.0);
+        if let Val::Px(padding_top) = WIDGET_PADDING.top
+            && let Val::Px(padding_bottom) = WIDGET_PADDING.bottom
+        {
+            let gauge_height = widget_node.content_size.y - padding_top - padding_bottom - 10.0;
+            let half_needle_height = needle_computed_node.size.y * 0.5;
+            needle_node.bottom =
+                px(((gauge_height - half_needle_height) * (0.5 + offset)) + padding_bottom);
+        }
+        needle_text.0 = vertical_speed_text;
     }
 }
