@@ -117,6 +117,7 @@ fn update(
             // Linear scale.
             (vertical_speed.abs() / 10.0) * 25.0
         } * vertical_speed.signum();
-        vertical_speed_ui.0.bottom = Val::Percent((50.0 + position).clamp(0.0, 100.0));
+        // TODO: Fix this hacky positioning math.
+        vertical_speed_ui.0.bottom = px(57.0 + position.clamp(-50.0, 50.0) * 0.01 * 114.0);
     }
 }
