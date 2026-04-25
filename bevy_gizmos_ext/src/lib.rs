@@ -1,8 +1,16 @@
 //! Additional [`GizmoBuffer`] functions
 //!
-//! Includes the implementation of [`GizmosExt::ellipse_gradient_2d`],
-//! [`GizmosExt::hyperbola`], [`GizmosExt::hyperbola_2d`], and assorted
-//! support items.
+//! Includes the implementation of the following Gizmo extensions and assorted
+//! support items:
+//!
+//!   * [`GizmosExt::ellipse_gradient_2d`]
+//!   * [`GizmosExt::hyperbola`]
+//!   * [`GizmosExt::hyperbola_2d`]
+//!   * [`GizmosExt::text`]
+//!   * [`GizmosExt::text_2d`]
+
+mod simplex_stroke_font;
+mod text;
 
 use core::f32::consts::TAU;
 use std::f32::consts::{FRAC_PI_2, PI};
@@ -11,7 +19,9 @@ use std::iter::zip;
 use bevy::color::Color;
 use bevy::gizmos::config::GizmoConfigGroup;
 use bevy::gizmos::gizmos::{GizmoBuffer, Gizmos};
-use bevy::math::{Isometry2d, Isometry3d, Vec2, ops};
+use bevy::math::{Isometry2d, Isometry3d, Vec2, ops, vec2};
+
+use crate::simplex_stroke_font::SIMPLEX_STROKE_FONT;
 
 pub(crate) const DEFAULT_HYPERBOLA_RESOLUTION: u32 = 32;
 
@@ -195,6 +205,24 @@ where
         half_size: Vec2,
         color: impl Into<Color>,
     ) -> Hyperbola2dBuilder<'_, Config, Clear>;
+
+    fn text(
+        &mut self,
+        isometry: impl Into<Isometry3d>,
+        text: &str,
+        font_size: f32,
+        anchor: Vec2,
+        color: impl Into<Color>,
+    );
+
+    fn text_2d(
+        &mut self,
+        isometry: impl Into<Isometry2d>,
+        text: &str,
+        font_size: f32,
+        anchor: Vec2,
+        color: impl Into<Color>,
+    );
 }
 
 impl<'w, 's, Config, Clear> GizmosExt<'w, 's, Config, Clear> for Gizmos<'w, 's, Config, Clear>
@@ -251,6 +279,94 @@ where
             half_size,
             color: color.into(),
             resolution: DEFAULT_HYPERBOLA_RESOLUTION,
+        }
+    }
+
+    /// Draw text using a stroke font with the given isometry applied.
+    ///
+    /// Only ASCII characters in the range 32–126 are supported.
+    ///
+    /// # Arguments
+    ///
+    /// - `isometry`: defines the translation and rotation of the text.
+    /// - `text`: the text to be drawn.
+    /// - `size`: the size of the text in pixels.
+    /// - `anchor`: normalized anchor point relative to the text bounds,
+    ///   where `(0, 0)` is centered, `(-0.5, 0.5)` is top-left,
+    ///   and `(0.5, -0.5)` is bottom-right.
+    /// - `color`: the color of the text.
+    ///
+    /// # Example
+    /// ```
+    /// # use bevy_gizmos::prelude::*;
+    /// # use bevy_math::prelude::*;
+    /// # use bevy_color::Color;
+    /// fn system(mut gizmos: Gizmos) {
+    ///     gizmos.text(Isometry3d::IDENTITY, "text gizmo", 25., Vec2::ZERO, Color::WHITE);
+    /// }
+    /// # bevy_ecs::system::assert_is_system(system);
+    /// ```
+    fn text(
+        &mut self,
+        isometry: impl Into<Isometry3d>,
+        text: &str,
+        font_size: f32,
+        anchor: Vec2,
+        color: impl Into<Color>,
+    ) {
+        let isometry: Isometry3d = isometry.into();
+        let color = color.into();
+        let layout = SIMPLEX_STROKE_FONT.layout(text, font_size);
+        let layout_anchor = layout.measure() * (vec2(-0.5, 0.5) - anchor);
+        for points in layout.render() {
+            self.linestrip(
+                points.map(|point| isometry * (layout_anchor + point).extend(0.)),
+                color,
+            );
+        }
+    }
+
+    /// Draw text using a stroke font in 2d with the given isometry applied.
+    ///
+    /// Only ASCII characters in the range 32–126 are supported.
+    ///
+    /// # Arguments
+    ///
+    /// - `isometry`: defines the translation and rotation of the text.
+    /// - `text`: the text to be drawn.
+    /// - `size`: the size of the text.
+    /// - `anchor`: normalized anchor point relative to the text bounds,
+    ///   where `(0., 0.)` is centered, `(-0.5, 0.5)` is top-left,
+    ///   and `(0.5, -0.5)` is bottom-right.
+    /// - `color`: the color of the text.
+    ///
+    /// # Example
+    /// ```
+    /// # use bevy_gizmos::prelude::*;
+    /// # use bevy_math::prelude::*;
+    /// # use bevy_color::Color;
+    /// fn system(mut gizmos: Gizmos) {
+    ///     gizmos.text_2d(Isometry2d::IDENTITY, "2D text gizmo", 25., Vec2::ZERO, Color::WHITE);
+    /// }
+    /// # bevy_ecs::system::assert_is_system(system);
+    /// ```
+    fn text_2d(
+        &mut self,
+        isometry: impl Into<Isometry2d>,
+        text: &str,
+        font_size: f32,
+        anchor: Vec2,
+        color: impl Into<Color>,
+    ) {
+        let isometry: Isometry2d = isometry.into();
+        let color = color.into();
+        let layout = SIMPLEX_STROKE_FONT.layout(text, font_size);
+        let layout_anchor = layout.measure() * (vec2(-0.5, 0.5) - anchor);
+        for points in layout.render() {
+            self.linestrip_2d(
+                points.map(|point| isometry * (layout_anchor + point)),
+                color,
+            );
         }
     }
 }
