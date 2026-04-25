@@ -193,6 +193,7 @@ fn setup_outer_camera(
         Projection::from(OrthographicProjection::default_2d()),
         RenderLayers::layer(HIGH_RES_LAYER),
         PrimaryEguiContext,
+        IsDefaultUiCamera,
     ));
 }
 
