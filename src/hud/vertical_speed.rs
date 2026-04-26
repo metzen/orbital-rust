@@ -31,6 +31,9 @@ pub struct VerticalSpeedNeedle;
 
 fn setup(mut commands: Commands) {
     use crate::hud::TextFontExt;
+    const COLOR_SAFE: Color = Color::srgb(0.33, 0.76, 0.47);
+    const COLOR_CAUTION: Color = Color::srgb(0.9, 0.86, 0.6);
+    const COLOR_DANGER: Color = Color::srgb(0.78, 0.3, 0.31);
     commands.spawn((
         VerticalSpeed,
         Node {
@@ -56,11 +59,11 @@ fn setup(mut commands: Commands) {
                     ("    ", Color::BLACK),
                     (" +10", Color::BLACK),
                     ("    ", Color::BLACK),
-                    ("   0", Color::srgb(0.33, 0.76, 0.47)),
-                    ("    ", Color::srgb(0.9, 0.86, 0.6)),
-                    (" -10", Color::srgb(0.9, 0.86, 0.6)),
-                    ("    ", Color::srgb(0.78, 0.3, 0.31)),
-                    ("-100", Color::srgb(0.78, 0.3, 0.31)),
+                    ("   0", COLOR_SAFE),
+                    ("    ", COLOR_CAUTION),
+                    (" -10", COLOR_CAUTION),
+                    ("    ", COLOR_DANGER),
+                    ("-100", COLOR_DANGER),
                 ]
                 .into_iter()
                 .map(|(label, border_color)| {
