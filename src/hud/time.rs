@@ -90,24 +90,18 @@ fn setup(mut commands: Commands) {
                     ..default()
                 },
                 TimeWarpBoxes,
-                Children::spawn(SpawnWith(move |parent: &mut ChildSpawner| {
-                    for _ in TIME_WARPS.into_iter() {
-                        parent.spawn((
-                            Node {
-                                width: px(20.0),
-                                height: px(16.0),
-                                justify_content: JustifyContent::Center,
-                                ..default()
-                            },
-                            BackgroundColor::from(Color::srgb(0.446, 0.471, 0.525)),
-                            Children::spawn_one((
-                                Text::new(">"),
-                                TextColor::BLACK,
-                                TextFont::ui_default(),
-                            )),
-                        ));
-                    }
-                })),
+                Children::spawn(SpawnIter(TIME_WARPS.into_iter().map(|_| {
+                    (
+                        Node {
+                            width: px(20.0),
+                            height: px(16.0),
+                            justify_content: JustifyContent::Center,
+                            ..default()
+                        },
+                        BackgroundColor::from(Color::srgb(0.446, 0.471, 0.525)),
+                        children![(Text::new(">"), TextColor::BLACK, TextFont::ui_default())],
+                    )
+                }))),
             ),
             (
                 Text::default(),
