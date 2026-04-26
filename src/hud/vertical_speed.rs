@@ -52,15 +52,15 @@ fn setup(mut commands: Commands) {
         Children::spawn((
             SpawnIter(
                 [
-                    ("+100", BorderColor::from(Color::BLACK)),
-                    ("    ", BorderColor::from(Color::BLACK)),
-                    (" +10", BorderColor::from(Color::BLACK)),
-                    ("    ", BorderColor::from(Color::BLACK)),
-                    ("   0", BorderColor::from(Color::srgb(0.33, 0.76, 0.47))),
-                    ("    ", BorderColor::from(Color::srgb(0.9, 0.86, 0.6))),
-                    (" -10", BorderColor::from(Color::srgb(0.9, 0.86, 0.6))),
-                    ("    ", BorderColor::from(Color::srgb(0.78, 0.3, 0.31))),
-                    ("-100", BorderColor::from(Color::srgb(0.78, 0.3, 0.31))),
+                    ("+100", Color::BLACK),
+                    ("    ", Color::BLACK),
+                    (" +10", Color::BLACK),
+                    ("    ", Color::BLACK),
+                    ("   0", Color::srgb(0.33, 0.76, 0.47)),
+                    ("    ", Color::srgb(0.9, 0.86, 0.6)),
+                    (" -10", Color::srgb(0.9, 0.86, 0.6)),
+                    ("    ", Color::srgb(0.78, 0.3, 0.31)),
+                    ("-100", Color::srgb(0.78, 0.3, 0.31)),
                 ]
                 .into_iter()
                 .map(|(label, border_color)| {
@@ -70,7 +70,7 @@ fn setup(mut commands: Commands) {
                             padding: UiRect::horizontal(px(5.0)),
                             ..default()
                         },
-                        border_color,
+                        BorderColor::from(border_color),
                         children![(
                             Text::new(label),
                             TextFont::ui_default(),
