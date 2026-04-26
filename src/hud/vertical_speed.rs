@@ -29,6 +29,23 @@ struct VerticalSpeed;
 #[require(Name::new("VerticalSpeedNeedle"))]
 pub struct VerticalSpeedNeedle;
 
+fn gauge_graduation(label: &str, border_color: Color) -> impl Bundle {
+    use crate::hud::TextFontExt;
+    (
+        Node {
+            border: UiRect::right(px(3.0)),
+            padding: UiRect::horizontal(px(5.0)),
+            ..default()
+        },
+        BorderColor::from(border_color),
+        children![(
+            Text::new(label),
+            TextFont::ui_default(),
+            TextColor::from(Color::srgb(0.41, 0.43, 1.0)),
+        )],
+    )
+}
+
 fn setup(mut commands: Commands) {
     use crate::hud::TextFontExt;
     const COLOR_SAFE: Color = Color::srgb(0.33, 0.76, 0.47);
@@ -52,37 +69,17 @@ fn setup(mut commands: Commands) {
         hud::BORDER_COLOR,
         BackgroundColor::from(BLACK),
         Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
-        Children::spawn((
-            SpawnIter(
-                [
-                    ("+100", Color::BLACK),
-                    ("    ", Color::BLACK),
-                    (" +10", Color::BLACK),
-                    ("    ", Color::BLACK),
-                    ("   0", COLOR_SAFE),
-                    ("    ", COLOR_CAUTION),
-                    (" -10", COLOR_CAUTION),
-                    ("    ", COLOR_DANGER),
-                    ("-100", COLOR_DANGER),
-                ]
-                .into_iter()
-                .map(|(label, border_color)| {
-                    (
-                        Node {
-                            border: UiRect::right(px(3.0)),
-                            padding: UiRect::horizontal(px(5.0)),
-                            ..default()
-                        },
-                        BorderColor::from(border_color),
-                        children![(
-                            Text::new(label),
-                            TextFont::ui_default(),
-                            TextColor::from(Color::srgb(0.41, 0.43, 1.0)),
-                        )],
-                    )
-                }),
-            ),
-            Spawn((
+        children![
+            gauge_graduation("+100", Color::BLACK),
+            gauge_graduation("    ", Color::BLACK),
+            gauge_graduation(" +10", Color::BLACK),
+            gauge_graduation("    ", Color::BLACK),
+            gauge_graduation("   0", COLOR_SAFE),
+            gauge_graduation("    ", COLOR_CAUTION),
+            gauge_graduation(" -10", COLOR_CAUTION),
+            gauge_graduation("    ", COLOR_DANGER),
+            gauge_graduation("-100", COLOR_DANGER),
+            (
                 VerticalSpeedNeedle,
                 Node {
                     position_type: PositionType::Absolute,
@@ -91,8 +88,8 @@ fn setup(mut commands: Commands) {
                 },
                 Text::default(),
                 TextFont::ui_default(),
-            )),
-        )),
+            ),
+        ],
     ));
 }
 
