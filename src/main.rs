@@ -7,6 +7,7 @@ mod hud;
 mod input;
 mod lifetime;
 mod physics;
+mod rendering;
 mod scene;
 mod timewarp;
 mod trails;

@@ -1,3 +1,4 @@
+use bevy::camera::visibility::{Layer, RenderLayers};
 use bevy::color::palettes::css::LIGHT_GRAY;
 use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::Read;
@@ -16,7 +17,18 @@ pub(super) struct OrbitsPlugin;
 
 impl Plugin for OrbitsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_gizmos);
+        use crate::rendering::LayerExt;
+        app.insert_gizmo_config(
+            OrbitGizmoConfigGroup,
+            GizmoConfig {
+                line: GizmoLineConfig {
+                    width: 1.0,
+                    ..default()
+                },
+                render_layers: RenderLayers::layer(Layer::ORBIT),
+                ..default()
+            },
+        );
         app.add_systems(
             PostUpdate,
             draw_orbits
@@ -26,20 +38,41 @@ impl Plugin for OrbitsPlugin {
     }
 }
 
-fn setup_gizmos(mut config_store: ResMut<GizmoConfigStore>) {
-    let (config, _config_group) = config_store.config_mut::<DefaultGizmoConfigGroup>();
-    config.line.width = 1.0;
-    // config.render_layers = RenderLayers::layer(1);
-}
+#[derive(GizmoConfigGroup, Default, Reflect)]
+struct OrbitGizmoConfigGroup;
 
 trait RenderOrbit {
-    fn render(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool);
-    fn render_ellipse(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool);
-    fn render_hyperbola(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool);
+    fn render(
+        &self,
+        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
+        translation: &Vec2,
+        color: Color,
+        fade: bool,
+    );
+    fn render_ellipse(
+        &self,
+        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
+        translation: &Vec2,
+        color: Color,
+        fade: bool,
+    );
+    fn render_hyperbola(
+        &self,
+        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
+        translation: &Vec2,
+        color: Color,
+        fade: bool,
+    );
 }
 
 impl RenderOrbit for Orbit {
-    fn render(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool) {
+    fn render(
+        &self,
+        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
+        translation: &Vec2,
+        color: Color,
+        fade: bool,
+    ) {
         match self.shape() {
             OrbitShape::Circle => self.render_ellipse(gizmos, translation, color, fade),
             OrbitShape::Ellipse => self.render_ellipse(gizmos, translation, color, fade),
@@ -48,7 +81,13 @@ impl RenderOrbit for Orbit {
         }
     }
 
-    fn render_ellipse(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, fade: bool) {
+    fn render_ellipse(
+        &self,
+        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
+        translation: &Vec2,
+        color: Color,
+        fade: bool,
+    ) {
         let angle = DVec2::X.angle_to(-self.eccentricity_vector) as f32;
         if fade {
             use bevy_gizmos_ext::GizmosExt;
@@ -72,7 +111,13 @@ impl RenderOrbit for Orbit {
         }
     }
 
-    fn render_hyperbola(&self, gizmos: &mut Gizmos, translation: &Vec2, color: Color, _fade: bool) {
+    fn render_hyperbola(
+        &self,
+        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
+        translation: &Vec2,
+        color: Color,
+        _fade: bool,
+    ) {
         use bevy_gizmos_ext::GizmosExt;
         let angle = DVec2::X.angle_to(-self.eccentricity_vector) as f32;
         gizmos
@@ -109,7 +154,7 @@ fn draw_orbits(
     primary_query: Query<OrbitPrimaryQueryData>,
     grid: Single<&Grid, With<BigSpace>>,
     projection: Single<&Projection, With<InGameCamera>>,
-    mut gizmos: Gizmos,
+    mut gizmos: Gizmos<OrbitGizmoConfigGroup>,
     materials: Res<Assets<ColorMaterial>>,
 ) {
     let apsis_radius = if let Projection::Orthographic(orthographic) = projection.into_inner() {

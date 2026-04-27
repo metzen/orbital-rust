@@ -1,3 +1,4 @@
+use bevy::camera::visibility::{Layer, RenderLayers};
 use bevy::color::palettes::css::{DARK_BLUE, GRAY, LIGHT_BLUE, MAGENTA, RED};
 use bevy::mesh::CircleMeshBuilder;
 use bevy::prelude::*;
@@ -366,6 +367,7 @@ pub fn spawn_atmosphere_layers(
         &CelestialBody,
     )>,
 ) {
+    use crate::rendering::LayerExt;
     for (id, atmosphere, mesh_material, celestialbody) in &bodies {
         let color = materials.get(mesh_material).unwrap().color;
         commands.entity(id).insert(children![
@@ -376,6 +378,7 @@ pub fn spawn_atmosphere_layers(
                     2000,
                 )))),
                 MeshMaterial2d(materials.add(ColorMaterial::from(color.mix(&Color::BLACK, 0.90)))),
+                RenderLayers::layer(Layer::BACKGROUND),
             ),
             (
                 Transform::from_xyz(0.0, 0.0, -1.0),
@@ -384,6 +387,7 @@ pub fn spawn_atmosphere_layers(
                     2000,
                 )))),
                 MeshMaterial2d(materials.add(ColorMaterial::from(color.mix(&Color::BLACK, 0.75)))),
+                RenderLayers::layer(Layer::BACKGROUND),
             ),
             (
                 Transform::from_xyz(0.0, 0.0, -1.0),
@@ -392,6 +396,7 @@ pub fn spawn_atmosphere_layers(
                     2000,
                 )))),
                 MeshMaterial2d(materials.add(ColorMaterial::from(color.mix(&Color::BLACK, 0.60)))),
+                RenderLayers::layer(Layer::BACKGROUND),
             ),
         ]);
     }

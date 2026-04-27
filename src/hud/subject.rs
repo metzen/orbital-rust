@@ -1,7 +1,6 @@
-use bevy::camera::visibility::RenderLayers;
+// use bevy::camera::visibility::RenderLayers;
 use bevy::prelude::*;
 
-use crate::camera::HIGH_RES_LAYER;
 use crate::hud::HudSubject;
 use crate::physics::SatelliteOf;
 
@@ -27,7 +26,6 @@ fn setup(mut commands: Commands) {
             padding: px(10.0).into(),
             ..default()
         },
-        RenderLayers::layer(HIGH_RES_LAYER),
         BackgroundColor::from(Srgba::new(0.05, 0.11, 0.15, 1.0)),
         children![(
             Text::default(),

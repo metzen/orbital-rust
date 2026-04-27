@@ -1,10 +1,7 @@
-use bevy::camera::visibility::RenderLayers;
 use bevy::diagnostic::{
     DiagnosticsStore, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
 };
 use bevy::prelude::*;
-
-use crate::camera::HIGH_RES_LAYER;
 
 const FONT_SIZE: f32 = 11.0;
 
@@ -38,27 +35,13 @@ fn setup(mut commands: Commands) {
             ..default()
         },
         children![
-            (
-                Text::new("FPS:"),
-                TextFont::from_font_size(FONT_SIZE),
-                RenderLayers::layer(HIGH_RES_LAYER),
-            ),
-            (
-                Text::default(),
-                TextFont::from_font_size(FONT_SIZE),
-                Fps,
-                RenderLayers::layer(HIGH_RES_LAYER),
-            ),
-            (
-                Text::new("Entities:"),
-                TextFont::from_font_size(FONT_SIZE),
-                RenderLayers::layer(HIGH_RES_LAYER),
-            ),
+            (Text::new("FPS:"), TextFont::from_font_size(FONT_SIZE)),
+            (Text::default(), TextFont::from_font_size(FONT_SIZE), Fps),
+            (Text::new("Entities:"), TextFont::from_font_size(FONT_SIZE)),
             (
                 Text::default(),
                 TextFont::from_font_size(FONT_SIZE),
                 EntityCount,
-                RenderLayers::layer(HIGH_RES_LAYER),
             ),
         ],
     ));

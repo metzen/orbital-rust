@@ -21,6 +21,7 @@ use either::Either;
 use leafwing_input_manager::prelude::*;
 
 use crate::physics::{CelestialBody, Orbit, RigidBody, SatelliteOf};
+use crate::rendering::LayerExt;
 use crate::vessel::Vessel;
 
 /// In-game resolution width.
@@ -28,9 +29,6 @@ const RES_WIDTH: u32 = 16 * 20;
 
 /// In-game resolution height.
 const RES_HEIGHT: u32 = 10 * 20;
-
-// High-res rendering layer.
-pub const HIGH_RES_LAYER: Layer = 1;
 
 const PIXEL_CAM_POINTER_ID: PointerId =
     PointerId::Custom(Uuid::from_u128(0x230e8400e29b41d1a716446655446439));
@@ -77,6 +75,10 @@ pub struct InGamePointer;
 /// Camera that renders the [`Canvas`] (and other graphics on [`HIGH_RES_LAYER`]) to the screen.
 #[derive(Component)]
 struct OuterCamera;
+
+/// Marker for entities that should have their projection scaled via camera zoom actions.
+#[derive(Component)]
+struct ProjectionScaleZoom;
 
 /// Entities with this component will scale up to acheive a minimum rendered size
 /// as specified when the scaling of the viewport is changed.
@@ -174,9 +176,26 @@ impl Plugin for CameraPlugin {
             (
                 update_camera_position_for_autofollow.before(TransformSystems::Propagate),
                 camera_control.before(TransformSystems::Propagate),
+                zoom.before(TransformSystems::Propagate),
                 scale_entities.before(TransformSystems::Propagate),
             ),
         );
+    }
+}
+
+struct RenderOrder(isize);
+
+trait CameraExt {
+    fn new(order: RenderOrder, clear_color: ClearColorConfig) -> Self;
+}
+
+impl CameraExt for Camera {
+    fn new(order: RenderOrder, clear_color: ClearColorConfig) -> Self {
+        Self {
+            order: order.0,
+            clear_color,
+            ..default()
+        }
     }
 }
 
@@ -188,10 +207,11 @@ fn setup_outer_camera(
     // Disable the automatic creation of a primary context to set it up manually.
     egui_global_settings.auto_create_primary_context = false;
     commands.spawn((
+        Camera::new(RenderOrder(1), ClearColorConfig::Default),
         Camera2d,
         OuterCamera,
         Projection::from(OrthographicProjection::default_2d()),
-        RenderLayers::layer(HIGH_RES_LAYER),
+        RenderLayers::layer(Layer::MAIN),
         PrimaryEguiContext,
         IsDefaultUiCamera,
     ));
@@ -236,22 +256,19 @@ fn setup_camera(
     commands.spawn((
         Sprite::from_image(image_handle.clone()),
         Canvas,
-        RenderLayers::layer(HIGH_RES_LAYER),
+        RenderLayers::layer(Layer::MAIN),
     ));
 
     // This camera renders whatever is on `PIXEL_PERFECT_LAYERS` to the canvas.
     commands.spawn((
-        Camera {
-            // render before the "main pass" camera
-            order: -1,
-            // hdr: true,
-            ..default()
-        },
+        Camera::new(RenderOrder(0), ClearColorConfig::None),
         Camera2d,
         RenderTarget::from(image_handle.clone()),
+        RenderLayers::layer(Layer::FOREGROUND),
         Msaa::Off,
         Projection::from(OrthographicProjection::default_2d()),
         InGameCamera::default(),
+        ProjectionScaleZoom,
         FloatingOrigin,
         CellCoord::default(),
         Autofollow {
@@ -265,6 +282,30 @@ fn setup_camera(
         SpatialListener::new(100.0),
         // Put the in game camera inside the BigSpace.
         ChildOf(*big_space),
+        children![
+            (
+                Name::new("OrbitGizmosCamera"),
+                Camera::new(RenderOrder(-1), ClearColorConfig::None),
+                Camera2d,
+                RenderTarget::from(image_handle.clone()),
+                RenderLayers::layer(Layer::ORBIT),
+                Projection::from(OrthographicProjection::default_2d()),
+                ProjectionScaleZoom,
+                Bloom::OLD_SCHOOL,
+                Msaa::Off,
+            ),
+            (
+                Name::new("BackgroundCamera"),
+                Camera::new(RenderOrder(-2), ClearColorConfig::Default),
+                Camera2d,
+                RenderTarget::from(image_handle.clone()),
+                RenderLayers::layer(Layer::BACKGROUND),
+                Projection::from(OrthographicProjection::default_2d()),
+                ProjectionScaleZoom,
+                Bloom::OLD_SCHOOL,
+                Msaa::Off,
+            )
+        ],
     ));
 }
 
@@ -374,22 +415,34 @@ fn camera_control(
         transform.translation += Vec3::new(delta.x, delta.y, 0.0);
     }
 
-    if action_state.pressed(&CameraAction::ZoomIn) {
-        orthographic_projection.scale *= 1.0 - CAMERA_ZOOM_RATE_MAX * 10.0 * time.delta_secs();
-    }
-    if action_state.pressed(&CameraAction::ZoomOut) {
-        orthographic_projection.scale *= 1.0 + CAMERA_ZOOM_RATE_MAX * 10.0 * time.delta_secs();
-    }
-    if action_state.clamped_value(&CameraAction::Zoom) != 0.0 {
-        orthographic_projection.scale *= 1.0
-            + CAMERA_ZOOM_RATE_MAX
-                * -action_state.clamped_value(&CameraAction::Zoom)
-                * time.delta_secs();
-    }
-
     if action_state.just_pressed(&CameraAction::NextViewMode) {
         in_game_camera.view_mode = in_game_camera.view_mode.next();
         info!("Camera mode: {:?}", in_game_camera.view_mode);
+    }
+}
+
+fn zoom(
+    action_state: Res<ActionState<CameraAction>>,
+    time: Res<Time<Real>>,
+    projections: Query<&mut Projection, With<ProjectionScaleZoom>>,
+) {
+    for mut projection in projections {
+        if let Projection::Orthographic(ref mut orthographic_projection) = *projection {
+            if action_state.pressed(&CameraAction::ZoomIn) {
+                orthographic_projection.scale *=
+                    1.0 - CAMERA_ZOOM_RATE_MAX * 10.0 * time.delta_secs();
+            }
+            if action_state.pressed(&CameraAction::ZoomOut) {
+                orthographic_projection.scale *=
+                    1.0 + CAMERA_ZOOM_RATE_MAX * 10.0 * time.delta_secs();
+            }
+            if action_state.clamped_value(&CameraAction::Zoom) != 0.0 {
+                orthographic_projection.scale *= 1.0
+                    + CAMERA_ZOOM_RATE_MAX
+                        * -action_state.clamped_value(&CameraAction::Zoom)
+                        * time.delta_secs();
+            }
+        }
     }
 }
 
