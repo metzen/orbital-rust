@@ -199,7 +199,7 @@ impl CameraExt for Camera {
     }
 }
 
-/// Spawns the "outer" camera, which renders whatever is on `HIGH_RES_LAYER` to the screen.
+/// Spawns the "outer" camera, which renders whatever is on [`Layer::MAIN`] to the screen.
 fn setup_outer_camera(
     mut commands: Commands,
     mut egui_global_settings: ResMut<EguiGlobalSettings>,
