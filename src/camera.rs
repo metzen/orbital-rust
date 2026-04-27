@@ -72,7 +72,7 @@ pub struct InGameCamera {
 #[derive(Component)]
 pub struct InGamePointer;
 
-/// Camera that renders the [`Canvas`] (and other graphics on [`HIGH_RES_LAYER`]) to the screen.
+/// Camera that renders the [`Canvas`] (and other graphics on [`Layer::MAIN`]) to the screen.
 #[derive(Component)]
 struct OuterCamera;
 
@@ -80,7 +80,7 @@ struct OuterCamera;
 #[derive(Component)]
 struct ProjectionScaleZoom;
 
-/// Entities with this component will scale up to acheive a minimum rendered size
+/// Entities with this component will scale up to achieve a minimum rendered size
 /// as specified when the scaling of the viewport is changed.
 #[derive(Component, Reflect)]
 pub struct Autoscale {
