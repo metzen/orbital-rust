@@ -25,7 +25,7 @@ use crate::hud::altitude::AltitudePlugin;
 use crate::hud::heading::HeadingPlugin;
 use crate::hud::hovered::HoveredPlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
-use crate::hud::orbits::OrbitsPlugin;
+use crate::hud::orbits::OrbitGizmoPlugin;
 use crate::hud::primary_flight_display::PrimaryFlightDisplayPlugin;
 use crate::hud::sas_indicator::SasIndicatorPlugin;
 use crate::hud::sas_selector::SasSelectorPlugin;
@@ -53,7 +53,7 @@ impl Plugin for HudPlugin {
             HoveredPlugin,
             InputManagerPlugin::<HudAction>::default(),
             OrbitInfoPlugin,
-            OrbitsPlugin,
+            OrbitGizmoPlugin,
             PrimaryFlightDisplayPlugin,
             SasIndicatorPlugin,
             SasSelectorPlugin,

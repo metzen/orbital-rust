@@ -13,21 +13,18 @@ use crate::camera::InGameCamera;
 use crate::physics::{NoGravity, Orbit, OrbitShape, RigidBody, SatelliteOf};
 use crate::vessel::Vessel;
 
-pub(super) struct OrbitsPlugin;
+pub(super) struct OrbitGizmoPlugin;
 
-impl Plugin for OrbitsPlugin {
+impl Plugin for OrbitGizmoPlugin {
     fn build(&self, app: &mut App) {
+        use bevy_gizmos_ext::GizmoConfigExt;
+        use bevy_gizmos_ext::GizmoLineConfigExt;
         use crate::rendering::LayerExt;
         app.insert_gizmo_config(
             OrbitGizmoConfigGroup,
-            GizmoConfig {
-                line: GizmoLineConfig {
-                    width: 1.0,
-                    ..default()
-                },
-                render_layers: RenderLayers::layer(Layer::ORBIT),
-                ..default()
-            },
+            GizmoConfig::default()
+                .with_render_layers(RenderLayers::layer(Layer::ORBIT))
+                .with_line(GizmoLineConfig::default().with_width(1.0)),
         );
         app.add_systems(
             PostUpdate,

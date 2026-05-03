@@ -16,8 +16,9 @@ use core::f32::consts::TAU;
 use std::f32::consts::{FRAC_PI_2, PI};
 use std::iter::zip;
 
+use bevy::camera::visibility::RenderLayers;
 use bevy::color::Color;
-use bevy::gizmos::config::GizmoConfigGroup;
+use bevy::gizmos::config::{GizmoConfig, GizmoConfigGroup, GizmoLineConfig};
 use bevy::gizmos::gizmos::{GizmoBuffer, Gizmos};
 use bevy::math::{Isometry2d, Isometry3d, Vec2, ops, vec2};
 
@@ -367,6 +368,42 @@ where
                 points.map(|point| isometry * (layout_anchor + point)),
                 color,
             );
+        }
+    }
+}
+
+/// Extension trait with extra utility methods for [`GizmoConfig`].
+pub trait GizmoConfigExt {
+    fn with_render_layers(self, layers: RenderLayers) -> Self;
+    fn with_line(self, line_config: GizmoLineConfig) -> Self;
+}
+
+impl GizmoConfigExt for GizmoConfig {
+    fn with_render_layers(self, layers: RenderLayers) -> Self {
+        Self {
+            render_layers: layers,
+            ..self
+        }
+    }
+
+    fn with_line(self, line_config: GizmoLineConfig) -> Self {
+        Self {
+            line: line_config,
+            ..self
+        }
+    }
+}
+
+/// Extension trait with extra utility methods for [`GizmoLineConfig`].
+pub trait GizmoLineConfigExt {
+    fn with_width(self, width: f32) -> Self;
+}
+
+impl GizmoLineConfigExt for GizmoLineConfig {
+    fn with_width(self, width: f32) -> Self {
+        Self {
+            width: width,
+            ..self
         }
     }
 }
