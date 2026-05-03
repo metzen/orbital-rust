@@ -17,9 +17,9 @@ pub(super) struct OrbitGizmoPlugin;
 
 impl Plugin for OrbitGizmoPlugin {
     fn build(&self, app: &mut App) {
+        use crate::rendering::LayerExt;
         use bevy_gizmos_ext::GizmoConfigExt;
         use bevy_gizmos_ext::GizmoLineConfigExt;
-        use crate::rendering::LayerExt;
         app.insert_gizmo_config(
             OrbitGizmoConfigGroup,
             GizmoConfig::default()
