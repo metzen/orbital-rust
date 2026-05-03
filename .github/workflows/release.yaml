@@ -231,14 +231,20 @@ jobs:
 
       - name: Install cargo-binstall
         if: ${{ env.is_platform_enabled == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: cargo-bins/cargo-binstall@main
 
       - name: Install Bevy CLI
         if: ${{ env.is_platform_enabled == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cargo binstall --version 0.1.0-alpha.2 --locked --no-confirm --force --git='https://github.com/TheBevyFlock/bevy_cli' bevy_cli
 
       - name: Build and add web bundle to app (Web)
         if: ${{ env.is_platform_enabled == 'true' && matrix.platform == 'web' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cargo binstall --locked --no-confirm --force wasm-bindgen-cli
           cargo binstall --locked --no-confirm --force wasm-opt
