@@ -374,23 +374,20 @@ where
 
 /// Extension trait with extra utility methods for [`GizmoConfig`].
 pub trait GizmoConfigExt {
-    fn with_render_layers(self, layers: RenderLayers) -> Self;
-    fn with_line(self, line_config: GizmoLineConfig) -> Self;
+    fn with_render_layers(self, render_layers: RenderLayers) -> Self;
+    fn with_line(self, line: GizmoLineConfig) -> Self;
 }
 
 impl GizmoConfigExt for GizmoConfig {
-    fn with_render_layers(self, layers: RenderLayers) -> Self {
+    fn with_render_layers(self, render_layers: RenderLayers) -> Self {
         Self {
-            render_layers: layers,
+            render_layers,
             ..self
         }
     }
 
-    fn with_line(self, line_config: GizmoLineConfig) -> Self {
-        Self {
-            line: line_config,
-            ..self
-        }
+    fn with_line(self, line: GizmoLineConfig) -> Self {
+        Self { line, ..self }
     }
 }
 
@@ -401,9 +398,6 @@ pub trait GizmoLineConfigExt {
 
 impl GizmoLineConfigExt for GizmoLineConfig {
     fn with_width(self, width: f32) -> Self {
-        Self {
-            width: width,
-            ..self
-        }
+        Self { width, ..self }
     }
 }
