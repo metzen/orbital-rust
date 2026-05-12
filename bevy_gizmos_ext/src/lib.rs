@@ -216,6 +216,14 @@ where
         color: impl Into<Color>,
     );
 
+    fn radial_2d(
+        &mut self,
+        isometry: impl Into<Isometry2d>,
+        start: f32,
+        end: f32,
+        color: impl Into<Color>,
+    );
+
     fn text_2d(
         &mut self,
         isometry: impl Into<Isometry2d>,
@@ -281,6 +289,21 @@ where
             color: color.into(),
             resolution: DEFAULT_HYPERBOLA_RESOLUTION,
         }
+    }
+
+    fn radial_2d(
+        &mut self,
+        isometry: impl Into<Isometry2d>,
+        start: f32,
+        end: f32,
+        color: impl Into<Color>,
+    ) {
+        let isometry = isometry.into();
+        self.line_2d(
+            isometry.translation + isometry.rotation * Vec2::Y * start,
+            isometry.translation + isometry.rotation * Vec2::Y * end,
+            color,
+        );
     }
 
     /// Draw text using a stroke font with the given isometry applied.
