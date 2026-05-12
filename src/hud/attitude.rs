@@ -102,7 +102,7 @@ struct Ground;
 fn camera(order: isize, layer: Layer) -> impl Bundle {
     (
         Camera {
-            order: order,
+            order,
             clear_color: ClearColorConfig::None,
             ..default()
         },
