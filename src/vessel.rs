@@ -95,6 +95,7 @@ impl VesselAction {
                 GamepadControlAxis::LEFT_X.with_deadzone_symmetric(0.3),
             )
             .with_axis(Self::Rotate, VirtualAxis::ad())
+            .with_axis(Self::Rotate, VirtualAxis::new(KeyCode::KeyW, KeyCode::KeyS))
             .with_axis(
                 Self::Throttle,
                 VirtualAxis::new(GamepadButton::LeftTrigger2, GamepadButton::RightTrigger2),
