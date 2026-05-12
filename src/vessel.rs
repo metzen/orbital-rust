@@ -92,7 +92,7 @@ impl VesselAction {
         InputMap::default()
             .with_axis(
                 Self::Rotate,
-                GamepadControlAxis::LEFT_X.with_deadzone_symmetric(0.3),
+                GamepadControlAxis::LEFT_Y.with_deadzone_symmetric(0.3),
             )
             .with_axis(Self::Rotate, VirtualAxis::ad())
             .with_axis(Self::Rotate, VirtualAxis::new(KeyCode::KeyW, KeyCode::KeyS))
