@@ -1,10 +1,12 @@
-use std::f32::consts::TAU;
+use std::f32::consts::{FRAC_PI_2, PI};
 
 use bevy::color::palettes::css::BLACK;
 use bevy::prelude::*;
 use bevy::text::LineHeight;
 
 use crate::hud::{BORDER, BORDER_COLOR, HudSubject};
+
+const FRAC_3PI_2: f32 = 1.5 * PI;
 
 pub(super) struct HeadingPlugin;
 
@@ -47,8 +49,19 @@ fn update(
     mut text: Single<&mut Text, With<HeadingText>>,
     transform: Single<&Transform, With<HudSubject>>,
 ) {
-    // TODO: Determine the real compass heading.
-    let (axis, angle) = transform.rotation.to_axis_angle();
-    let modifier = if axis.z < 0.0 { TAU } else { 0.0 };
-    text.0 = format!("{:3.0}", (modifier + axis.z * angle).to_degrees());
+    // TODO: Determine the real horizon angle.
+    let horizon = Quat::from_axis_angle(Vec3::Z, FRAC_PI_2);
+    let relative_rotation = transform.rotation.angle_between(horizon);
+    // Rotation bounded to [-90, 90] degrees.
+    let bounded_rotation = match relative_rotation {
+        0.0..FRAC_PI_2 => relative_rotation,
+        FRAC_PI_2..PI => PI - relative_rotation,
+        _ => panic!("Unexpected rotation angle: {relative_rotation}"),
+    };
+    let (_, angle) = transform.rotation.to_axis_angle();
+    let sign = match angle {
+        FRAC_PI_2..FRAC_3PI_2 => -1.0,
+        _ => 1.0,
+    };
+    text.0 = format!("{:-3.0}", bounded_rotation.to_degrees() * sign);
 }
