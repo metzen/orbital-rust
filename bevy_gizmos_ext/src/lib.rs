@@ -18,7 +18,7 @@ use std::iter::zip;
 
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::Color;
-use bevy::gizmos::config::{GizmoConfig, GizmoConfigGroup, GizmoLineConfig};
+use bevy::gizmos::config::{GizmoConfig, GizmoConfigGroup, GizmoLineConfig, GizmoLineJoint};
 use bevy::gizmos::gizmos::{GizmoBuffer, Gizmos};
 use bevy::math::{Isometry2d, Isometry3d, Vec2, ops, vec2};
 
@@ -417,10 +417,14 @@ impl GizmoConfigExt for GizmoConfig {
 /// Extension trait with extra utility methods for [`GizmoLineConfig`].
 pub trait GizmoLineConfigExt {
     fn with_width(self, width: f32) -> Self;
+    fn with_joints(self, joints: GizmoLineJoint) -> Self;
 }
 
 impl GizmoLineConfigExt for GizmoLineConfig {
     fn with_width(self, width: f32) -> Self {
         Self { width, ..self }
+    }
+    fn with_joints(self, joints: GizmoLineJoint) -> Self {
+        Self { joints, ..self }
     }
 }
