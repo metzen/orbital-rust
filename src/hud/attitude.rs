@@ -265,7 +265,7 @@ fn draw_pitch_graduation_lines(
             let x2 = x + indicator_computed_node.size.x * width_modifier;
             let display_angle = to_display_angle(i as f32 * 180.0 / 72.0);
             let text = match display_angle.rem_euclid(20.0) {
-                0.0 => format!("{:.0}", display_angle),
+                0.0 => format!("{display_angle:.0}"),
                 _ => String::new(),
             };
             gizmos.line_2d(Vec2::new(x1, y_final), Vec2::new(x2, y_final), Color::WHITE);
@@ -289,6 +289,7 @@ fn draw_pitch_graduation_lines(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn update_artificial_horizon(
     subject_transform: Single<&Transform, With<HudSubject>>,
     mut sky: Single<&mut Node, (With<Sky>, Without<AttitudeIndicator>, Without<Ground>)>,
@@ -325,11 +326,11 @@ fn update_artificial_horizon(
 impl Rot2 {
     const FRAC_TAU_3: Rot2 = Rot2 {
         cos: -0.5,
-        sin: 0.8660254037844387,
+        sin: 0.866_025_4,
     };
     const FRAC_2TAU_3: Rot2 = Rot2 {
         cos: -0.5,
-        sin: -0.8660254037844387,
+        sin: -0.866_025_4,
     };
     const NEG_FRAC_PI_2: Rot2 = Rot2::FRAC_PI_2.inverse();
 }
