@@ -2,7 +2,7 @@ use bevy::color::palettes::css::BLACK;
 use bevy::prelude::*;
 
 use crate::hud::altitude::altitude_tape;
-use crate::hud::attitude::attitude_indicator;
+use crate::hud::attitude::{AttitudePlugin, attitude_indicator};
 use crate::hud::velocity::velocity_tape;
 use crate::hud::{AltitudePlugin, BORDER, BORDER_COLOR, VelocityPlugin};
 
@@ -11,7 +11,7 @@ pub(super) struct PrimaryFlightDisplayPlugin;
 impl Plugin for PrimaryFlightDisplayPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
-        app.add_plugins((AltitudePlugin, VelocityPlugin));
+        app.add_plugins((AltitudePlugin, AttitudePlugin, VelocityPlugin));
     }
 }
 
