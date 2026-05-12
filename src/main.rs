@@ -1,5 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[macro_use]
+extern crate extension_traits;
+
 mod audio;
 mod camera;
 mod diagnostics;

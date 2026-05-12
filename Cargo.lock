@@ -1021,6 +1021,7 @@ name = "bevy_gizmos_ext"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "extension-traits",
 ]
 
 [[package]]
@@ -2889,6 +2890,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "ext-trait"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccef4f53516d7589a8ed95216b6ebc9d519df033c1303b42125bfe57aa475d23"
+dependencies = [
+ "ext-trait-proc_macros",
+]
+
+[[package]]
+name = "ext-trait-proc_macros"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "025e48a9a5db92b84dbd3b6be37853a0e60c1ce9c7c03c08e6ac282766f3e3f0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "extension-traits"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7dae1256e3fea2900e1e674bae228edc852f5ce9ccb1c916a496a33cb9bc4cb"
+dependencies = [
+ "ext-trait",
+]
+
+[[package]]
 name = "fallible-iterator"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4656,6 +4686,7 @@ dependencies = [
  "clap",
  "either",
  "embed-resource",
+ "extension-traits",
  "image",
  "leafwing-input-manager",
  "log",

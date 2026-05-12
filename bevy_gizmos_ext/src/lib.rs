@@ -9,6 +9,9 @@
 //!   * [`GizmosExt::text`]
 //!   * [`GizmosExt::text_2d`]
 
+#[macro_use]
+extern crate extension_traits;
+
 mod simplex_stroke_font;
 mod text;
 
@@ -179,62 +182,8 @@ where
 }
 
 /// Additional shape drawing extensions for [`Gizmos`].
-pub trait GizmosExt<'w, 's, Config, Clear>
-where
-    Config: GizmoConfigGroup,
-    Clear: 'static + Send + Sync,
-{
-    fn ellipse_gradient_2d(
-        &mut self,
-        isometry: impl Into<Isometry2d>,
-        half_size: Vec2,
-        start_angle: f32,
-        start_color: impl Into<Color>,
-        end_color: impl Into<Color>,
-    ) -> EllipseGradient2dBuilder<'_, Config, Clear>;
-
-    fn hyperbola(
-        &mut self,
-        isometry: impl Into<Isometry3d>,
-        half_size: Vec2,
-        color: impl Into<Color>,
-    ) -> HyperbolaBuilder<'_, Config, Clear>;
-
-    fn hyperbola_2d(
-        &mut self,
-        isometry: impl Into<Isometry2d>,
-        half_size: Vec2,
-        color: impl Into<Color>,
-    ) -> Hyperbola2dBuilder<'_, Config, Clear>;
-
-    fn text(
-        &mut self,
-        isometry: impl Into<Isometry3d>,
-        text: &str,
-        font_size: f32,
-        anchor: Vec2,
-        color: impl Into<Color>,
-    );
-
-    fn radial_2d(
-        &mut self,
-        isometry: impl Into<Isometry2d>,
-        start: f32,
-        end: f32,
-        color: impl Into<Color>,
-    );
-
-    fn text_2d(
-        &mut self,
-        isometry: impl Into<Isometry2d>,
-        text: &str,
-        font_size: f32,
-        anchor: Vec2,
-        color: impl Into<Color>,
-    );
-}
-
-impl<'w, 's, Config, Clear> GizmosExt<'w, 's, Config, Clear> for Gizmos<'w, 's, Config, Clear>
+#[extension(pub trait GizmosExt)]
+impl<'w, 's, Config, Clear> Gizmos<'w, 's, Config, Clear>
 where
     Config: GizmoConfigGroup,
     Clear: 'static + Send + Sync,
@@ -396,12 +345,8 @@ where
 }
 
 /// Extension trait with extra utility methods for [`GizmoConfig`].
-pub trait GizmoConfigExt {
-    fn with_render_layers(self, render_layers: RenderLayers) -> Self;
-    fn with_line(self, line: GizmoLineConfig) -> Self;
-}
-
-impl GizmoConfigExt for GizmoConfig {
+#[extension(pub trait GizmoConfigExt)]
+impl GizmoConfig {
     fn with_render_layers(self, render_layers: RenderLayers) -> Self {
         Self {
             render_layers,
@@ -415,12 +360,8 @@ impl GizmoConfigExt for GizmoConfig {
 }
 
 /// Extension trait with extra utility methods for [`GizmoLineConfig`].
-pub trait GizmoLineConfigExt {
-    fn with_width(self, width: f32) -> Self;
-    fn with_joints(self, joints: GizmoLineJoint) -> Self;
-}
-
-impl GizmoLineConfigExt for GizmoLineConfig {
+#[extension(pub trait GizmoLineConfigExt)]
+impl GizmoLineConfig {
     fn with_width(self, width: f32) -> Self {
         Self { width, ..self }
     }

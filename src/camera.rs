@@ -185,11 +185,8 @@ impl Plugin for CameraPlugin {
 
 struct RenderOrder(isize);
 
-trait CameraExt {
-    fn new(order: RenderOrder, clear_color: ClearColorConfig) -> Self;
-}
-
-impl CameraExt for Camera {
+#[extension(trait CameraExt)]
+impl Camera {
     fn new(order: RenderOrder, clear_color: ClearColorConfig) -> Self {
         Self {
             order: order.0,

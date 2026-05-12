@@ -80,11 +80,8 @@ const BORDER_COLOR: BorderColor = BorderColor {
     left: Color::srgb(0.184, 0.188, 0.251),
 };
 
-trait TextFontExt {
-    fn ui_default() -> Self;
-}
-
-impl TextFontExt for TextFont {
+#[extension(trait TextFontExt)]
+impl TextFont {
     fn ui_default() -> Self {
         Self {
             font_size: 12.0,

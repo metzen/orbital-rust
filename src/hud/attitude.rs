@@ -321,13 +321,8 @@ fn update_artificial_horizon(
     ground.height = percent(50.0 - 50.0 * (rot * 1.5 / FRAC_PI_2).clamp(-1.0, 1.0));
 }
 
-trait Rot2Ext {
-    const FRAC_TAU_3: Self;
-    const FRAC_2TAU_3: Self;
-    const NEG_FRAC_PI_2: Self;
-}
-
-impl Rot2Ext for Rot2 {
+#[extension(trait Rot2Ext)]
+impl Rot2 {
     const FRAC_TAU_3: Rot2 = Rot2 {
         cos: -0.5,
         sin: 0.8660254037844387,
@@ -339,17 +334,8 @@ impl Rot2Ext for Rot2 {
     const NEG_FRAC_PI_2: Rot2 = Rot2::FRAC_PI_2.inverse();
 }
 
-trait AttitudeIndicatorGizmosExt<'w, 's, Config, Clear>
-where
-    Config: GizmoConfigGroup,
-    Clear: 'static + Send + Sync,
-{
-    fn prograde_vector(&mut self, position: Vec2);
-    fn retrograde_vector(&mut self, position: Vec2);
-}
-
-impl<'w, 's, Config, Clear> AttitudeIndicatorGizmosExt<'w, 's, Config, Clear>
-    for Gizmos<'w, 's, Config, Clear>
+#[extension(trait AttitudeIndicatorGizmosExt)]
+impl<'w, 's, Config, Clear> Gizmos<'w, 's, Config, Clear>
 where
     Config: GizmoConfigGroup,
     Clear: 'static + Send + Sync,
