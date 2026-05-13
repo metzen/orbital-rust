@@ -25,7 +25,7 @@ impl Plugin for TrailsPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Trailable;
 
 #[derive(Component)]

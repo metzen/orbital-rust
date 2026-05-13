@@ -36,7 +36,7 @@ impl Plugin for PhysicsPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Collider;
 
 #[derive(Component, Default, Reflect)]
