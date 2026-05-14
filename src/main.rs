@@ -83,7 +83,7 @@ fn set_window_icon(_non_send_marker: NonSendMarker) {
         for window in winit.windows.values() {
             window.set_window_icon(Some(icon.clone()));
         }
-    })
+    });
 }
 
 fn toggle_fullscreen(mut window: Single<&mut Window, With<PrimaryWindow>>) {
