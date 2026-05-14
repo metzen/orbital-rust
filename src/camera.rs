@@ -52,7 +52,7 @@ enum CameraViewMode {
 }
 
 impl CameraViewMode {
-    fn next(&self) -> CameraViewMode {
+    fn next(self) -> CameraViewMode {
         match self {
             CameraViewMode::Free => CameraViewMode::Locked,
             CameraViewMode::Locked => CameraViewMode::Chase,
