@@ -38,7 +38,7 @@ fn hyperbola_inner(half_size: Vec2, resolution: u32) -> impl Iterator<Item = Vec
 }
 
 fn ellipse_inner(start_angle: f32, half_size: Vec2, resolution: u32) -> impl Iterator<Item = Vec2> {
-    (0..resolution + 1).map(move |i| {
+    (0..=resolution).map(move |i| {
         let angle = -(i as f32 * TAU / resolution as f32);
         let (x, y) = ops::sin_cos(-start_angle + angle + PI);
         Vec2::new(x, y) * half_size
