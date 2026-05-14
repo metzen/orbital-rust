@@ -21,7 +21,6 @@ use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::camera::{Autofollow, InGameCamera};
-use crate::hud::altitude::AltitudePlugin;
 use crate::hud::heading::HeadingPlugin;
 use crate::hud::hovered::HoveredPlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
@@ -29,7 +28,6 @@ use crate::hud::orbits::OrbitGizmoPlugin;
 use crate::hud::primary_flight_display::PrimaryFlightDisplayPlugin;
 use crate::hud::sas_indicator::SasIndicatorPlugin;
 use crate::hud::sas_selector::SasSelectorPlugin;
-use crate::hud::speed::SpeedPlugin;
 use crate::hud::staging::StagingPlugin;
 use crate::hud::subject::SubjectPlugin;
 use crate::hud::throttle::ThrottlePlugin;

@@ -1,10 +1,10 @@
 use bevy::color::palettes::css::BLACK;
 use bevy::prelude::*;
 
-use crate::hud::altitude::altitude_tape;
+use crate::hud::altitude::{AltitudePlugin, altitude_tape};
 use crate::hud::attitude::{AttitudePlugin, attitude_indicator};
-use crate::hud::speed::speed_tape;
-use crate::hud::{AltitudePlugin, BORDER, BORDER_COLOR, SpeedPlugin};
+use crate::hud::speed::{SpeedPlugin, speed_tape};
+use crate::hud::{BORDER, BORDER_COLOR};
 
 pub(super) struct PrimaryFlightDisplayPlugin;
 
