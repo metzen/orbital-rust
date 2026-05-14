@@ -5,24 +5,24 @@ use bevy::text::LineHeight;
 use crate::hud::HudSubject;
 use crate::physics::{RigidBody, SatelliteOf};
 
-const VELOCITY_TAPE_COLOR: Color = Color::srgb(0.44, 0.44, 0.2);
+const SPEED_TAPE_COLOR: Color = Color::srgb(0.44, 0.44, 0.2);
 
-pub(super) struct VelocityPlugin;
+pub(super) struct SpeedPlugin;
 
-impl Plugin for VelocityPlugin {
+impl Plugin for SpeedPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(FixedUpdate, update);
     }
 }
 
 #[derive(Component)]
-struct VelocityText;
+struct SpeedText;
 
-fn velocity_indicator() -> impl Bundle {
+fn speed_indicator() -> impl Bundle {
     use crate::hud::TextFontExt;
     let widget_color = Color::srgb(213.0 / 255.0, 175.0 / 255.0, 3.0 / 255.0);
     (
-        Name::new("Velocity widget"),
+        Name::new("Speed widget"),
         Node {
             position_type: PositionType::Absolute,
             right: px(10.0),
@@ -70,7 +70,7 @@ fn velocity_indicator() -> impl Bundle {
                     TextSpan::default(),
                     TextFont::ui_default().with_font_size(18.0),
                     LineHeight::RelativeToFont(1.0),
-                    VelocityText,
+                    SpeedText,
                 )]
             ),
             (
@@ -108,19 +108,19 @@ fn velocity_indicator() -> impl Bundle {
                 BackgroundColor::from(Color::BLACK),
                 children![
                     (
-                        Text::new("V"),
+                        Text::new("S"),
                         TextColor::from(widget_color),
                         TextFont::ui_default(),
                         LineHeight::RelativeToFont(1.0),
                     ),
                     (
-                        Text::new("E"),
+                        Text::new("P"),
                         TextColor::from(widget_color),
                         TextFont::ui_default(),
                         LineHeight::RelativeToFont(1.0),
                     ),
                     (
-                        Text::new("L"),
+                        Text::new("D"),
                         TextColor::from(widget_color),
                         TextFont::ui_default(),
                         LineHeight::RelativeToFont(1.0),
@@ -134,14 +134,14 @@ fn velocity_indicator() -> impl Bundle {
 fn tape_graduation(label: impl Into<String>) -> impl Bundle {
     (
         Text::new(label),
-        TextColor::from(VELOCITY_TAPE_COLOR),
+        TextColor::from(SPEED_TAPE_COLOR),
         TextFont::from_font_size(12.0),
     )
 }
 
-pub(super) fn velocity_tape() -> impl Bundle {
+pub(super) fn speed_tape() -> impl Bundle {
     (
-        Name::new("Velocity tape"),
+        Name::new("Speed tape"),
         Node {
             width: px(50.0),
             height: px(172.0),
@@ -152,9 +152,9 @@ pub(super) fn velocity_tape() -> impl Bundle {
             ..default()
         },
         BackgroundColor::from(Color::srgb(0.09, 0.09, 0.09)),
-        BorderColor::from(VELOCITY_TAPE_COLOR),
+        BorderColor::from(SPEED_TAPE_COLOR),
         children![
-            velocity_indicator(),
+            speed_indicator(),
             tape_graduation(" 20 --"),
             tape_graduation("    --"),
             tape_graduation(" 10 --"),
@@ -169,19 +169,19 @@ pub(super) fn velocity_tape() -> impl Bundle {
 }
 
 fn update(
-    mut text: Single<&mut TextSpan, With<VelocityText>>,
+    mut text: Single<&mut TextSpan, With<SpeedText>>,
     subject_rigidbody: Query<(&RigidBody, &SatelliteOf), With<HudSubject>>,
     primary_body_query: Query<&RigidBody>,
 ) {
     if let Ok((rigidbody, satellite_of)) = subject_rigidbody.single()
         && let Ok(primary_body) = primary_body_query.get(satellite_of.primary())
     {
-        let relative_velocity = (rigidbody.velocity - primary_body.velocity).length();
+        let relative_speed = (rigidbody.velocity - primary_body.velocity).length();
         text.0 = format!(
             "{:.*}",
-            // Show one digit of decimal precision when velocity is low.
-            if relative_velocity < 10_000.0 { 1 } else { 0 },
-            relative_velocity
+            // Show one digit of decimal precision when speed is low.
+            if relative_speed < 10_000.0 { 1 } else { 0 },
+            relative_speed
         );
     } else {
         text.0 = String::new();

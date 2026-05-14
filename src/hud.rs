@@ -7,11 +7,11 @@ mod orbits;
 mod primary_flight_display;
 mod sas_indicator;
 mod sas_selector;
+mod speed;
 mod staging;
 mod subject;
 mod throttle;
 mod time;
-mod velocity;
 mod vertical_speed;
 
 use bevy::prelude::*;
@@ -29,11 +29,11 @@ use crate::hud::orbits::OrbitGizmoPlugin;
 use crate::hud::primary_flight_display::PrimaryFlightDisplayPlugin;
 use crate::hud::sas_indicator::SasIndicatorPlugin;
 use crate::hud::sas_selector::SasSelectorPlugin;
+use crate::hud::speed::SpeedPlugin;
 use crate::hud::staging::StagingPlugin;
 use crate::hud::subject::SubjectPlugin;
 use crate::hud::throttle::ThrottlePlugin;
 use crate::hud::time::TimePlugin;
-use crate::hud::velocity::VelocityPlugin;
 use crate::hud::vertical_speed::VerticalSpeedPlugin;
 use crate::vessel::Vessel;
 

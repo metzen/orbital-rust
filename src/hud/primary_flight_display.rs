@@ -3,15 +3,15 @@ use bevy::prelude::*;
 
 use crate::hud::altitude::altitude_tape;
 use crate::hud::attitude::{AttitudePlugin, attitude_indicator};
-use crate::hud::velocity::velocity_tape;
-use crate::hud::{AltitudePlugin, BORDER, BORDER_COLOR, VelocityPlugin};
+use crate::hud::speed::speed_tape;
+use crate::hud::{AltitudePlugin, BORDER, BORDER_COLOR, SpeedPlugin};
 
 pub(super) struct PrimaryFlightDisplayPlugin;
 
 impl Plugin for PrimaryFlightDisplayPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
-        app.add_plugins((AltitudePlugin, AttitudePlugin, VelocityPlugin));
+        app.add_plugins((AltitudePlugin, AttitudePlugin, SpeedPlugin));
     }
 }
 
@@ -31,6 +31,6 @@ fn setup(mut commands: Commands) {
         BORDER_COLOR,
         BackgroundColor::from(BLACK),
         Outline::new(px(1.0), px(0.0), Color::from(BLACK)),
-        children![velocity_tape(), attitude_indicator(), altitude_tape()],
+        children![speed_tape(), attitude_indicator(), altitude_tape()],
     ));
 }
