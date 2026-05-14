@@ -168,7 +168,7 @@ fn gravity(
             primary_info_by_entity.insert(
                 secondary.entity,
                 PrimaryInfo {
-                    old_primary: secondary.satellite_of.map(|x| x.primary()),
+                    old_primary: secondary.satellite_of.map(SatelliteOf::primary),
                     new_primary: primary.entity,
                     force: tidal_force_magnitude,
                 },

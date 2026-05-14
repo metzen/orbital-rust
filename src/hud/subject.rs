@@ -48,7 +48,7 @@ fn update(
             && let Ok((name, satellite_of)) = name_query.get(entity)
         {
             parts.push(format!("{name}"));
-            parent = satellite_of.map(|x| x.primary());
+            parent = satellite_of.map(SatelliteOf::primary);
         }
         parts.reverse();
         hud_subject_text.0 = parts.join(" / ");
