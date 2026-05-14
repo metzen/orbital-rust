@@ -185,7 +185,7 @@ fn setup_vessel(
     let (big_space, grid) = big_space.into_inner();
     let (grid_cell, translation) = grid.translation_to_grid(DVec3 {
         x: 147.10e9,
-        y: Planet::EARTH.radius as f64 + 40.0,
+        y: f64::from(Planet::EARTH.radius) + 40.0,
         z: 4.0,
     });
     commands.spawn_vessel((

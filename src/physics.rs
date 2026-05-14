@@ -303,7 +303,7 @@ fn collision(
 
         // TODO: Handle non square/circle shapes.
         let collision_distance =
-            (primary.aabb.half_extents.y + secondary.aabb.half_extents.y) as f64;
+            f64::from(primary.aabb.half_extents.y + secondary.aabb.half_extents.y);
         let diff = relative_position.length_squared() - collision_distance * collision_distance;
         if diff < 0.0 {
             debug!(
@@ -365,7 +365,7 @@ pub struct Orbit {
 
 impl Orbit {
     pub fn new(position: DVec2, velocity: DVec2, primary_mass: f32, secondary_mass: f32) -> Self {
-        let μ = G * (primary_mass as f64 + secondary_mass as f64);
+        let μ = G * (f64::from(primary_mass) + f64::from(secondary_mass));
         let position_length = position.length();
         let velocity_length_squared = velocity.length_squared();
         let orbital_energy = velocity_length_squared / 2.0 - μ / position_length;

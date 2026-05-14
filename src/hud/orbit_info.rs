@@ -152,7 +152,7 @@ fn update(
                 rigidbody.mass,
             );
 
-            let ap = orbit.apoapsis - primary_aabb.half_extents.y as f64;
+            let ap = orbit.apoapsis - f64::from(primary_aabb.half_extents.y);
             let (humanized_ap, ap_units) = hud::humanize_distance(ap);
             *writer.text(*ap_text, 2) = format!("{humanized_ap:>7.0}");
             // *writer.text(*ap_text, 2) = format!(
@@ -166,7 +166,7 @@ fn update(
             *writer.text(*ap_text, 9) = format!("{:02}", time_to_ap / 60 % 60);
             *writer.text(*ap_text, 11) = format!("{:02}", time_to_ap % 60);
 
-            let pe = orbit.periapsis - primary_aabb.half_extents.y as f64;
+            let pe = orbit.periapsis - f64::from(primary_aabb.half_extents.y);
             let (humanized_pe, pe_units) = hud::humanize_distance(pe);
             *writer.text(*pe_text, 2) = format!("{humanized_pe:>7.0}");
             *writer.text(*pe_text, 4) = pe_units;

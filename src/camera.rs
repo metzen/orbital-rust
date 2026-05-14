@@ -378,8 +378,8 @@ fn update_camera_position_for_autofollow(
                     primary_rigidbody.mass,
                     target_rigidbody.mass,
                 );
-                if (orbit.periapsis - primary_celestial_body.radius as f64) < 0.0
-                    && (orbit.apoapsis - primary_celestial_body.radius as f64) > 0.0
+                if (orbit.periapsis - f64::from(primary_celestial_body.radius)) < 0.0
+                    && (orbit.apoapsis - f64::from(primary_celestial_body.radius)) > 0.0
                 {
                     // Free mode.
                     let direction = target_position - primary_position;

@@ -191,8 +191,9 @@ fn update(
         let distance = primary_position.distance(subject_position);
         // TODO: Calculate from lowest vertex of mesh instead of the Aabb.
         // TODO: Use CelestialBody.radius after it's defined for all planets.
-        let altitude =
-            distance - primary_aabb.half_extents.y as f64 - subject_aabb.half_extents.y as f64;
+        let altitude = distance
+            - f64::from(primary_aabb.half_extents.y)
+            - f64::from(subject_aabb.half_extents.y);
         let (humanized_altitude, units) = super::humanize_distance(altitude);
         text.0 = format!("{humanized_altitude:.0}");
         // TODO: This is super hacky; clean it up.
