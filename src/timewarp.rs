@@ -182,9 +182,10 @@ fn update_max_allowed_timewarp(
 
 /// Toggles the paused state of the virtual clock.
 fn toggle_pause(mut virtual_time: ResMut<Time<Virtual>>) {
-    match virtual_time.is_paused() {
-        true => virtual_time.unpause(),
-        false => virtual_time.pause(),
+    if virtual_time.is_paused() {
+        virtual_time.unpause();
+    } else {
+        virtual_time.pause();
     }
 }
 
