@@ -1,19 +1,3 @@
-mod altitude;
-mod attitude;
-mod heading;
-mod hovered;
-mod orbit_info;
-mod orbits;
-mod primary_flight_display;
-mod sas_indicator;
-mod sas_selector;
-mod speed;
-mod staging;
-mod subject;
-mod throttle;
-mod time;
-mod vertical_speed;
-
 use bevy::prelude::*;
 use leafwing_input_manager::Actionlike;
 use leafwing_input_manager::common_conditions::action_just_pressed;
@@ -34,6 +18,22 @@ use crate::hud::throttle::ThrottlePlugin;
 use crate::hud::time::TimePlugin;
 use crate::hud::vertical_speed::VerticalSpeedPlugin;
 use crate::vessel::Vessel;
+
+mod altitude;
+mod attitude;
+mod heading;
+mod hovered;
+mod orbit_info;
+mod orbits;
+mod primary_flight_display;
+mod sas_indicator;
+mod sas_selector;
+mod speed;
+mod staging;
+mod subject;
+mod throttle;
+mod time;
+mod vertical_speed;
 
 pub struct HudPlugin;
 

@@ -12,9 +12,6 @@
 #[macro_use]
 extern crate extension_traits;
 
-mod simplex_stroke_font;
-mod text;
-
 use core::f32::consts::TAU;
 use std::f32::consts::{FRAC_PI_2, PI};
 use std::iter::zip;
@@ -26,6 +23,9 @@ use bevy::gizmos::gizmos::{GizmoBuffer, Gizmos};
 use bevy::math::{Isometry2d, Isometry3d, Vec2, ops, vec2};
 
 use crate::simplex_stroke_font::SIMPLEX_STROKE_FONT;
+
+mod simplex_stroke_font;
+mod text;
 
 pub(crate) const DEFAULT_HYPERBOLA_RESOLUTION: u32 = 32;
 

@@ -3,20 +3,6 @@
 #[macro_use]
 extern crate extension_traits;
 
-mod audio;
-mod camera;
-mod diagnostics;
-mod hud;
-mod input;
-mod lifetime;
-mod physics;
-mod rendering;
-mod scene;
-mod timewarp;
-mod trails;
-mod util;
-mod vessel;
-
 use bevy::audio::{AddAudioSource, AudioPlugin, SpatialScale, Volume};
 #[cfg(any(windows, unix))]
 use bevy::ecs::system::NonSendMarker;
@@ -41,6 +27,20 @@ use crate::scene::{add_name_to_big_space, setup_scene, spawn_atmosphere_layers};
 use crate::timewarp::TimeWarpPlugin;
 use crate::trails::TrailsPlugin;
 use crate::vessel::VesselPlugin;
+
+mod audio;
+mod camera;
+mod diagnostics;
+mod hud;
+mod input;
+mod lifetime;
+mod physics;
+mod rendering;
+mod scene;
+mod timewarp;
+mod trails;
+mod util;
+mod vessel;
 
 // // The initial scene file will be loaded below and not change when the scene is saved
 // const SCENE_FILE_PATH: &str = "scenes/solar_system.scn.ron";
