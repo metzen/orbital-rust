@@ -54,7 +54,7 @@ pub fn reaper(
                     commands.entity(entity).remove::<ChildOf>();
                     commands.entity(entity).insert(Disabled);
                 }
-            };
+            }
         }
     }
 }
