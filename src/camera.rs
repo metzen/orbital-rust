@@ -499,25 +499,22 @@ fn change_focus(
         let Some(&(first_target, first_name)) = peekable.peek() else {
             return;
         };
-        match autofollow.target {
-            Some(current_target) => {
-                while let Some((target, _name)) = peekable.next() {
-                    if current_target == target {
-                        if let Some((next_target, next_name)) = peekable.next() {
-                            autofollow.target = Some(next_target);
-                            info!("focusing {}", next_name);
-                        } else {
-                            autofollow.target = Some(first_target);
-                            info!("focusing {}", first_name);
-                        }
-                        break;
+        if let Some(current_target) = autofollow.target {
+            while let Some((target, _name)) = peekable.next() {
+                if current_target == target {
+                    if let Some((next_target, next_name)) = peekable.next() {
+                        autofollow.target = Some(next_target);
+                        info!("focusing {}", next_name);
+                    } else {
+                        autofollow.target = Some(first_target);
+                        info!("focusing {}", first_name);
                     }
+                    break;
                 }
             }
-            None => {
-                autofollow.target = Some(first_target);
-                info!("focusing {}", first_name);
-            }
+        } else {
+            autofollow.target = Some(first_target);
+            info!("focusing {}", first_name);
         }
     }
 }
