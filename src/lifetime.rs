@@ -39,7 +39,7 @@ pub fn reaper(
     real_time: Res<Time<Real>>,
     virtual_time: Res<Time<Virtual>>,
 ) {
-    for (entity, mut ephemeral) in query.iter_mut() {
+    for (entity, mut ephemeral) in &mut query {
         let delta = match ephemeral.clock {
             Clock::Real => real_time.delta(),
             Clock::Virtual => virtual_time.delta(),

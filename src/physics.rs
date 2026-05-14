@@ -199,7 +199,7 @@ fn drag(
     grid: Single<&Grid, With<BigSpace>>,
     time: Res<Time>,
 ) {
-    for (mut rigidbody, transform, cell, aabb, satellite_of) in query.iter_mut() {
+    for (mut rigidbody, transform, cell, aabb, satellite_of) in &mut query {
         // D = Cd * A * .5 * r * V^2
         // TODO: This is just currently hard coded for the vessel engine particles.
         let drag_coefficient = 0.5;
@@ -238,7 +238,7 @@ fn drag(
 }
 
 pub fn dynamics(mut query: Query<&mut RigidBody>, time: Res<Time>) {
-    for mut rigidbody in query.iter_mut() {
+    for mut rigidbody in &mut query {
         let delta_time = time.delta_secs();
         let old_acceleration = rigidbody.acceleration;
         let new_acceleration = rigidbody.force / rigidbody.mass;
@@ -259,7 +259,7 @@ pub fn dynamics(mut query: Query<&mut RigidBody>, time: Res<Time>) {
 }
 
 fn kinematics(mut query: Query<(&mut Transform, &mut RigidBody)>, time: Res<Time>) {
-    for (mut transform, rigidbody) in query.iter_mut() {
+    for (mut transform, rigidbody) in &mut query {
         let dt = time.delta_secs();
         transform.translation += dt * (rigidbody.velocity + 0.5 * rigidbody.acceleration * dt);
         transform.rotate_z(

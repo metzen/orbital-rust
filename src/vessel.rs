@@ -445,7 +445,7 @@ fn vessel_control(
     action_state: Res<ActionState<VesselAction>>,
     timewarp: Res<TimeWarp>,
 ) {
-    for mut vessel in query.iter_mut() {
+    for mut vessel in &mut query {
         if !vessel.controlled {
             continue;
         }
@@ -556,7 +556,7 @@ fn vessel_systems(
     engine_particle_spawn_timer.0.tick(time.delta());
     let mut disabled_engine_particles = disabled_engine_particle_query.iter_mut();
     for (transform, mut rigidbody, vessel, grid_cell, global_transform, satellite_of) in
-        vessels.iter_mut()
+        &mut vessels
     {
         if vessel.sas_enabled {
             // TODO: Do this by applying torque and let physics solve for velocity.
@@ -696,7 +696,7 @@ fn animate_engine_particles(
     >,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    for (mut transform, color_material_handle, ephemeral) in query.iter_mut() {
+    for (mut transform, color_material_handle, ephemeral) in &mut query {
         transform.scale *= 1.005;
         let material = color_materials.get_mut(color_material_handle).unwrap();
         if material.color.luminance() > 1.0 {

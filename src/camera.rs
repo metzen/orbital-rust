@@ -449,7 +449,7 @@ fn scale_entities(
     projection: Single<&Projection, With<InGameCamera>>,
 ) {
     if let Projection::Orthographic(orthographic_projection) = *projection {
-        for (mut transform, aabb, autoscale) in query.iter_mut() {
+        for (mut transform, aabb, autoscale) in &mut query {
             transform.scale = Vec3::new(
                 f32::max(
                     orthographic_projection.scale / aabb.half_extents.x * autoscale.minimum_size,
