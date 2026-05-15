@@ -373,13 +373,13 @@ pub fn spawn_atmosphere_layers(
     )>,
 ) {
     use crate::rendering::LayerExt;
-    for (id, atmosphere, mesh_material, celestialbody) in &bodies {
+    for (id, atmosphere, mesh_material, celestial_body) in &bodies {
         let color = materials.get(mesh_material).unwrap().color;
         commands.entity(id).insert(children![
             (
                 Transform::from_xyz(0.0, 0.0, -1.0),
                 Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
-                    celestialbody.radius + atmosphere.height,
+                    celestial_body.radius + atmosphere.height,
                     2000,
                 )))),
                 MeshMaterial2d(materials.add(ColorMaterial::from(color.mix(&Color::BLACK, 0.90)))),
@@ -388,7 +388,7 @@ pub fn spawn_atmosphere_layers(
             (
                 Transform::from_xyz(0.0, 0.0, -1.0),
                 Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
-                    celestialbody.radius + atmosphere.height / 2.0,
+                    celestial_body.radius + atmosphere.height / 2.0,
                     2000,
                 )))),
                 MeshMaterial2d(materials.add(ColorMaterial::from(color.mix(&Color::BLACK, 0.75)))),
@@ -397,7 +397,7 @@ pub fn spawn_atmosphere_layers(
             (
                 Transform::from_xyz(0.0, 0.0, -1.0),
                 Mesh2d(meshes.add(Mesh::from(CircleMeshBuilder::new(
-                    celestialbody.radius + atmosphere.height / 10.0,
+                    celestial_body.radius + atmosphere.height / 10.0,
                     2000,
                 )))),
                 MeshMaterial2d(materials.add(ColorMaterial::from(color.mix(&Color::BLACK, 0.60)))),
