@@ -224,7 +224,7 @@ fn drag(
             velocity = rigidbody.velocity;
             density = 0.0;
             area = 1.0;
-        };
+        }
 
         let b = drag_coefficient * area * 0.5 * density;
 

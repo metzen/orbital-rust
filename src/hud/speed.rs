@@ -184,5 +184,5 @@ fn update(
         );
     } else {
         text.0 = String::new();
-    };
+    }
 }
