@@ -338,7 +338,7 @@ pub fn setup_scene(
         ));
         root.spawn_spatial((
             Name::new("Proxima Centauri"),
-            Transform::from_xyz(4.017499e16, 0.0, 0.0),
+            Transform::from_xyz(4.017_499e16, 0.0, 0.0),
             Mesh2d(meshes.add(Mesh::from(Circle::new(Planet::PROXIMA_CENTAURI.radius)))),
             MeshMaterial2d(materials.add(ColorMaterial::from(Planet::PROXIMA_CENTAURI.color))),
             RigidBody {

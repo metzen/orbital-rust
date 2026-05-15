@@ -30,6 +30,7 @@ const RES_WIDTH: u32 = 16 * 20;
 /// In-game resolution height.
 const RES_HEIGHT: u32 = 10 * 20;
 
+#[allow(clippy::unreadable_literal)]
 const PIXEL_CAM_POINTER_ID: PointerId =
     PointerId::Custom(Uuid::from_u128(0x230e8400e29b41d1a716446655446439));
 
