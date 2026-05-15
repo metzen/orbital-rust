@@ -30,7 +30,7 @@ mod text;
 pub(crate) const DEFAULT_HYPERBOLA_RESOLUTION: u32 = 32;
 
 fn hyperbola_inner(half_size: Vec2, resolution: u32) -> impl Iterator<Item = Vec2> {
-    let half_resolution = (resolution / 2) as i32;
+    let half_resolution = i32::try_from(resolution / 2).unwrap();
     (-half_resolution..=half_resolution).map(move |i| {
         let angle = i as f32 * TAU / resolution as f32;
         Vec2::new(ops::cosh(angle), ops::sinh(angle)) * half_size
