@@ -523,7 +523,7 @@ fn setup_pointer(mut commands: Commands) {
     commands.spawn((PIXEL_CAM_POINTER_ID, InGamePointer));
 }
 
-/// Relay PointerInput messages from window-based mouse inputs into the pixel-perfect canvas.
+/// Relay [`PointerInput`] messages from window-based mouse inputs into the pixel-perfect canvas.
 fn relay_pointer_input_messages(
     mut message_reader: Local<MessageCursor<PointerInput>>,
     mut messages: ResMut<Messages<PointerInput>>,

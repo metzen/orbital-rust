@@ -189,7 +189,7 @@ fn toggle_pause(mut virtual_time: ResMut<Time<Virtual>>) {
     }
 }
 
-/// Increases the TimeWarp by one step.
+/// Increases the [`TimeWarp`] by one step.
 fn increase_timewarp(mut timewarp: ResMut<TimeWarp>, mut commands: Commands) {
     match timewarp.increase_warp() {
         Ok(index) => commands.trigger(TimeWarpChangeEvent::new(index)),
@@ -197,7 +197,7 @@ fn increase_timewarp(mut timewarp: ResMut<TimeWarp>, mut commands: Commands) {
     }
 }
 
-/// Decreases the TimeWarp by one step.
+/// Decreases the [`TimeWarp`] by one step.
 fn decrease_timewarp(mut timewarp: ResMut<TimeWarp>, mut commands: Commands) {
     match timewarp.decrease_warp() {
         Ok(index) => commands.trigger(TimeWarpChangeEvent::new(index)),
@@ -205,7 +205,7 @@ fn decrease_timewarp(mut timewarp: ResMut<TimeWarp>, mut commands: Commands) {
     }
 }
 
-/// Applies the current TimeWarp settings to the virtual clock.
+/// Applies the current [`TimeWarp`] settings to the virtual clock.
 fn apply_timewarp_settings_to_virtual_clock(
     timewarp: Res<TimeWarp>,
     mut virtual_time: ResMut<Time<Virtual>>,
