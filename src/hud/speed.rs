@@ -180,7 +180,7 @@ fn update(
         text.0 = format!(
             "{:.*}",
             // Show one digit of decimal precision when speed is low.
-            if relative_speed < 10_000.0 { 1 } else { 0 },
+            usize::from(relative_speed < 10_000.0),
             relative_speed
         );
     } else {
