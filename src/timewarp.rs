@@ -20,15 +20,13 @@ pub const TIME_WARPS: [f32; 13] = [
 const TIME_WARP_MAX: f32 = 1e9;
 
 #[derive(Debug)]
-struct OutOfRange {
-    reason: String,
-}
+struct OutOfRange(String);
 
 impl Error for OutOfRange {}
 
 impl fmt::Display for OutOfRange {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.reason)
+        write!(f, "{}", self.0)
     }
 }
 
@@ -42,29 +40,24 @@ pub struct TimeWarp {
 }
 
 impl TimeWarp {
-    fn shift_warp(&mut self, shift: isize) -> Result<usize, OutOfRange> {
-        let index = self.index as isize + shift;
-        if (0..(self.max_allowed_index + 1) as isize).contains(&index) {
-            self.index = index as usize;
-            self.value = TIME_WARPS[self.index];
-            Ok(self.index)
-        } else {
-            Err(OutOfRange {
-                reason: if index > 0 {
-                    self.max_allowed_reason.clone()
-                } else {
-                    String::new()
-                },
-            })
+    fn set_warp_index(&mut self, index: usize) -> Result<usize, OutOfRange> {
+        if index > self.max_allowed_index {
+            return Err(OutOfRange(self.max_allowed_reason.clone()));
         }
+        self.index = index;
+        self.value = TIME_WARPS[self.index];
+        Ok(self.index)
     }
 
     fn increase_warp(&mut self) -> Result<usize, OutOfRange> {
-        self.shift_warp(1)
+        self.set_warp_index(self.index + 1)
     }
 
     fn decrease_warp(&mut self) -> Result<usize, OutOfRange> {
-        self.shift_warp(-1)
+        if self.index == 0 {
+            return Err(OutOfRange(String::from("Cannot decrease Time Warp below 1x")));
+        }
+        self.set_warp_index(self.index - 1)
     }
 
     fn set_max_allowed_warp(&mut self, max_allowed_warp: f32, reason: String) {
@@ -193,7 +186,7 @@ fn toggle_pause(mut virtual_time: ResMut<Time<Virtual>>) {
 fn increase_timewarp(mut timewarp: ResMut<TimeWarp>, mut commands: Commands) {
     match timewarp.increase_warp() {
         Ok(index) => commands.trigger(TimeWarpChangeEvent::new(index)),
-        Err(error) => info!("{}", error.reason),
+        Err(error) => info!("{error}"),
     }
 }
 
@@ -201,7 +194,7 @@ fn increase_timewarp(mut timewarp: ResMut<TimeWarp>, mut commands: Commands) {
 fn decrease_timewarp(mut timewarp: ResMut<TimeWarp>, mut commands: Commands) {
     match timewarp.decrease_warp() {
         Ok(index) => commands.trigger(TimeWarpChangeEvent::new(index)),
-        Err(error) => info!("{}", error.reason),
+        Err(error) => info!("{error}"),
     }
 }
 
