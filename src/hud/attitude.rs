@@ -296,6 +296,7 @@ fn update_artificial_horizon(
     mut ground: Single<&mut Node, (With<Ground>, Without<AttitudeIndicator>, Without<Sky>)>,
     indicator: Single<&mut Node, (With<AttitudeIndicator>, Without<Ground>, Without<Sky>)>,
 ) {
+    const FRAC_3PI_2: f32 = 1.5 * PI;
     let mut indicator_node = indicator.into_inner();
     let mut rot = subject_transform
         .rotation
@@ -303,7 +304,6 @@ fn update_artificial_horizon(
     if rot > FRAC_PI_2 {
         rot = PI - rot;
     }
-    const FRAC_3PI_2: f32 = 1.5 * PI;
     let (_axis, angle) = subject_transform.rotation.to_axis_angle();
     if (FRAC_PI_2..FRAC_3PI_2).contains(&angle) {
         rot = -rot;
