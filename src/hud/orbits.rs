@@ -42,21 +42,21 @@ trait RenderOrbit {
     fn render(
         &self,
         gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: &Vec2,
+        translation: Vec2,
         color: Color,
         fade: bool,
     );
     fn render_ellipse(
         &self,
         gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: &Vec2,
+        translation: Vec2,
         color: Color,
         fade: bool,
     );
     fn render_hyperbola(
         &self,
         gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: &Vec2,
+        translation: Vec2,
         color: Color,
         fade: bool,
     );
@@ -66,7 +66,7 @@ impl RenderOrbit for Orbit {
     fn render(
         &self,
         gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: &Vec2,
+        translation: Vec2,
         color: Color,
         fade: bool,
     ) {
@@ -81,7 +81,7 @@ impl RenderOrbit for Orbit {
     fn render_ellipse(
         &self,
         gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: &Vec2,
+        translation: Vec2,
         color: Color,
         fade: bool,
     ) {
@@ -111,7 +111,7 @@ impl RenderOrbit for Orbit {
     fn render_hyperbola(
         &self,
         gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: &Vec2,
+        translation: Vec2,
         color: Color,
         _fade: bool,
     ) {
@@ -176,7 +176,7 @@ fn draw_orbits(
             Some(material) => material.color,
             None => Color::from(LIGHT_GRAY),
         };
-        orbit.render(&mut gizmos, &translation, color, secondary.vessel.is_none());
+        orbit.render(&mut gizmos, translation, color, secondary.vessel.is_none());
         // AP and PE markers for controlled vessel.
         let perifocal_unit_vec = orbit.eccentricity_vector / orbit.eccentricity;
         let ap_vec = orbit.apoapsis * -perifocal_unit_vec;
