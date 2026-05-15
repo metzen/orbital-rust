@@ -178,10 +178,9 @@ fn update(
     {
         let relative_speed = (rigidbody.velocity - primary_body.velocity).length();
         text.0 = format!(
-            "{:.*}",
+            "{relative_speed:.*}",
             // Show one digit of decimal precision when speed is low.
-            usize::from(relative_speed < 10_000.0),
-            relative_speed
+            usize::from(relative_speed < 10_000.0)
         );
     } else {
         text.0 = String::new();
