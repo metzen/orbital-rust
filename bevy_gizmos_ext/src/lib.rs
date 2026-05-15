@@ -176,7 +176,7 @@ where
             self.resolution,
         )
         .map(|vec2| self.isometry * vec2);
-        let colors = (0..self.resolution + 1).map(|i| {
+        let colors = (0..=self.resolution).map(|i| {
             let factor = i as f32 / self.resolution as f32;
             self.start_color.mix(&self.end_color, factor)
         });
