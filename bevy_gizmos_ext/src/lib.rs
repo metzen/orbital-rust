@@ -64,7 +64,7 @@ where
     Clear: 'static + Send + Sync,
 {
     /// Set the number of line-segments used to approximate the geometry of this hyperbola.
-    #[must_use]
+    #[allow(clippy::must_use_candidate, clippy::return_self_not_must_use)]
     pub fn resolution(mut self, resolution: u32) -> Self {
         self.resolution = resolution;
         self
@@ -107,7 +107,7 @@ where
     Clear: 'static + Send + Sync,
 {
     /// Set the number of line-segments used to approximate the geometry of this hyperbola.
-    #[must_use]
+    #[allow(clippy::must_use_candidate, clippy::return_self_not_must_use)]
     pub fn resolution(mut self, resolution: u32) -> Self {
         self.resolution = resolution;
         self
@@ -152,7 +152,7 @@ where
     Clear: 'static + Send + Sync,
 {
     /// Set the number of line-segments used to approximate the geometry of this hyperbola.
-    #[must_use]
+    #[allow(clippy::must_use_candidate, clippy::return_self_not_must_use)]
     pub fn resolution(mut self, resolution: u32) -> Self {
         self.resolution = resolution;
         self
