@@ -64,6 +64,7 @@ where
     Clear: 'static + Send + Sync,
 {
     /// Set the number of line-segments used to approximate the geometry of this hyperbola.
+    #[must_use]
     pub fn resolution(mut self, resolution: u32) -> Self {
         self.resolution = resolution;
         self
@@ -106,6 +107,7 @@ where
     Clear: 'static + Send + Sync,
 {
     /// Set the number of line-segments used to approximate the geometry of this hyperbola.
+    #[must_use]
     pub fn resolution(mut self, resolution: u32) -> Self {
         self.resolution = resolution;
         self
@@ -150,6 +152,7 @@ where
     Clear: 'static + Send + Sync,
 {
     /// Set the number of line-segments used to approximate the geometry of this hyperbola.
+    #[must_use]
     pub fn resolution(mut self, resolution: u32) -> Self {
         self.resolution = resolution;
         self

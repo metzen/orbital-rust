@@ -6,16 +6,19 @@ pub enum Angle {
 
 impl Angle {
     /// Create a new [`Angle`] from a [`f64`] value representing an angle in radians.
+    #[must_use]
     pub fn from_radians(radians: f64) -> Angle {
         Angle::Radians(radians)
     }
 
     /// Create a new [`Angle`] from a [`f64`] value representing an angle in degrees.
+    #[must_use]
     pub fn from_degrees(degrees: f64) -> Angle {
         Angle::Degrees(degrees)
     }
 
     #[inline]
+    #[must_use]
     pub fn as_radians_f64(&self) -> f64 {
         match self {
             Angle::Radians(radians) => *radians,
@@ -24,6 +27,7 @@ impl Angle {
     }
 
     #[inline]
+    #[must_use]
     pub fn as_degrees_f64(&self) -> f64 {
         match self {
             Angle::Radians(radians) => radians.to_degrees(),
@@ -32,6 +36,7 @@ impl Angle {
     }
 
     #[inline]
+    #[must_use]
     pub fn sin(&self) -> f64 {
         match self {
             Angle::Radians(radians) => radians.sin(),
@@ -40,6 +45,7 @@ impl Angle {
     }
 
     #[inline]
+    #[must_use]
     pub fn cos(&self) -> f64 {
         match self {
             Angle::Radians(radians) => radians.cos(),
