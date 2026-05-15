@@ -196,9 +196,8 @@ where
         start_color: impl Into<Color>,
         end_color: impl Into<Color>,
     ) -> EllipseGradient2dBuilder<'_, Config, Clear> {
-        use std::ops::DerefMut;
         EllipseGradient2dBuilder {
-            gizmos: self.deref_mut(),
+            gizmos: self,
             isometry: isometry.into(),
             half_size,
             start_angle,
@@ -214,9 +213,8 @@ where
         half_size: Vec2,
         color: impl Into<Color>,
     ) -> HyperbolaBuilder<'_, Config, Clear> {
-        use std::ops::DerefMut;
         HyperbolaBuilder {
-            gizmos: self.deref_mut(),
+            gizmos: self,
             isometry: isometry.into(),
             half_size,
             color: color.into(),
@@ -230,9 +228,8 @@ where
         half_size: Vec2,
         color: impl Into<Color>,
     ) -> Hyperbola2dBuilder<'_, Config, Clear> {
-        use std::ops::DerefMut;
         Hyperbola2dBuilder {
-            gizmos: self.deref_mut(),
+            gizmos: self,
             isometry: isometry.into(),
             half_size,
             color: color.into(),
