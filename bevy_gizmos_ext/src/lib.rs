@@ -3,11 +3,11 @@
 //! Includes the implementation of the following Gizmo extensions and assorted
 //! support items:
 //!
-//!   * [`GizmosExt::ellipse_gradient_2d`]
-//!   * [`GizmosExt::hyperbola`]
-//!   * [`GizmosExt::hyperbola_2d`]
-//!   * [`GizmosExt::text`]
-//!   * [`GizmosExt::text_2d`]
+//!   * [`GizmoBufferExt::ellipse_gradient_2d`]
+//!   * [`GizmoBufferExt::hyperbola`]
+//!   * [`GizmoBufferExt::hyperbola_2d`]
+//!   * [`GizmoBufferExt::text`]
+//!   * [`GizmoBufferExt::text_2d`]
 
 #[macro_use]
 extern crate extension_traits;
@@ -45,7 +45,7 @@ fn ellipse_inner(start_angle: f32, half_size: Vec2, resolution: u32) -> impl Ite
     })
 }
 
-/// A builder returned by [`GizmosExt::hyperbola`].
+/// A builder returned by [`GizmoBufferExt::hyperbola`].
 pub struct HyperbolaBuilder<'a, Config, Clear>
 where
     Config: GizmoConfigGroup,
@@ -88,7 +88,7 @@ where
     }
 }
 
-/// A builder returned by [`GizmosExt::hyperbola_2d`].
+/// A builder returned by [`GizmoBufferExt::hyperbola_2d`].
 pub struct Hyperbola2dBuilder<'a, Config, Clear>
 where
     Config: GizmoConfigGroup,
@@ -131,7 +131,7 @@ where
     }
 }
 
-/// A builder returned by [`GizmosExt::ellipse_gradient_2d`].
+/// A builder returned by [`GizmoBufferExt::ellipse_gradient_2d`].
 pub struct EllipseGradient2dBuilder<'a, Config, Clear>
 where
     Config: GizmoConfigGroup,
