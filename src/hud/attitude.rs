@@ -232,7 +232,7 @@ fn draw_pitch_graduation_lines(
     window: Single<&Window>,
     knob: Res<Knob>,
 ) {
-    use bevy_gizmos_ext::GizmosExt;
+    use bevy_gizmos_ext::GizmoBufferExt;
     let (indicator_transform, indicator_computed_node) = indicator.into_inner();
     let rotation = subject_transform.rotation;
     let (_axis, angle) = rotation.to_axis_angle();
@@ -343,7 +343,7 @@ where
 {
     fn prograde_vector(&mut self, position: Vec2) {
         // let color = Color::srgb(0.22, 0.4, 0.29);
-        use bevy_gizmos_ext::GizmosExt;
+        use bevy_gizmos_ext::GizmoBufferExt;
         const COLOR: Color = Color::BLACK;
         const RADIUS: f32 = 8.0;
         self.circle_2d(position, RADIUS, COLOR);
@@ -364,7 +364,7 @@ where
 
     /// Draws a retrograde vector indicator at the given position.
     fn retrograde_vector(&mut self, position: Vec2) {
-        use bevy_gizmos_ext::GizmosExt;
+        use bevy_gizmos_ext::GizmoBufferExt;
         const COLOR: Color = Color::BLACK;
         const RADIUS: f32 = 8.0;
         self.circle_2d(position, RADIUS, COLOR);

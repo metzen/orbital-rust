@@ -87,7 +87,7 @@ impl RenderOrbit for Orbit {
     ) {
         let angle = DVec2::X.angle_to(-self.eccentricity_vector) as f32;
         if fade {
-            use bevy_gizmos_ext::GizmosExt;
+            use bevy_gizmos_ext::GizmoBufferExt;
             gizmos
                 .ellipse_gradient_2d(
                     Isometry2d::new(translation + self.center().as_vec2(), Rot2::radians(angle)),
@@ -115,7 +115,7 @@ impl RenderOrbit for Orbit {
         color: Color,
         _fade: bool,
     ) {
-        use bevy_gizmos_ext::GizmosExt;
+        use bevy_gizmos_ext::GizmoBufferExt;
         let angle = DVec2::X.angle_to(-self.eccentricity_vector) as f32;
         gizmos
             .hyperbola_2d(

@@ -184,9 +184,9 @@ where
     }
 }
 
-/// Additional shape drawing extensions for [`Gizmos`].
-#[extension(pub trait GizmosExt)]
-impl<'w, 's, Config, Clear> Gizmos<'w, 's, Config, Clear>
+/// Additional shape drawing extensions for [`GizmoBuffer`].
+#[extension(pub trait GizmoBufferExt)]
+impl<Config, Clear> GizmoBuffer<Config, Clear>
 where
     Config: GizmoConfigGroup,
     Clear: 'static + Send + Sync,
