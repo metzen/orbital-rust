@@ -19,7 +19,7 @@ use std::iter::zip;
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::Color;
 use bevy::gizmos::config::{GizmoConfig, GizmoConfigGroup, GizmoLineConfig, GizmoLineJoint};
-use bevy::gizmos::gizmos::{GizmoBuffer, Gizmos};
+use bevy::gizmos::gizmos::GizmoBuffer;
 use bevy::math::{Isometry2d, Isometry3d, Vec2, ops, vec2};
 
 use crate::simplex_stroke_font::SIMPLEX_STROKE_FONT;
