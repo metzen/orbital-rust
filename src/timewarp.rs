@@ -55,7 +55,9 @@ impl TimeWarp {
 
     fn decrease_warp(&mut self) -> Result<usize, OutOfRange> {
         if self.index == 0 {
-            return Err(OutOfRange(String::from("Cannot decrease Time Warp below 1x")));
+            return Err(OutOfRange(String::from(
+                "Cannot decrease Time Warp below 1x",
+            )));
         }
         self.set_warp_index(self.index - 1)
     }
