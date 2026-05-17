@@ -2,6 +2,7 @@ use bevy::camera::visibility::{Layer, RenderLayers};
 use bevy::color::palettes::css::LIGHT_GRAY;
 use bevy::ecs::query::QueryData;
 use bevy::ecs::system::lifetimeless::Read;
+use bevy::gizmos::gizmos::GizmoBuffer;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::math::DVec2;
 use bevy::prelude::*;
@@ -38,92 +39,132 @@ impl Plugin for OrbitGizmoPlugin {
 #[derive(GizmoConfigGroup, Default, Reflect)]
 struct OrbitGizmoConfigGroup;
 
-trait RenderOrbit {
-    fn render(
-        &self,
-        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: Vec2,
-        color: Color,
-        fade: bool,
-    );
-    fn render_ellipse(
-        &self,
-        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: Vec2,
-        color: Color,
-        fade: bool,
-    );
-    fn render_hyperbola(
-        &self,
-        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: Vec2,
-        color: Color,
-        fade: bool,
-    );
+// Allow for Orbit to be used as a primitive for Gizmo rendering.
+impl Primitive2d for Orbit {}
+
+/// Builder for configuring the drawing options of [`Orbit`].
+pub struct Orbit2dBuilder<'a, Config, Clear>
+where
+    Config: GizmoConfigGroup,
+    Clear: 'static + Send + Sync,
+{
+    gizmos: &'a mut GizmoBuffer<Config, Clear>,
+    isometry: Isometry2d,
+    shape: OrbitShape,
+    half_size: Vec2,
+    start_angle: f32,
+    color: Color,
+    resolution: u32,
+    fade: bool,
+    draw_apsides: bool,
+    apsis_radius: f32,
 }
 
-impl RenderOrbit for Orbit {
-    fn render(
-        &self,
-        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: Vec2,
-        color: Color,
-        fade: bool,
-    ) {
-        match self.shape() {
-            OrbitShape::Circle => self.render_ellipse(gizmos, translation, color, fade),
-            OrbitShape::Ellipse => self.render_ellipse(gizmos, translation, color, fade),
-            OrbitShape::Parabola => self.render_hyperbola(gizmos, translation, color, fade),
-            OrbitShape::Hyperbola => self.render_hyperbola(gizmos, translation, color, fade),
-        }
+impl<Config, Clear> Orbit2dBuilder<'_, Config, Clear>
+where
+    Config: GizmoConfigGroup,
+    Clear: 'static + Send + Sync,
+{
+    /// Set the number of line-segments for the orbit.
+    pub fn resolution(mut self, resolution: u32) -> Self {
+        self.resolution = resolution;
+        self
     }
 
-    fn render_ellipse(
-        &self,
-        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: Vec2,
-        color: Color,
-        fade: bool,
-    ) {
-        let angle = DVec2::X.angle_to(-self.eccentricity_vector) as f32;
-        if fade {
-            use bevy_gizmos_ext::GizmoBufferExt;
-            gizmos
-                .ellipse_gradient_2d(
-                    Isometry2d::new(translation + self.center().as_vec2(), Rot2::radians(angle)),
-                    DVec2::new(self.semi_major_axis, self.semi_minor_axis).as_vec2(),
-                    self.eccentric_anomaly().as_radians_f64() as f32,
-                    color.with_alpha(0.01),
-                    color.with_alpha(0.3),
-                )
-                .resolution(2000);
-        } else {
-            gizmos
-                .ellipse_2d(
-                    Isometry2d::new(translation + self.center().as_vec2(), Rot2::radians(angle)),
-                    DVec2::new(self.semi_major_axis, self.semi_minor_axis).as_vec2(),
-                    color.with_alpha(0.3),
-                )
-                .resolution(2000);
-        }
+    /// Set the fade behavior of the orbit.
+    pub fn fade(mut self, fade: bool) -> Self {
+        self.fade = fade;
+        self
     }
 
-    fn render_hyperbola(
-        &self,
-        gizmos: &mut Gizmos<OrbitGizmoConfigGroup>,
-        translation: Vec2,
-        color: Color,
-        _fade: bool,
-    ) {
+    /// Set whether to draw the apsides of the orbit.
+    pub fn draw_apsides(mut self, draw_apsides: bool) -> Self {
+        self.draw_apsides = draw_apsides;
+        self
+    }
+
+    /// Set the radius of the apsis circles.
+    pub fn apsis_radius(mut self, apsis_radius: f32) -> Self {
+        self.apsis_radius = apsis_radius;
+        self
+    }
+}
+
+impl<Config, Clear> Drop for Orbit2dBuilder<'_, Config, Clear>
+where
+    Config: GizmoConfigGroup,
+    Clear: 'static + Send + Sync,
+{
+    fn drop(&mut self) {
         use bevy_gizmos_ext::GizmoBufferExt;
-        let angle = DVec2::X.angle_to(-self.eccentricity_vector) as f32;
-        gizmos
-            .hyperbola_2d(
-                Isometry2d::new(translation - self.center().as_vec2(), Rot2::radians(angle)),
-                DVec2::new(self.semi_major_axis, self.semi_minor_axis).as_vec2(),
-                color.with_alpha(0.2),
-            )
-            .resolution(2000);
+        match self.shape {
+            OrbitShape::Circle | OrbitShape::Ellipse => {
+                if self.fade {
+                    self.gizmos
+                        .ellipse_gradient_2d(
+                            self.isometry,
+                            self.half_size,
+                            self.start_angle,
+                            self.color.with_alpha(0.01),
+                            self.color.with_alpha(0.3),
+                        )
+                        .resolution(self.resolution);
+                } else {
+                    self.gizmos
+                        .ellipse_2d(self.isometry, self.half_size, self.color.with_alpha(0.3))
+                        .resolution(self.resolution);
+                }
+            }
+            OrbitShape::Parabola | OrbitShape::Hyperbola => {
+                self.gizmos
+                    .hyperbola_2d(self.isometry, self.half_size, self.color.with_alpha(0.3))
+                    .resolution(self.resolution);
+            }
+        }
+        if self.draw_apsides {
+            self.gizmos.circle_2d(
+                self.isometry * vec2(self.half_size.x, 0.0),
+                self.apsis_radius,
+                self.color,
+            );
+            self.gizmos.circle_2d(
+                self.isometry * vec2(-self.half_size.x, 0.0),
+                self.apsis_radius,
+                self.color,
+            );
+        }
+    }
+}
+
+impl<Config, Clear> GizmoPrimitive2d<Orbit> for GizmoBuffer<Config, Clear>
+where
+    Config: GizmoConfigGroup,
+    Clear: 'static + Send + Sync,
+{
+    type Output<'a>
+        = Orbit2dBuilder<'a, Config, Clear>
+    where
+        Self: 'a;
+
+    fn primitive_2d(
+        &mut self,
+        orbit: &Orbit,
+        isometry: impl Into<Isometry2d>,
+        color: impl Into<Color>,
+    ) -> Self::Output<'_> {
+        const DEFAULT_ORBIT_RESOLUTION: u32 = 32;
+        Orbit2dBuilder {
+            gizmos: self,
+            isometry: isometry.into(),
+            shape: orbit.shape(),
+            half_size: DVec2::new(orbit.semi_major_axis, orbit.semi_minor_axis).as_vec2(),
+            start_angle: orbit.eccentric_anomaly().as_radians_f64() as f32,
+            color: color.into(),
+            resolution: DEFAULT_ORBIT_RESOLUTION,
+            fade: false,
+            draw_apsides: false,
+            apsis_radius: 1.0,
+        }
     }
 }
 
@@ -171,29 +212,21 @@ fn draw_orbits(
             primary.rigidbody.mass,
             secondary.rigidbody.mass,
         );
-        let translation = primary.global_transform.translation().xy();
-        let color = match materials.get(secondary.mesh_material) {
-            Some(material) => material.color,
-            None => Color::from(LIGHT_GRAY),
-        };
-        orbit.render(&mut gizmos, translation, color, secondary.vessel.is_none());
-        // AP and PE markers for controlled vessel.
-        let perifocal_unit_vec = orbit.eccentricity_vector / orbit.eccentricity;
-        let ap_vec = orbit.apoapsis * -perifocal_unit_vec;
-        let pe_vec = orbit.periapsis * perifocal_unit_vec;
-        if let Some(vessel) = secondary.vessel
-            && vessel.controlled
-        {
-            gizmos.circle_2d(
-                Isometry2d::from_translation(translation + ap_vec.as_vec2()),
-                apsis_radius,
-                color.with_alpha(1.0),
-            );
-            gizmos.circle_2d(
-                Isometry2d::from_translation(translation + pe_vec.as_vec2()),
-                apsis_radius,
-                color.with_alpha(1.0),
-            );
-        }
+        gizmos
+            .primitive_2d(
+                &orbit,
+                Isometry2d::new(
+                    primary.global_transform.translation().xy() + orbit.center().as_vec2(),
+                    Rot2::radians(DVec2::X.angle_to(-orbit.eccentricity_vector) as f32),
+                ),
+                match materials.get(secondary.mesh_material) {
+                    Some(material) => material.color,
+                    None => Color::from(LIGHT_GRAY),
+                },
+            )
+            .resolution(2000)
+            .fade(secondary.vessel.is_none())
+            .apsis_radius(apsis_radius)
+            .draw_apsides(secondary.vessel.is_some_and(|vessel| vessel.controlled));
     }
 }
