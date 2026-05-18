@@ -103,48 +103,43 @@ impl HudAction {
 
 fn change_hud_subject(
     mut commands: Commands,
-    mut vessels_query: Query<(Entity, &mut Vessel, Option<&HudSubject>), With<Vessel>>,
-    mut camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
-    modifier: i32,
+    subject: Single<Entity, With<HudSubject>>,
+    vessel_entities: Query<Entity, With<Vessel>>,
+    mut vessels: Query<&mut Vessel>,
+    mut autofollow: Single<&mut Autofollow, With<InGameCamera>>,
+    modifier: isize,
 ) {
-    let mut current_subject_index: i32 = -1;
-    let mut i = 0;
-    let mut entities = Vec::new();
-    for (entity, mut vessel, hud_subject) in vessels_query.iter_mut().sort::<Entity>() {
-        entities.push(entity);
-        info!("hud subj vessel");
-        if hud_subject.is_some() {
-            info!("vessel is subject");
-            current_subject_index = i;
-            commands.entity(entity).remove::<HudSubject>();
-            vessel.controlled = false;
-        }
-        i += 1;
-    }
-
-    let new_subject_index = (current_subject_index + modifier).rem_euclid(i);
-    let new_subject = entities[new_subject_index as usize];
+    let old_subject = *subject;
+    let items: Vec<Entity> = vessel_entities.iter().sort::<Entity>().collect();
+    let index = items.binary_search(&old_subject).unwrap();
+    #[allow(clippy::cast_possible_wrap)]
+    let new_index = (index as isize + modifier).rem_euclid(items.len() as isize) as usize;
+    let new_subject = items[new_index];
+    commands.entity(old_subject).remove::<HudSubject>();
     commands.entity(new_subject).insert(HudSubject);
-    if let Ok((entity, mut vessel, _hud_subject)) = vessels_query.get_mut(new_subject) {
-        vessel.controlled = true;
-        camera_autofollow.target = Some(entity);
-    }
+    vessels.get_mut(old_subject).unwrap().controlled = false;
+    vessels.get_mut(new_subject).unwrap().controlled = true;
+    autofollow.target = Some(new_subject);
 }
 
 fn next_vessel(
     commands: Commands,
-    vessels_query: Query<(Entity, &mut Vessel, Option<&HudSubject>), With<Vessel>>,
-    camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
+    subject: Single<Entity, With<HudSubject>>,
+    vessels: Query<Entity, With<Vessel>>,
+    vessel_query: Query<&mut Vessel>,
+    autofollow: Single<&mut Autofollow, With<InGameCamera>>,
 ) {
-    change_hud_subject(commands, vessels_query, camera_autofollow, 1);
+    change_hud_subject(commands, subject, vessels, vessel_query, autofollow, 1);
 }
 
 fn previous_vessel(
     commands: Commands,
-    vessels_query: Query<(Entity, &mut Vessel, Option<&HudSubject>), With<Vessel>>,
-    camera_autofollow: Single<&mut Autofollow, With<InGameCamera>>,
+    subject: Single<Entity, With<HudSubject>>,
+    vessels: Query<Entity, With<Vessel>>,
+    vessel_query: Query<&mut Vessel>,
+    autofollow: Single<&mut Autofollow, With<InGameCamera>>,
 ) {
-    change_hud_subject(commands, vessels_query, camera_autofollow, -1);
+    change_hud_subject(commands, subject, vessels, vessel_query, autofollow, -1);
 }
 
 fn humanize_distance(altitude: f64) -> (f64, String) {
