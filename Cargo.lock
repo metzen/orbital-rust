@@ -4675,7 +4675,7 @@ dependencies = [
 
 [[package]]
 name = "orbital"
-version = "0.1.10"
+version = "0.1.11"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
