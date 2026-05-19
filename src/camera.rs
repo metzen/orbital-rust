@@ -116,8 +116,8 @@ enum CameraAction {
     Pan,
     #[actionlike(Axis)]
     Zoom,
-    ZoomIn,
-    ZoomOut,
+    #[actionlike(Axis)]
+    ScrollZoom,
     NextViewMode,
     FocusNext,
     FocusPrev,
@@ -138,8 +138,7 @@ impl CameraAction {
                 Self::Zoom,
                 VirtualAxis::new(KeyCode::NumpadSubtract, KeyCode::NumpadAdd),
             )
-            .with(Self::ZoomIn, MouseScrollDirection::UP)
-            .with(Self::ZoomOut, MouseScrollDirection::DOWN)
+            .with_axis(Self::ScrollZoom, MouseScrollAxis::Y.inverted())
             .with(Self::NextViewMode, KeyCode::KeyV)
             .with(Self::FocusNext, KeyCode::Tab)
             .with(
@@ -424,21 +423,22 @@ fn zoom(
     time: Res<Time<Real>>,
     projections: Query<&mut Projection, With<ProjectionScaleZoom>>,
 ) {
+    const SCROLL_DIVISOR: f32 = 600.0;
     for mut projection in projections {
         if let Projection::Orthographic(ref mut orthographic_projection) = *projection {
-            if action_state.pressed(&CameraAction::ZoomIn) {
-                orthographic_projection.scale *=
-                    1.0 - CAMERA_ZOOM_RATE_MAX * 10.0 * time.delta_secs();
-            }
-            if action_state.pressed(&CameraAction::ZoomOut) {
-                orthographic_projection.scale *=
-                    1.0 + CAMERA_ZOOM_RATE_MAX * 10.0 * time.delta_secs();
-            }
-            if action_state.clamped_value(&CameraAction::Zoom) != 0.0 {
+            if action_state.value(&CameraAction::Zoom) != 0.0 {
                 orthographic_projection.scale *= 1.0
                     + CAMERA_ZOOM_RATE_MAX
-                        * -action_state.clamped_value(&CameraAction::Zoom)
+                        * -action_state.value(&CameraAction::Zoom)
                         * time.delta_secs();
+            }
+            if action_state.value(&CameraAction::ScrollZoom) > 0.0 {
+                orthographic_projection.scale *=
+                    1.0 + (action_state.value(&CameraAction::ScrollZoom) / SCROLL_DIVISOR);
+            }
+            if action_state.value(&CameraAction::ScrollZoom) < 0.0 {
+                orthographic_projection.scale /=
+                    1.0 + (action_state.value(&CameraAction::ScrollZoom).abs() / SCROLL_DIVISOR);
             }
         }
     }
