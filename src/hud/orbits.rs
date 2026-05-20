@@ -56,7 +56,7 @@ where
     color: Color,
     resolution: u32,
     fade: bool,
-    draw_apsides: bool,
+    apsides: bool,
     apsis_radius: f32,
 }
 
@@ -78,8 +78,8 @@ where
     }
 
     /// Set whether to draw the apsides of the orbit.
-    pub fn draw_apsides(mut self, draw_apsides: bool) -> Self {
-        self.draw_apsides = draw_apsides;
+    pub fn apsides(mut self, apsides: bool) -> Self {
+        self.apsides = apsides;
         self
     }
 
@@ -87,6 +87,52 @@ where
     pub fn apsis_radius(mut self, apsis_radius: f32) -> Self {
         self.apsis_radius = apsis_radius;
         self
+    }
+
+    fn draw_orbit(&mut self) {
+        match self.shape {
+            OrbitShape::Circle | OrbitShape::Ellipse => self.draw_elliptical_orbit(),
+            OrbitShape::Parabola | OrbitShape::Hyperbola => self.draw_hyperbolic_orbit(),
+        }
+    }
+
+    fn draw_elliptical_orbit(&mut self) {
+        use bevy_gizmos_ext::GizmoBufferExt;
+        if self.fade {
+            self.gizmos
+                .ellipse_gradient_2d(
+                    self.isometry,
+                    self.half_size,
+                    self.start_angle,
+                    self.color.with_alpha(0.01),
+                    self.color.with_alpha(0.3),
+                )
+                .resolution(self.resolution);
+        } else {
+            self.gizmos
+                .ellipse_2d(self.isometry, self.half_size, self.color.with_alpha(0.3))
+                .resolution(self.resolution);
+        }
+    }
+
+    fn draw_hyperbolic_orbit(&mut self) {
+        use bevy_gizmos_ext::GizmoBufferExt;
+        self.gizmos
+            .hyperbola_2d(self.isometry, self.half_size, self.color.with_alpha(0.3))
+            .resolution(self.resolution);
+    }
+
+    fn draw_apsides(&mut self) {
+        self.gizmos.circle_2d(
+            self.isometry * vec2(self.half_size.x, 0.0),
+            self.apsis_radius,
+            self.color,
+        );
+        self.gizmos.circle_2d(
+            self.isometry * vec2(-self.half_size.x, 0.0),
+            self.apsis_radius,
+            self.color,
+        );
     }
 }
 
@@ -96,42 +142,9 @@ where
     Clear: 'static + Send + Sync,
 {
     fn drop(&mut self) {
-        use bevy_gizmos_ext::GizmoBufferExt;
-        match self.shape {
-            OrbitShape::Circle | OrbitShape::Ellipse => {
-                if self.fade {
-                    self.gizmos
-                        .ellipse_gradient_2d(
-                            self.isometry,
-                            self.half_size,
-                            self.start_angle,
-                            self.color.with_alpha(0.01),
-                            self.color.with_alpha(0.3),
-                        )
-                        .resolution(self.resolution);
-                } else {
-                    self.gizmos
-                        .ellipse_2d(self.isometry, self.half_size, self.color.with_alpha(0.3))
-                        .resolution(self.resolution);
-                }
-            }
-            OrbitShape::Parabola | OrbitShape::Hyperbola => {
-                self.gizmos
-                    .hyperbola_2d(self.isometry, self.half_size, self.color.with_alpha(0.3))
-                    .resolution(self.resolution);
-            }
-        }
-        if self.draw_apsides {
-            self.gizmos.circle_2d(
-                self.isometry * vec2(self.half_size.x, 0.0),
-                self.apsis_radius,
-                self.color,
-            );
-            self.gizmos.circle_2d(
-                self.isometry * vec2(-self.half_size.x, 0.0),
-                self.apsis_radius,
-                self.color,
-            );
+        self.draw_orbit();
+        if self.apsides {
+            self.draw_apsides();
         }
     }
 }
@@ -162,7 +175,7 @@ where
             color: color.into(),
             resolution: DEFAULT_ORBIT_RESOLUTION,
             fade: false,
-            draw_apsides: false,
+            apsides: false,
             apsis_radius: 1.0,
         }
     }
@@ -227,6 +240,6 @@ fn draw_orbits(
             .resolution(2000)
             .fade(secondary.vessel.is_none())
             .apsis_radius(apsis_radius)
-            .draw_apsides(secondary.vessel.is_some_and(|vessel| vessel.controlled));
+            .apsides(secondary.vessel.is_some_and(|vessel| vessel.controlled));
     }
 }
