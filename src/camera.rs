@@ -312,15 +312,14 @@ fn setup_camera(
 /// Scales camera projection to fit the window (integer multiples only).
 fn fit_canvas(
     mut resize_events: MessageReader<WindowResized>,
-    mut projection: Single<&mut Projection, With<OuterCamera>>,
+    projection: Single<&mut Projection, With<OuterCamera>>,
 ) {
-    for event in resize_events.read() {
-        let h_scale = event.width / RES_WIDTH as f32;
-        let v_scale = event.height / RES_HEIGHT as f32;
-        if let Projection::Orthographic(orthographic_projection) = &mut **projection {
-            orthographic_projection.scale = 0.15;
+    if let Projection::Orthographic(orthographic_projection) = projection.into_inner().as_mut() {
+        for event in resize_events.read() {
             info!("{:?}", event);
-            orthographic_projection.scale = 1. / h_scale.min(v_scale);
+            let h_scale = event.width / RES_WIDTH as f32;
+            let v_scale = event.height / RES_HEIGHT as f32;
+            orthographic_projection.scale = 1.0 / f32::min(h_scale, v_scale);
         }
     }
 }
