@@ -1,7 +1,7 @@
 use bevy::asset::uuid::Uuid;
 use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::{Layer, RenderLayers};
-use bevy::camera::{ImageRenderTarget, RenderTarget};
+use bevy::camera::{ImageRenderTarget, NormalizedRenderTarget, RenderTarget};
 use bevy::ecs::message::MessageCursor;
 use bevy::math::DVec2;
 use bevy::picking::PickingSystems;
@@ -29,6 +29,9 @@ const RES_WIDTH: u32 = 16 * 20;
 
 /// In-game resolution height.
 const RES_HEIGHT: u32 = 10 * 20;
+
+/// Dimensions of the low-res canvas.
+const CANVAS_SIZE: Vec2 = Vec2::new(RES_WIDTH as f32, RES_HEIGHT as f32);
 
 #[allow(clippy::unreadable_literal)]
 const PIXEL_CAM_POINTER_ID: PointerId =
@@ -530,32 +533,31 @@ fn relay_pointer_input_messages(
     mut messages: ResMut<Messages<PointerInput>>,
     render_target: Single<&RenderTarget, With<InGameCamera>>,
     window: Single<&Window, With<PrimaryWindow>>,
+    projection: Single<&Projection, With<OuterCamera>>,
 ) {
-    let messages_to_resend: Vec<PointerInput> = message_reader
+    let Projection::Orthographic(ortho_projection) = *projection else {
+        todo!("Handle non-orthographic camera projection for pointer input relay");
+    };
+    let rect = Rect::from_center_size(window.size() / 2.0, CANVAS_SIZE / ortho_projection.scale);
+    message_reader
         .read(&messages)
-        .filter(|m| m.pointer_id == PointerId::Mouse)
-        .map(|input| {
-            PointerInput {
-                pointer_id: PIXEL_CAM_POINTER_ID,
-                location: Location {
-                    target: bevy::camera::NormalizedRenderTarget::Image(ImageRenderTarget {
-                        handle: render_target.as_image().unwrap().clone(),
-                        scale_factor: 1.0,
-                    }),
-                    // TODO: This isn't quite correct; need to account for cases where the canvas
-                    // does not fill the whole window.
-                    position: Vec2::new(
-                        (input.location.position.x / window.width()) * RES_WIDTH as f32,
-                        (input.location.position.y / window.height()) * RES_HEIGHT as f32,
-                    ),
-                },
-                action: input.action,
-            }
+        .filter(|m| m.pointer_id == PointerId::Mouse && rect.contains(m.location.position))
+        .map(|input| PointerInput {
+            pointer_id: PIXEL_CAM_POINTER_ID,
+            location: Location {
+                target: NormalizedRenderTarget::Image(ImageRenderTarget {
+                    handle: render_target.as_image().unwrap().clone(),
+                    scale_factor: 1.0,
+                }),
+                position: (input.location.position - rect.min) * ortho_projection.scale,
+            },
+            action: input.action,
         })
-        .collect();
-    for message in messages_to_resend {
-        messages.write(message);
-    }
+        .collect::<Vec<PointerInput>>()
+        .into_iter()
+        .for_each(|message| {
+            messages.write(message);
+        });
 }
 
 /// Focus an entity when clicked.
