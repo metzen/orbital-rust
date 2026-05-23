@@ -58,7 +58,7 @@ fn setup(mut commands: Commands) {
         Name::new("SAS Controls"),
         Node {
             position_type: PositionType::Absolute,
-            left: px(545.0),
+            left: px(575.0),
             bottom: px(20.0),
             border: super::BORDER,
             border_radius: BorderRadius::all(px(3.0)),

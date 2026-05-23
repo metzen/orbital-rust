@@ -5,6 +5,7 @@ use leafwing_input_manager::plugin::InputManagerPlugin;
 use leafwing_input_manager::prelude::{ActionState, InputMap};
 
 use crate::camera::{Autofollow, InGameCamera};
+use crate::hud::gforce::GForcePlugin;
 use crate::hud::heading::HeadingPlugin;
 use crate::hud::hovered::HoveredPlugin;
 use crate::hud::orbit_info::OrbitInfoPlugin;
@@ -20,6 +21,7 @@ use crate::vessel::Vessel;
 
 mod altitude;
 mod attitude;
+mod gforce;
 mod heading;
 mod hovered;
 mod orbit_info;
@@ -45,6 +47,7 @@ impl Plugin for HudPlugin {
             ),
         );
         app.add_plugins((
+            GForcePlugin,
             HeadingPlugin,
             HoveredPlugin,
             InputManagerPlugin::<HudAction>::default(),
