@@ -48,7 +48,7 @@ fn setup(mut commands: Commands) {
                     ..default()
                 },
                 ThrottleBar,
-                BackgroundColor::from(Color::srgb(0.0, 0.8, 0.32)),
+                BackgroundColor::from(Color::srgb(0.0, 1.0, 0.38)),
             ),
             (Text::default(), ThrottleText, TextFont::ui_default()),
         ],
