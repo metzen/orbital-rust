@@ -1,7 +1,7 @@
 use bevy::asset::uuid::Uuid;
+use bevy::camera::RenderTarget;
 use bevy::camera::primitives::Aabb;
 use bevy::camera::visibility::{Layer, RenderLayers};
-use bevy::camera::{ImageRenderTarget, NormalizedRenderTarget, RenderTarget};
 use bevy::ecs::message::MessageCursor;
 use bevy::math::DVec2;
 use bevy::picking::PickingSystems;
@@ -544,10 +544,7 @@ fn relay_pointer_input_messages(
         .map(|input| PointerInput {
             pointer_id: PIXEL_CAM_POINTER_ID,
             location: Location {
-                target: NormalizedRenderTarget::Image(ImageRenderTarget {
-                    handle: render_target.as_image().unwrap().clone(),
-                    scale_factor: 1.0,
-                }),
+                target: render_target.normalize(None).unwrap(),
                 position: (input.location.position - rect.min) * ortho_projection.scale,
             },
             action: input.action,
