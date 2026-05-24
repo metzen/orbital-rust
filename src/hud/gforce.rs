@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 use crate::hud;
 use crate::hud::HudSubject;
+use crate::physics;
 use crate::physics::{RigidBody, SatelliteOf};
 
 const WIDGET_PADDING: UiRect = UiRect::axes(Val::Px(1.0), Val::Px(5.0));
@@ -93,17 +94,22 @@ fn setup(mut commands: Commands) {
 
 fn update(
     subject: Single<(&RigidBody, &SatelliteOf, &GlobalTransform), With<HudSubject>>,
-    transform_query: Query<&GlobalTransform, Without<HudSubject>>,
+    primary_query: Query<(&GlobalTransform, &RigidBody), Without<HudSubject>>,
     widget_node: Single<&ComputedNode, With<GForce>>,
     mut needle: Single<(&mut Node, &ComputedNode, &mut Text), With<GForceNeedle>>,
 ) {
     let (subject_rigidbody, subject_satellite_of, subject_transform) = *subject;
-    let primary_transform = transform_query.get(subject_satellite_of.primary()).unwrap();
-    let direction = subject_transform.translation() - primary_transform.translation();
-    // TODO: Fix this dummy implementation.
-    let inertial_frame_acceleration = direction.normalize() * G_FORCE;
+    let (primary_transform, primary_rigidbody) =
+        primary_query.get(subject_satellite_of.primary()).unwrap();
+    let direction = primary_transform.translation() - subject_transform.translation();
+    let gravitational_force = physics::gravitation_force(
+        f64::from(primary_rigidbody.mass),
+        f64::from(subject_rigidbody.mass),
+        direction.into(),
+    );
+    let inertial_frame_acceleration = gravitational_force / subject_rigidbody.mass;
     let acceleration_relative_to_inertial_frame =
-        subject_rigidbody.acceleration + inertial_frame_acceleration;
+        subject_rigidbody.acceleration - inertial_frame_acceleration;
     let acceleration_relative_to_subject_orientation =
         acceleration_relative_to_inertial_frame.dot(subject_transform.rotation() * Vec3::Y);
     let g_force = acceleration_relative_to_inertial_frame.length() / G_FORCE

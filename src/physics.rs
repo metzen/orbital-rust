@@ -118,7 +118,7 @@ impl SatelliteOf {
 #[relationship_target(relationship = SatelliteOf, linked_spawn)]
 pub struct Satellites(Vec<Entity>);
 
-fn gravitation_force(m1: f64, m2: f64, distance: DVec3) -> Vec3 {
+pub fn gravitation_force(m1: f64, m2: f64, distance: DVec3) -> Vec3 {
     let unit = distance.normalize() * DVec3::new(1.0, 1.0, 0.0);
     (unit * (G * m1 * m2 / distance.length_squared())).as_vec3()
 }
