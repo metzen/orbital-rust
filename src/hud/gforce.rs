@@ -7,7 +7,7 @@ use crate::physics::{RigidBody, SatelliteOf};
 
 const WIDGET_PADDING: UiRect = UiRect::axes(Val::Px(1.0), Val::Px(5.0));
 
-/// Force per unit mass due to gravity at sea level on Earth, in m/s².
+/// Force per unit mass due to gravity at sea level on Earth, in N/kg.
 const G_FORCE: f32 = 9.80665;
 
 pub(super) struct GForcePlugin;
