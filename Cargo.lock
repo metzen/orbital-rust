@@ -4684,6 +4684,7 @@ dependencies = [
  "bevy_gizmos_ext",
  "big_space",
  "clap",
+ "egui",
  "either",
  "embed-resource",
  "extension-traits",

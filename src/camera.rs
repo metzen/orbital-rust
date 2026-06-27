@@ -13,10 +13,13 @@ use bevy::render::render_resource::{
 };
 use bevy::window::{PrimaryWindow, WindowResized};
 use bevy_egui::input::egui_wants_any_pointer_input;
-use bevy_egui::{EguiGlobalSettings, EguiStartupSet, PrimaryEguiContext};
+use bevy_egui::{
+    EguiContexts, EguiGlobalSettings, EguiPrimaryContextPass, EguiStartupSet, PrimaryEguiContext,
+};
 use big_space::floating_origins::{BigSpace, FloatingOrigin};
 use big_space::grid::Grid;
 use big_space::grid::cell::CellCoord;
+use egui::{Id, LayerId, Popup, PopupAnchor, PopupCloseBehavior, PopupKind, SetOpenCommand};
 use either::Either;
 use leafwing_input_manager::prelude::*;
 
@@ -160,6 +163,7 @@ impl Plugin for CameraPlugin {
         app.add_plugins(InputManagerPlugin::<CameraAction>::default());
         app.init_resource::<ActionState<CameraAction>>();
         app.insert_resource(CameraAction::default_input_map());
+        app.init_resource::<ContextMenu>();
         app.register_type::<Autoscale>();
         app.add_systems(
             PreStartup,
@@ -173,7 +177,8 @@ impl Plugin for CameraPlugin {
                 .in_set(PickingSystems::PostInput)
                 .run_if(not(egui_wants_any_pointer_input)),
         );
-        app.add_systems(Update, (fit_canvas, change_focus, change_focus_on_click));
+        app.add_systems(Update, (fit_canvas, change_focus));
+        app.add_systems(EguiPrimaryContextPass, open_context_menu_on_right_click);
         app.add_systems(
             PostUpdate,
             (
@@ -556,27 +561,75 @@ fn relay_pointer_input_messages(
         });
 }
 
-/// Focus an entity when clicked.
-fn change_focus_on_click(
+/// Context menu state for right-click actions.
+#[derive(Resource, Default)]
+struct ContextMenu {
+    entity: Option<Entity>,
+    /// Screen position in physical pixels (window coordinates, top-left origin)
+    screen_pos: Vec2,
+}
+
+/// Open context menu when right-clicking a focusable entity.
+fn open_context_menu_on_right_click(
     mut reader: MessageReader<PointerInput>,
     interactions: Query<&PointerInteraction, With<InGamePointer>>,
-    mut autofollow: Single<&mut Autofollow, With<InGameCamera>>,
     focusable_query: Query<Has<Focusable>>,
+    mut ctx_menu: ResMut<ContextMenu>,
+    window: Single<&Window, With<PrimaryWindow>>,
+    projection: Single<&Projection, With<OuterCamera>>,
+    mut contexts: EguiContexts,
+    mut autofollow: Single<&mut Autofollow, With<InGameCamera>>,
 ) {
-    for input in reader
+    // Convert projection to the same rect calculation used by the relay.
+    let Projection::Orthographic(ortho_projection) = *projection else {
+        return;
+    };
+    let rect = Rect::from_center_size(window.size() / 2.0, CANVAS_SIZE / ortho_projection.scale);
+    let open = reader
         .read()
-        .filter(|m| m.pointer_id == PIXEL_CAM_POINTER_ID)
-    {
-        if input.button_just_pressed(PointerButton::Primary) {
+        .filter(|input| input.pointer_id == PIXEL_CAM_POINTER_ID)
+        // Egui seems to close the popup on release immediately after a press, so just open
+        // the menu on release events rather than press events.
+        .filter(|input| input.button_just_released(PointerButton::Secondary))
+        .fold(false, |acc, input| {
             for interaction in interactions.iter() {
-                // TODO: Bubble up to next nearest hit when nearest is not focusable.
                 if let Some((entity, _hit)) = interaction.get_nearest_hit()
-                    && let Ok(focusable) = focusable_query.get(*entity)
-                    && focusable
+                    && focusable_query.get(*entity).unwrap_or(false)
                 {
-                    autofollow.target = Some(*entity);
+                    // Transform canvas coords back to window coords for egui placement.
+                    let canvas_pos = input.location.position;
+                    let window_pos = rect.min + (canvas_pos / ortho_projection.scale);
+                    ctx_menu.entity = Some(*entity);
+                    ctx_menu.screen_pos = window_pos;
+                    return true;
                 }
             }
-        }
-    }
+            acc
+        });
+
+    Popup::new(
+        Id::from("entity_context_menu"),
+        contexts.ctx_mut().unwrap().clone(),
+        PopupAnchor::Position(egui::pos2(ctx_menu.screen_pos.x, ctx_menu.screen_pos.y)),
+        LayerId::debug(),
+    )
+    .kind(PopupKind::Menu)
+    .open_memory(if open {
+        Some(SetOpenCommand::Bool(true))
+    } else {
+        None
+    })
+    .close_behavior(PopupCloseBehavior::CloseOnClick)
+    .show(|ui| {
+        ui.vertical(|ui| {
+            if let Some(entity) = ctx_menu.entity
+                && ui.button("Focus").clicked()
+            {
+                autofollow.target = Some(entity);
+            }
+            if ui.button("Set as target").clicked() {
+                info!("clicked set as target");
+            }
+        });
+    });
 }

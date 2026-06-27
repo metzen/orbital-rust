@@ -17,6 +17,7 @@ bevy-inspector-egui = "0.36"
 big_space = { version = "0.12", features = ["bevy_camera"] }
 clap = { version = "4.5.37", features = ["derive"] }
 either = "1.15.0"
+egui = "0.33"
 extension-traits = "2.0.2"
 image = "0.25.6"
 leafwing-input-manager = "0.20"
