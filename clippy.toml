@@ -1,0 +1,2 @@
+allow-mixed-uninlined-format-args = true
+too-many-arguments-threshold = 10
