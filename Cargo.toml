@@ -3,7 +3,7 @@ members = ["run-wasm"]
 
 [package]
 name = "orbital"
-version = "0.1.11"
+version = "0.1.12"
 edition = "2024"
 
 [patch]
