@@ -32,10 +32,10 @@
           buildInputs = with pkgs; [
             alsa-lib
             systemd
-            xorg.libX11
-            xorg.libXcursor
-            xorg.libXi
-            xorg.libXrandr
+            libx11
+            libxcursor
+            libxi
+            libxrandr
           ];
           nativeBuildInputs = with pkgs; [
             autoPatchelfHook
